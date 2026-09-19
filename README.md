@@ -51,3 +51,8 @@ O pre-commit substitui a manutenção de um hook Git manual específico de cada 
 
 Commits seguem [AGENTS.md](AGENTS.md): uma ideia, corpo explicando o porquê e
 até 400 linhas de adições + remoções, exceto lockfiles e migrations autogeradas.
+
+O CI possui dois jobs nesta etapa: qualidade Python (via pre-commit) e infraestrutura
+local (Compose, pgvector e Redis em ambiente descartável). Dependabot roda mensalmente.
+Build do frontend/API Docker, evals RAG e auditorias adicionais entram com as etapas
+correspondentes; não há jobs vazios que simulem essas verificações.
