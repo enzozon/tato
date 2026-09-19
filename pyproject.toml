@@ -1,0 +1,49 @@
+[project]
+name = "tato-api"
+version = "0.1.0"
+description = "Assistente financeiro conversacional; fundação da API."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.115,<1",
+    "pydantic>=2.10,<3",
+    "uvicorn>=0.34,<1",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28,<1",
+    "mypy>=1.15,<2",
+    "pytest>=8.3,<10",
+    "pytest-cov>=6,<8",
+    "ruff>=0.11,<1",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["apps/api"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["apps/api/app"]
+mypy_path = "apps/api"
+
+[tool.pytest.ini_options]
+testpaths = ["apps/api/tests"]
+pythonpath = ["apps/api"]
+addopts = "--strict-config --strict-markers"
+
+[tool.coverage.run]
+source = ["apps/api/app"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
