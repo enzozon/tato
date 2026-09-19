@@ -1,4 +1,4 @@
-.PHONY: sync dev check lint typecheck test infra-up infra-down
+.PHONY: sync dev check lint typecheck test infra-up infra-down hooks
 
 sync:
 	uv sync --locked
@@ -23,3 +23,6 @@ infra-up:
 
 infra-down:
 	docker compose down
+
+hooks:
+	uv run --locked pre-commit install

@@ -9,6 +9,7 @@
 - `make dev`: inicia API em `127.0.0.1:8000`, com recarga.
 - `make check`: ruff, mypy estrito e pytest com cobertura mínima de 80%.
 - `make infra-up` / `make infra-down`: inicia / encerra Compose sem apagar o volume.
+- `make hooks`: instala o pre-commit que repete `make check` antes de commits.
 - Windows: uv e GNU Make no PATH; Docker com Compose v2 para infraestrutura.
 
 ## Mapa

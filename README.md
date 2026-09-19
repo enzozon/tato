@@ -41,3 +41,13 @@ Autenticação, dados financeiros, LLM, RAG e interface ainda não existem.
 Não há deploy nem necessidade de credenciais externas para testar esta etapa.
 
 Veja [a arquitetura e o mapa do monorepo](docs/01-ARQUITETURA.md).
+
+## Contribuir
+
+Execute `make hooks` uma vez após clonar. O pre-commit executa `make check`,
+sem formatar ou modificar arquivos automaticamente. O mesmo comando roda no CI.
+Não pule o hook para contornar falhas; corrija a causa e rode a verificação novamente.
+O pre-commit substitui a manutenção de um hook Git manual específico de cada sistema.
+
+Commits seguem [AGENTS.md](AGENTS.md): uma ideia, corpo explicando o porquê e
+até 400 linhas de adições + remoções, exceto lockfiles e migrations autogeradas.
