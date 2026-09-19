@@ -1,0 +1,5 @@
+{
+  "name": "Tato",
+  "tagline": "seu dinheiro, em uma conversa.",
+  "states": ["calmo", "atento", "alerta", "comemorando", "dormindo"]
+}

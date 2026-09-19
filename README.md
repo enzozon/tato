@@ -39,3 +39,5 @@ habilitada pela migration da etapa 2, após revisão do schema; não há tabelas
 Fundação: API de saúde, contrato OpenAPI testado e verificação de qualidade.
 Autenticação, dados financeiros, LLM, RAG e interface ainda não existem.
 Não há deploy nem necessidade de credenciais externas para testar esta etapa.
+
+Veja [a arquitetura e o mapa do monorepo](docs/01-ARQUITETURA.md).
