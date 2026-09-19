@@ -1,4 +1,4 @@
-.PHONY: sync dev check lint typecheck test
+.PHONY: sync dev check lint typecheck test infra-up infra-down hooks
 
 sync:
 	uv sync --locked
@@ -17,3 +17,12 @@ typecheck:
 
 test:
 	uv run --locked pytest -q --cov --cov-report=term-missing --cov-report=xml
+
+infra-up:
+	docker compose up -d --wait --wait-timeout 90
+
+infra-down:
+	docker compose down
+
+hooks:
+	uv run --locked pre-commit install

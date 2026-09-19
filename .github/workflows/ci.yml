@@ -23,4 +23,27 @@ jobs:
           version: "0.12.17"
           enable-cache: true
       - run: make sync
-      - run: make check
+      - run: uv run --locked pre-commit run --all-files
+
+  infrastructure:
+    name: Infraestrutura local
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      POSTGRES_PASSWORD: tato_ci_sintetico
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # versão 4
+      - name: Validar configuração do Compose
+        run: docker compose config --quiet
+      - name: Iniciar serviços com healthchecks
+        run: make infra-up
+      - name: Verificar pgvector no banco descartável do CI
+        run: >-
+          docker compose exec -T postgres psql -U tato -d tato
+          -v ON_ERROR_STOP=1
+          -c "CREATE EXTENSION vector; SELECT '[1,2,3]'::vector;"
+      - name: Verificar resposta do Redis
+        run: test "$(docker compose exec -T redis redis-cli ping)" = "PONG"
+      - name: Encerrar ambiente descartável do CI
+        if: always()
+        run: docker compose down -v
