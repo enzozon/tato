@@ -41,6 +41,8 @@ Autenticação, dados financeiros, LLM, RAG e interface ainda não existem.
 Não há deploy nem necessidade de credenciais externas para testar esta etapa.
 
 Veja [a arquitetura e o mapa do monorepo](docs/01-ARQUITETURA.md).
+O [diário](docs/DIARIO.md) registra evidências e limitações, e o
+[experimento de quotas](docs/09-FREE-TIER-LIMITS.md) separa medição de estimativa.
 
 ## Contribuir
 
