@@ -1,4 +1,4 @@
-.PHONY: sync dev check lint typecheck test infra-up infra-down hooks migrate
+.PHONY: sync dev check lint typecheck test infra-up infra-down hooks migrate db-init integration
 
 sync:
 	uv sync --locked
@@ -29,3 +29,9 @@ hooks:
 
 migrate:
 	uv run --locked --env-file .env alembic upgrade head
+
+db-init:
+	uv run --locked --env-file .env python scripts/bootstrap_db.py
+
+integration:
+	uv run --locked pytest -q -m integration apps/api/tests/integration

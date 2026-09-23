@@ -48,7 +48,8 @@ mypy_path = "apps/api"
 [tool.pytest.ini_options]
 testpaths = ["apps/api/tests"]
 pythonpath = ["apps/api"]
-addopts = "--strict-config --strict-markers"
+addopts = "--strict-config --strict-markers -m 'not integration'"
+markers = ["integration: exige PostgreSQL real em banco descartável tato_test"]
 
 [tool.coverage.run]
 source = ["apps/api/app"]

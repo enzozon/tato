@@ -107,3 +107,9 @@ revisada; o script recusa sobrescrever histórico. A migration contém SQL conge
 não importa modelos vivos. Mudanças futuras usam `alembic revision --autogenerate`
 com revisão manual do resultado. A extensão pgvector é preservada no downgrade.
 O teste offline verifica renderização, não substitui aplicação em Postgres real.
+
+`0002` força RLS e concede DML ao papel `tato_app`; assinatura é somente leitura
+para esse papel, impedindo auto-upgrade de plano. `make db-init` cria esse papel
+apenas em banco local, sem privilégios de bypass; em provedores, provisionar o papel
+separadamente antes da migration. `make migrate` usa a URL administrativa do `.env`.
+`tenant_session` usa transação com contexto local e recusa credenciais privilegiadas.
