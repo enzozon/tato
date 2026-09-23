@@ -117,3 +117,9 @@ separadamente antes da migration. `make migrate` usa a URL administrativa do `.e
 O job `Infraestrutura local` cria `tato_test`, provisiona o papel, aplica migrations,
 confere drift com `alembic check`, executa `make integration` e valida downgrade/
 upgrade no banco descartável. Esse caminho nunca aponta para contas de produção.
+
+`repositories.py` oferece inserção idempotente de transação, soma exata de despesas
+por intervalo e leitura ordenada de chunks de um documento. A entrada não aceita
+`user_id`; o serviço passa o dono autenticado separadamente. Nenhuma função faz commit:
+`tenant_session` controla a unidade de trabalho. Despesas são negativas no banco e
+o total retorna centavos positivos, excluindo transferências e o limite final da data.
