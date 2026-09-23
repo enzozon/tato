@@ -31,17 +31,34 @@ jobs:
     timeout-minutes: 10
     env:
       POSTGRES_PASSWORD: tato_ci_sintetico
+      DATABASE_MIGRATION_URL: postgresql+psycopg://tato:tato_ci_sintetico@127.0.0.1:5432/tato_test
+      DATABASE_URL: postgresql+psycopg://tato_app:tato_ci_app@127.0.0.1:5432/tato_test
+      TEST_DATABASE_ADMIN_URL: postgresql+psycopg://tato:tato_ci_sintetico@127.0.0.1:5432/tato_test
+      TEST_DATABASE_URL: postgresql+psycopg://tato_app:tato_ci_app@127.0.0.1:5432/tato_test
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # versão 4
       - name: Validar configuração do Compose
         run: docker compose config --quiet
       - name: Iniciar serviços com healthchecks
         run: make infra-up
-      - name: Verificar pgvector no banco descartável do CI
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # versão 6
+        with:
+          version: "0.12.17"
+          enable-cache: true
+      - run: make sync
+      - name: Criar banco descartável de integração
         run: >-
           docker compose exec -T postgres psql -U tato -d tato
-          -v ON_ERROR_STOP=1
-          -c "CREATE EXTENSION vector; SELECT '[1,2,3]'::vector;"
+          -v ON_ERROR_STOP=1 -c "CREATE DATABASE tato_test;"
+      - run: uv run --locked python scripts/bootstrap_db.py
+      - run: uv run --locked alembic upgrade head
+      - run: uv run --locked alembic check
+      - run: make integration
+      - name: Validar reversão em banco descartável
+        run: |
+          uv run --locked alembic downgrade base
+          uv run --locked alembic upgrade head
+          uv run --locked alembic check
       - name: Verificar resposta do Redis
         run: test "$(docker compose exec -T redis redis-cli ping)" = "PONG"
       - name: Encerrar ambiente descartável do CI

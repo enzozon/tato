@@ -113,3 +113,7 @@ para esse papel, impedindo auto-upgrade de plano. `make db-init` cria esse papel
 apenas em banco local, sem privilégios de bypass; em provedores, provisionar o papel
 separadamente antes da migration. `make migrate` usa a URL administrativa do `.env`.
 `tenant_session` usa transação com contexto local e recusa credenciais privilegiadas.
+
+O job `Infraestrutura local` cria `tato_test`, provisiona o papel, aplica migrations,
+confere drift com `alembic check`, executa `make integration` e valida downgrade/
+upgrade no banco descartável. Esse caminho nunca aponta para contas de produção.
