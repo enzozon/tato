@@ -59,6 +59,8 @@ O contexto autenticado inclui usuário e finalidade do campo: copiar ciphertext
 de outra pessoa/campo não o torna legível. A chave fica fora do banco e do Git.
 Perder a chave perde os textos; guardar banco e chave no mesmo backup elimina parte
 da proteção. Rotação de chaves exigirá migração explícita antes de produção.
+Implementação: `apps/api/app/crypto.py`; testes cobrem adulteração, chave incorreta,
+troca de usuário/finalidade, nonces diferentes e identidade de operação.
 
 Nenhuma descrição privada em claro, `tsvector` ou cópia de texto será persistida
 para contornar a criptografia. O FTS da base pública será definido na etapa 6;
