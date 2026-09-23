@@ -35,6 +35,10 @@ jobs:
       DATABASE_URL: postgresql+psycopg://tato_app:tato_ci_app@127.0.0.1:5432/tato_test
       TEST_DATABASE_ADMIN_URL: postgresql+psycopg://tato:tato_ci_sintetico@127.0.0.1:5432/tato_test
       TEST_DATABASE_URL: postgresql+psycopg://tato_app:tato_ci_app@127.0.0.1:5432/tato_test
+      # Chaves sintéticas exclusivamente para o banco descartável do CI.
+      DATA_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      DEDUP_HMAC_KEY: AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=
+      PYTHONPATH: apps/api
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # versão 4
       - name: Validar configuração do Compose
@@ -53,6 +57,10 @@ jobs:
       - run: uv run --locked python scripts/bootstrap_db.py
       - run: uv run --locked alembic upgrade head
       - run: uv run --locked alembic check
+      - name: Executar seed duas vezes sem duplicar dados
+        run: |
+          uv run --locked python scripts/seed_demo.py
+          uv run --locked python scripts/seed_demo.py
       - run: make integration
       - name: Validar reversão em banco descartável
         run: |
