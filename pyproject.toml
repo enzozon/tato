@@ -35,6 +35,10 @@ src = ["apps/api"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
+[tool.ruff.lint.per-file-ignores]
+# Preserva o DDL congelado gerado pelo SQLAlchemy, sem reformatar SQL como Python.
+"apps/api/migrations/versions/0001_schema.py" = ["E501"]
+
 [tool.mypy]
 python_version = "3.12"
 strict = true

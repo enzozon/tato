@@ -1,4 +1,4 @@
-.PHONY: sync dev check lint typecheck test infra-up infra-down hooks
+.PHONY: sync dev check lint typecheck test infra-up infra-down hooks migrate
 
 sync:
 	uv sync --locked
@@ -26,3 +26,6 @@ infra-down:
 
 hooks:
 	uv run --locked pre-commit install
+
+migrate:
+	uv run --locked --env-file .env alembic upgrade head

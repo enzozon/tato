@@ -98,3 +98,12 @@ constraints monetárias, duplicatas, FKs entre donos, cascatas, papel sem bypass
 leitura/escrita cruzada, contexto após rollback e armazenamento vetorial.
 `make check` continua executável sem Docker; testes de integração terão comando
 próprio obrigatório no CI, sem substituí-los por SQLite.
+
+## Migrations
+
+`alembic.ini` carrega as revisions de `apps/api/migrations`. A primeira revision
+foi gerada por `scripts/freeze_schema.py` a partir do DDL PostgreSQL dos modelos e
+revisada; o script recusa sobrescrever histórico. A migration contém SQL congelado,
+não importa modelos vivos. Mudanças futuras usam `alembic revision --autogenerate`
+com revisão manual do resultado. A extensão pgvector é preservada no downgrade.
+O teste offline verifica renderização, não substitui aplicação em Postgres real.

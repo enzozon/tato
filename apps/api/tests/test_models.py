@@ -3,6 +3,7 @@ from uuid import uuid4
 
 import pytest
 from pydantic import ValidationError
+from sqlmodel import SQLModel
 
 from app.models import Account, Category, Chunk, Goal, Transaction, User
 
@@ -43,3 +44,10 @@ def test_goal_and_chunk_reject_invalid_boundaries() -> None:
         Chunk.model_validate(
             dict(user_id=uuid4(), document_id=uuid4(), position=-1, content_ciphertext=b"x")
         )
+
+
+def test_constraints_have_distinct_names_per_table() -> None:
+    for table in SQLModel.metadata.sorted_tables:
+        names = [constraint.name for constraint in table.constraints]
+        assert None not in names
+        assert len(names) == len(set(names)), table.name
