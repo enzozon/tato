@@ -10,11 +10,14 @@
 - `make check`: ruff, mypy estrito e pytest com cobertura mínima de 80%.
 - `make infra-up` / `make infra-down`: inicia / encerra Compose sem apagar o volume.
 - `make hooks`: instala o pre-commit que repete `make check` antes de commits.
+- `make db-init` / `make migrate` / `make seed`: papel local, migrations e dados sintéticos.
+- `make integration`: testes Postgres/RLS; exige URLs de teste no banco descartável `tato_test`.
 - Windows: uv e GNU Make no PATH; Docker com Compose v2 para infraestrutura.
 
 ## Mapa
 
-- `apps/api/app/`: API FastAPI; saúde implementada, domínio ainda pendente.
+- `apps/api/app/`: saúde, modelos, criptografia, repositórios e dados sintéticos.
+- `apps/api/migrations/`: schema congelado e RLS; não importar modelos vivos em revisions.
 - `apps/api/tests/`: testes da API e contratos.
 - `apps/web/`: Next.js 16 estático/PWA; implementação na etapa 9.
 - `packages/mascot/`: identidade e futura arte/persona; nenhuma duplicação no app.
