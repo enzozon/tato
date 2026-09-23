@@ -123,3 +123,7 @@ por intervalo e leitura ordenada de chunks de um documento. A entrada não aceit
 `user_id`; o serviço passa o dono autenticado separadamente. Nenhuma função faz commit:
 `tenant_session` controla a unidade de trabalho. Despesas são negativas no banco e
 o total retorna centavos positivos, excluindo transferências e o limite final da data.
+
+`make seed` insere exemplos sintéticos com UUIDs determinísticos, sem sobrescrever
+registros existentes. Exige banco local e chaves separadas no ambiente; não gera
+embeddings nem contas Supabase. `seed_data.py` contém o conjunto dos dez modelos.

@@ -1,4 +1,6 @@
-.PHONY: sync dev check lint typecheck test infra-up infra-down hooks migrate db-init integration
+export PYTHONPATH := apps/api
+
+.PHONY: sync dev check lint typecheck test infra-up infra-down hooks migrate db-init integration seed
 
 sync:
 	uv sync --locked
@@ -35,3 +37,6 @@ db-init:
 
 integration:
 	uv run --locked pytest -q -m integration apps/api/tests/integration
+
+seed:
+	uv run --locked --env-file .env python scripts/seed_demo.py
