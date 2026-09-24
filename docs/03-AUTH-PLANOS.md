@@ -23,3 +23,12 @@ As funções `require_capacity` e `require_reports` são verificações de backe
 As rotas de chat, importação e agentes usarão contagens autoritativas e reserva
 atômica ao serem implementadas; não há contador mensal fictício nesta etapa.
 O limite técnico protege a API e não substitui quota mensal nem quota de LLM.
+
+`rate_limit.check_rate` usa script Lua atômico pelo REST do Upstash: conta por
+identidade, expira a janela em 60 segundos e responde 429 com `Retry-After`.
+A chave é HMAC do UUID, sem token, e-mail ou descrição financeira.
+Sem configuração ou em falha do Redis, retorna 503; não reinicia o contador em RAM.
+`RATE_LIMIT_BACKEND=memory` só funciona com `TATO_ENV=development`, em um processo,
+para testes locais. Não serve para quota mensal, múltiplos workers ou produção.
+
+Referência: [REST Upstash](https://upstash.com/docs/redis/features/restapi).
