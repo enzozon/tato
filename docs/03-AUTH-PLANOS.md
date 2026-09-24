@@ -38,7 +38,7 @@ para testes locais. Não serve para quota mensal, múltiplos workers ou produç�
 
 Referência: [REST Upstash](https://upstash.com/docs/redis/features/restapi).
 
-## Revisão pendente antes da migration
+## Revisão aprovada antes da migration
 
 Proposta: adicionar em `users` dois campos opcionais `TIMESTAMP WITH TIME ZONE`,
 ambos inicialmente `NULL`, preservando os usuários e as policies existentes.
@@ -52,6 +52,6 @@ Por quê: uma transação PostgreSQL não desfaz uma chamada HTTP. Se o Supabase
 falhar, precisamos reconhecer a exclusão pendente após reiniciar o processo,
 sem continuar usando a conta nem declarar sucesso prematuramente.
 
-A migration não foi escrita nem aplicada: aguarda o checkpoint do Enzo.
-Ainda falta implementar e testar a ordem de remoção, retomada após falha e
-concorrência com requisições em andamento; estes campos sozinhos não resolvem isso.
+O Enzo aprovou os dois campos em 23/09/2026. A revision `0003` adiciona somente
+essas colunas; downgrade remove os marcadores, portanto não usar em exclusões
+pendentes. O ambiente local usa dados sintéticos e não altera serviços hospedados.

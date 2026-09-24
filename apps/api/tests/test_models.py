@@ -12,6 +12,8 @@ def test_records_have_independent_ids_and_aware_timestamps() -> None:
     first, second = User(), User()
     assert first.id != second.id
     assert first.created_at.utcoffset().total_seconds() == 0
+    assert first.onboarding_completed_at is None
+    assert first.deletion_requested_at is None
 
 
 def test_money_preserves_cents_above_float_precision() -> None:
