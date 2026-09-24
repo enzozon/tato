@@ -110,3 +110,24 @@ FTS privado persistido exporia palavras dos textos cifrados; essa cópia não fo
 A etapa 3 acrescentará Auth e autorização HTTP; as migrations não substituem JWT.
 Parar após o resumo desta etapa. Reaplicar localmente depois da reinicialização não
 autoriza avançar para auth, deploy ou dados financeiros reais.
+
+## 23/09/2026 — Etapa 3 iniciada com autorização do Enzo
+
+O Enzo autorizou seguir para auth/planos e informou Docker aberto. Revalidamos:
+Docker 29.8.0 acessível; Compose saudável; papel local, migrations até `0002` e
+seed sintético aplicados. Banco de teste `tato_test` criado separadamente: nove
+testes PostgreSQL/pgvector/RLS aprovados e `alembic check` sem divergências.
+
+Branch `etapa-03-auth-planos` baseada na etapa 2, pois PR 6 continua aberto.
+Implementados módulos de identidade remota Supabase, plano derivado da assinatura
+e limite atômico via REST/Lua Upstash, com memória somente em desenvolvimento.
+`httpx` foi promovido de teste a execução, sem adicionar SDK. `make check` passou
+com 49 testes, cobertura 94,67%; nove testes de integração passaram separadamente.
+O script Lua também foi exercitado no Redis local: primeira chamada aceita,
+segunda negada, expiração presente. Serviços hospedados não foram provisionados.
+
+Etapa **incompleta**: módulos ainda não ligados a rotas de negócio. Checkpoint
+solicitado para `users.onboarding_completed_at` e `users.deletion_requested_at`;
+nenhuma migration nova gerada enquanto aguarda resposta. Depois implementar
+`/me`, onboarding, exclusão recuperável, testes de concorrência/isolamento e CI.
+Interfaces de login e Google dependem da configuração Supabase e da etapa 9.

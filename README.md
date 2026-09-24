@@ -52,10 +52,10 @@ make seed
 `seed` insere exemplos sintéticos sem sobrescrever registros. Não existe migração
 automática no startup da API. Guarde as chaves: sem elas, os textos não são recuperáveis.
 
-Nesta máquina, o `.env` já foi preparado sem publicar valores. Docker Desktop e WSL
-foram instalados em 23/09/2026, mas o Windows solicitou reinicialização para ativar
-a virtualização. Reinicie e abra o Docker antes dos comandos acima; migrations
-locais ainda não foram aplicadas. Elas foram aplicadas e revertidas em Postgres no CI.
+Nesta máquina, Docker Desktop e WSL estão operacionais. As migrations até `0002`
+e o seed sintético foram aplicados localmente em 23/09/2026. Os nove testes de
+integração passaram no banco descartável `tato_test`, incluindo RLS e pgvector.
+O `.env` local mantém as credenciais fora do Git.
 
 `make integration` exige as variáveis `TEST_DATABASE_ADMIN_URL` e `TEST_DATABASE_URL`
 apontando para o banco descartável `tato_test`, com migrations aplicadas e papel
