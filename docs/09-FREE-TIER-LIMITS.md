@@ -43,3 +43,13 @@ foram medidos. Custo contratado por esta execução: R$ 0,00; nenhum plano pago 
 Na etapa 11, `quota-watch` registrará medição, data e origem, usando API quando
 disponível ou contador próprio/registro manual explicitamente identificado.
 Não fingiremos coleta automática de um provedor que não expõe esses dados.
+
+## Medição da etapa 2: 23/09/2026
+
+[Execução 35926485225](https://github.com/enzozon/tato/actions/runs/35926485225),
+SHA `c705b14`: qualidade Python de 22:06:58 a 22:07:19 UTC (21 s);
+infraestrutura de 22:06:56 a 22:07:22 UTC (26 s). O job de infraestrutura aplicou
+e reverteu migrations e executou nove testes de integração em 0,35 s.
+São tempos de uma execução, não extrapolação de capacidade nem faturamento mensal.
+Docker Desktop/WSL foram instalados para desenvolvimento local; nenhum plano pago,
+provedor LLM ou banco hospedado foi ativado. Custo contratado nesta etapa: R$ 0,00.

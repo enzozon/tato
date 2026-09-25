@@ -63,3 +63,50 @@ As primeiras durações medidas de jobs estão em `09-FREE-TIER-LIMITS.md`.
 Parar para o resumo da etapa. A etapa 2 começa com proposta do schema e revisão
 com Enzo antes de gerar qualquer migration. Nenhum provedor externo de dados/LLM,
 frontend, SVG final, conta bancária real ou pagamento foi ativado nesta etapa.
+
+## Etapa 2 — domínio e dados (19–23/09/2026)
+
+Enzo autorizou revisão do schema, instalação das dependências e execução das
+migrations após a revisão. O PR #1 já estava mesclado ao retomar; a etapa usa
+`etapa-02-dominio-dados`, baseada no main atualizado, sem alterar PRs do Dependabot.
+
+Entregues os dez modelos, centavos BIGINT, FKs compostas, constraints e índices;
+criptografia AES-GCM com contexto de usuário/finalidade e HMAC de idempotência;
+repositórios de transação/total/chunks; seeds sintéticos; Alembic com duas revisions.
+A migration `0001` congela DDL gerado pelo SQLAlchemy; `0002` força RLS e restringe
+o papel da API. Assinaturas são somente leitura para impedir elevação de plano.
+
+### Evidências
+
+- `make check` local: 18 testes aprovados, cobertura de 91,35%, mypy estrito e ruff.
+  Nove testes de integração não rodam nesse comando; não são contabilizados como aprovados.
+- [CI 35926485225](https://github.com/enzozon/tato/actions/runs/35926485225): nove
+  testes de integração aprovados em Postgres 17/pgvector real; seed executado duas
+  vezes; migration sobe, reverte e sobe novamente; `alembic check` sem drift.
+- Testes cobrem centavos, sinais inválidos, FKs entre donos, unicidade, adulteração
+  de ciphertext, acesso cruzado nas dez tabelas, consulta vetorial sem WHERE,
+  reset do contexto de conexão, bloqueio de Pro e cascatas sem afetar outro usuário.
+- Alterações permanecem em commits pequenos e PR da etapa; sem deploy ou merge automático.
+
+### Instalação e limites locais
+
+A falha de 19/09 foi cancelamento da confirmação UAC, conforme log do instalador.
+Em 23/09, Docker Desktop 4.91.0 e WSL 2.7.13 foram instalados. Os recursos
+VirtualMachinePlatform/WSL foram habilitados com `NoRestart`; Windows retornou
+`RestartNeeded: True`. Não reiniciamos o computador. Até reiniciar e abrir Docker,
+o engine local não funciona; a migration foi executada no CI, não no banco local.
+
+`.env` local foi criado com senhas aleatórias e duas chaves independentes, sem
+exibição dos valores; arquivo ignorado pelo Git. Após reiniciar: `make infra-up`,
+`make db-init`, `make migrate` e `make seed`. Nenhuma conexão Neon/Supabase foi criada.
+
+### Aprendizado e próximo passo
+
+DDL gerado também precisa de revisão: a convenção inicial repetia nomes de UNIQUE
+com o mesmo primeiro campo. Incluímos todas as colunas no nome e um teste de colisão.
+RLS depende de papel sem bypass; testar como superuser esconderia a falha que importa.
+FTS privado persistido exporia palavras dos textos cifrados; essa cópia não foi criada.
+
+A etapa 3 acrescentará Auth e autorização HTTP; as migrations não substituem JWT.
+Parar após o resumo desta etapa. Reaplicar localmente depois da reinicialização não
+autoriza avançar para auth, deploy ou dados financeiros reais.

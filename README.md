@@ -31,18 +31,47 @@ Redis é descartável nesta etapa. Não use `down -v` para parar o ambiente:
 esse comando apagaria o banco. Alterar a senha no `.env` não muda a senha de
 um banco já inicializado no volume.
 
-A API e `make check` independem desses serviços. A extensão pgvector será
-habilitada pela migration da etapa 2, após revisão do schema; não há tabelas ainda.
+A API de saúde e `make check` independem desses serviços. A camada de dados
+tem dez tabelas e duas migrations revisadas, incluindo pgvector e RLS.
+
+## Preparar o banco de desenvolvimento
+
+No `.env`, mantenha `DATABASE_MIGRATION_URL` para o administrador local e
+`DATABASE_URL` para `tato_app`, com senhas diferentes. Para o seed, preencha
+`DATA_ENCRYPTION_KEY` e `DEDUP_HMAC_KEY` com duas chaves aleatórias independentes
+de 32 bytes codificadas em base64. Não reutilize JWT, senhas ou chaves de produção.
+
+```sh
+make infra-up
+make db-init
+make migrate
+make seed
+```
+
+`db-init` provisiona apenas o papel local; `migrate` aplica as revisions até `0002`;
+`seed` insere exemplos sintéticos sem sobrescrever registros. Não existe migração
+automática no startup da API. Guarde as chaves: sem elas, os textos não são recuperáveis.
+
+Nesta máquina, o `.env` já foi preparado sem publicar valores. Docker Desktop e WSL
+foram instalados em 23/09/2026, mas o Windows solicitou reinicialização para ativar
+a virtualização. Reinicie e abra o Docker antes dos comandos acima; migrations
+locais ainda não foram aplicadas. Elas foram aplicadas e revertidas em Postgres no CI.
+
+`make integration` exige as variáveis `TEST_DATABASE_ADMIN_URL` e `TEST_DATABASE_URL`
+apontando para o banco descartável `tato_test`, com migrations aplicadas e papel
+restrito. Não use esse comando em dados reais. O CI prepara esse banco sozinho.
 
 ## Estado
 
-Fundação: API de saúde, contrato OpenAPI testado e verificação de qualidade.
-Autenticação, dados financeiros, LLM, RAG e interface ainda não existem.
-Não há deploy nem necessidade de credenciais externas para testar esta etapa.
+Etapa 2: domínio, criptografia de textos, deduplicação, repositórios, seeds e
+migrations verificadas. A API pública ainda oferece somente saúde e OpenAPI;
+auth HTTP, imports, LLM, RAG e interface entram nas próximas etapas. Não há deploy
+nem necessidade de contas externas para testes locais.
 
 Veja [a arquitetura e o mapa do monorepo](docs/01-ARQUITETURA.md).
 O [diário](docs/DIARIO.md) registra evidências e limitações, e o
 [experimento de quotas](docs/09-FREE-TIER-LIMITS.md) separa medição de estimativa.
+O [modelo de dados](docs/02-DADOS.md) explica dinheiro, índices, isolamento e migrations.
 
 ## Contribuir
 
@@ -54,7 +83,9 @@ O pre-commit substitui a manutenção de um hook Git manual específico de cada 
 Commits seguem [AGENTS.md](AGENTS.md): uma ideia, corpo explicando o porquê e
 até 400 linhas de adições + remoções, exceto lockfiles e migrations autogeradas.
 
-O CI possui dois jobs nesta etapa: qualidade Python (via pre-commit) e infraestrutura
-local (Compose, pgvector e Redis em ambiente descartável). Dependabot roda mensalmente.
+O CI possui dois jobs: qualidade Python (via pre-commit) e infraestrutura local
+(Compose, migrations, pgvector, RLS, seeds e Redis em ambiente descartável).
+Testes de integração são separados dos unitários, mas obrigatórios no CI.
+Dependabot roda mensalmente.
 Build do frontend/API Docker, evals RAG e auditorias adicionais entram com as etapas
 correspondentes; não há jobs vazios que simulem essas verificações.

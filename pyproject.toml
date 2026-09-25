@@ -4,8 +4,13 @@ version = "0.1.0"
 description = "Assistente financeiro conversacional; fundação da API."
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "alembic>=1.15,<2",
+    "cryptography>=44",
     "fastapi>=0.115,<1",
+    "pgvector>=0.4,<1",
+    "psycopg[binary]>=3.2,<4",
     "pydantic>=2.10,<3",
+    "sqlmodel>=0.0.24,<0.1",
     "uvicorn>=0.34,<1",
 ]
 
@@ -30,6 +35,10 @@ src = ["apps/api"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
+[tool.ruff.lint.per-file-ignores]
+# Preserva o DDL congelado gerado pelo SQLAlchemy, sem reformatar SQL como Python.
+"apps/api/migrations/versions/0001_schema.py" = ["E501"]
+
 [tool.mypy]
 python_version = "3.12"
 strict = true
@@ -39,7 +48,8 @@ mypy_path = "apps/api"
 [tool.pytest.ini_options]
 testpaths = ["apps/api/tests"]
 pythonpath = ["apps/api"]
-addopts = "--strict-config --strict-markers"
+addopts = "--strict-config --strict-markers -m 'not integration'"
+markers = ["integration: exige PostgreSQL real em banco descartável tato_test"]
 
 [tool.coverage.run]
 source = ["apps/api/app"]

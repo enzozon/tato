@@ -1,4 +1,6 @@
-.PHONY: sync dev check lint typecheck test infra-up infra-down hooks
+export PYTHONPATH := apps/api
+
+.PHONY: sync dev check lint typecheck test infra-up infra-down hooks migrate db-init integration seed
 
 sync:
 	uv sync --locked
@@ -26,3 +28,15 @@ infra-down:
 
 hooks:
 	uv run --locked pre-commit install
+
+migrate:
+	uv run --locked --env-file .env alembic upgrade head
+
+db-init:
+	uv run --locked --env-file .env python scripts/bootstrap_db.py
+
+integration:
+	uv run --locked pytest -q -m integration apps/api/tests/integration
+
+seed:
+	uv run --locked --env-file .env python scripts/seed_demo.py

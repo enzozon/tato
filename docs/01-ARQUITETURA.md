@@ -1,6 +1,6 @@
 # Arquitetura
 
-## Estado executável: etapa 1
+## Caminho HTTP atual
 
 Uma recepção pode responder que está aberta antes de existir um arquivo de clientes.
 O `/health` é essa recepção: prova que o processo HTTP responde. Não demonstra
@@ -27,7 +27,7 @@ O OpenAPI é servido em `/openapi.json`, com interface interativa em `/docs`.
 
 | Caminho | Responsabilidade e estado |
 | --- | --- |
-| `apps/api/app` | API Python; somente saúde implementada |
+| `apps/api/app` | Saúde e camada de dados da etapa 2; ainda sem rotas de negócio |
 | `apps/api/tests` | Testes locais sem serviços externos |
 | `apps/web` | Destino documentado da interface; implementação na etapa 9 |
 | `packages/mascot` | Identidade central; arte e consumidores na etapa 9 |
@@ -38,7 +38,7 @@ Um `pyproject.toml` e um `uv.lock` na raiz gerenciam o único ambiente Python.
 Não há workspace Python com múltiplos pacotes porque só existe uma aplicação.
 As dependências Node serão adicionadas quando houver código frontend.
 
-## Arquitetura aprovada, ainda não implementada
+## Arquitetura aprovada, parcialmente implementada
 
 ```mermaid
 flowchart TD
@@ -79,7 +79,10 @@ mínima de 80%. Docker Compose fornece Postgres 17 com pgvector disponível e Re
 
 O teste do contrato verifica o endpoint e o schema de saúde. Uma política completa
 de compatibilidade de OpenAPI será ampliada com endpoints de negócio.
-Não existe migration; o modelo de dados será revisado com Enzo na etapa 2.
+O schema foi revisado antes das migrations `0001` e `0002` na etapa 2.
+A camada de dados usa transações com contexto de usuário, RLS forçada, textos
+cifrados e repositórios com filtros explícitos. Ainda não está exposta por endpoints.
+Leia `02-DADOS.md` para relações, índices, reversão e verificações de isolamento.
 
 Produção gratuita permanece uma hipótese: embedding e reranker precisam caber
 no orçamento de memória do provedor. Render é candidato; não há serviço publicado.
