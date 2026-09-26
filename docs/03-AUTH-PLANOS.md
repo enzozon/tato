@@ -1,9 +1,13 @@
 # Autenticação e planos
 
-Estado: etapa 3 em andamento. Os módulos de identidade, planos e limite estão
-testados, mas ainda não ligados a `/me`. A API HTTP continua oferecendo somente
-saúde até concluir o ciclo de onboarding e exclusão. Supabase/Upstash reais
-ainda não foram provisionados ou validados nesta sessão.
+Estado: `/me` retorna identidade, onboarding e plano; `POST /me/onboarding`
+aceita somente `{"completed": true}`, sem CPF ou campos internos. Respostas não
+podem ser cacheadas. Supabase/Upstash hospedados ainda não foram provisionados:
+o Enzo escolheu implementar e testar localmente primeiro.
+
+As operações da conta usam lock transacional por UUID e papel SQL restrito.
+Na criação inicial, a identidade é revalidada sob o lock: uma requisição
+autenticada antes de uma exclusão não pode recriar o usuário depois dela.
 
 Uma carteira de identidade não informa a assinatura do cliente. Da mesma forma,
 o UUID validado no Supabase identifica a pessoa; somente `subscriptions` decide
