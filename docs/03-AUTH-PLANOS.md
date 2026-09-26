@@ -59,3 +59,16 @@ sem continuar usando a conta nem declarar sucesso prematuramente.
 O Enzo aprovou os dois campos em 23/09/2026. A revision `0003` adiciona somente
 essas colunas; downgrade remove os marcadores, portanto não usar em exclusões
 pendentes. O ambiente local usa dados sintéticos e não altera serviços hospedados.
+
+## Exclusão recuperável
+
+`DELETE /me` exige bearer e `{"confirm": true}`. Primeiro confirma no banco o
+marcador de exclusão; depois remove identidade Supabase, chave de limite e usuário
+PostgreSQL, cuja cascata inclui documentos/vetores. Só retorna 204 após o commit.
+Falha externa mantém o marcador e bloqueia perfil/onboarding com 409.
+
+Se o login já foi removido, a retomada operacional usa o papel restrito e somente
+uma conta que já pediu exclusão: `uv run --locked --env-file .env python
+scripts/retry_deletion.py UUID`, com `PYTHONPATH=apps/api`. Não aceita iniciar
+exclusão arbitrária. Repita após corrigir indisponibilidade; não há worker automático
+nesta etapa. Isso evita exigir um token que deixou de existir para terminar a remoção.

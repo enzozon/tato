@@ -64,3 +64,22 @@ def current_identity(
     if identity.is_anonymous:
         raise unauthorized
     return identity
+
+
+def delete_identity(owner: UUID) -> None:
+    url = service_url("SUPABASE_URL")
+    key = service_key("SUPABASE_SECRET_KEY")
+    try:
+        with httpx.Client(timeout=5, follow_redirects=False) as client:
+            response = client.request(
+                "DELETE",
+                f"{url}/auth/v1/admin/users/{owner}",
+                headers={"apikey": key, "Authorization": f"Bearer {key}"},
+                json={"should_soft_delete": False},
+            )
+        if response.status_code == 404 and response.json().get("code") == "user_not_found":
+            return
+        if response.status_code not in {200, 204}:
+            raise ValueError("Exclusão não confirmada.")
+    except (httpx.HTTPError, ValueError, AttributeError):
+        raise HTTPException(503, "Exclusão pendente; tente novamente mais tarde.") from None

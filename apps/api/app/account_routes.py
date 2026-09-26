@@ -7,7 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Engine
 
-from app.account_service import Profile, profile
+from app.account_service import Profile, profile, request_deletion
 from app.auth import Identity, bearer, current_identity
 from app.database import app_engine
 
@@ -50,3 +50,16 @@ def complete_onboarding(
 ) -> Profile:
     response.headers["Cache-Control"] = "no-store"
     return profile(engine, identity.id, lambda: current_identity(credentials), complete=True)
+
+
+class DeletionInput(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    confirm: Literal[True]
+
+
+@router.delete("", status_code=204)
+def delete_me(
+    data: DeletionInput, identity: IdentityDep, engine: EngineDep, credentials: CredentialsDep
+) -> Response:
+    request_deletion(engine, identity.id, lambda: current_identity(credentials))
+    return Response(status_code=204, headers={"Cache-Control": "no-store"})

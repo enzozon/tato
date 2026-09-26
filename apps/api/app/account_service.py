@@ -8,11 +8,11 @@ from pydantic import BaseModel
 from sqlalchemy import Engine, text
 from sqlmodel import Session
 
-from app.auth import Identity
+from app.auth import Identity, delete_identity
 from app.database import tenant_session
 from app.models import User
 from app.plans import Plan, user_plan
-from app.rate_limit import check_rate
+from app.rate_limit import check_rate, clear_rate
 
 
 class Profile(BaseModel):
@@ -57,3 +57,27 @@ def profile(
             id=owner, onboarding_completed=user.onboarding_completed_at is not None, plan=plan
         )
     return result
+
+
+def request_deletion(engine: Engine, owner: UUID, verify: Callable[[], Identity]) -> None:
+    with account_session(engine, owner) as session:
+        user = ensure_user(session, owner, verify)
+        check_rate(owner, user_plan(session, owner).requests_per_minute)
+        if user.deletion_requested_at is None:
+            user.deletion_requested_at = datetime.now(UTC)
+            session.add(user)
+    # O marcador precisa estar confirmado antes de efeitos em serviços externos.
+    finish_deletion(engine, owner)
+
+
+def finish_deletion(engine: Engine, owner: UUID) -> None:
+    """Também usado na retomada operacional, quando o login já foi removido."""
+    with account_session(engine, owner) as session:
+        user = session.get(User, owner)
+        if user is None:
+            return
+        if user.deletion_requested_at is None:
+            raise ValueError("Conta não solicitou exclusão.")
+        delete_identity(owner)
+        clear_rate(owner)
+        session.delete(user)
