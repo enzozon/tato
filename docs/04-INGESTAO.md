@@ -35,3 +35,15 @@ A data contábil preserva os oito primeiros dígitos de DTPOSTED, sem converter 
 dia para UTC. Os testes são sintéticos e não afirmam certificação OFX completa.
 
 Referência: [OFX Banking 2.3](https://financialdataexchange.org/common/Uploaded%20files/OFX%20files/OFX%20Banking%20Specification%20v2.3.pdf).
+
+## PDF
+
+`pypdf` substitui implementar estruturas/streams PDF; `python-multipart` permite
+upload padrão no FastAPI. Extração em subprocesso sem credenciais, timeout de
+10 segundos, até 40 páginas e 200 mil caracteres. Streams descomprimidos têm
+limites próprios; processo separado não equivale a sandbox de segurança do SO.
+PDF digitalizado sem texto e PDF cifrado são recusados; não há OCR nesta etapa.
+
+Conteúdo extraído continua sendo dado não confiável. O teste com instruções
+maliciosas comprova extração literal, sem execução ou envio a provedor LLM.
+Referência: [segurança pypdf](https://pypdf.readthedocs.io/en/6.6.1/user/security.html).
