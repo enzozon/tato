@@ -75,13 +75,15 @@ antecipadamente. Cada fronteira ganha código quando existir um fluxo real.
 
 `make check` executa ruff, mypy estrito em toda a API atual e pytest com cobertura
 mínima de 80%. Docker Compose fornece Postgres 17 com pgvector disponível e Redis
-7.4, ambos acessíveis apenas pelo loopback. A API ainda não conecta a esses serviços.
+8.0, ambos acessíveis apenas pelo loopback. `/me` conecta ao PostgreSQL com RLS.
 
 O teste do contrato verifica o endpoint e o schema de saúde. Uma política completa
 de compatibilidade de OpenAPI será ampliada com endpoints de negócio.
 O schema foi revisado antes das migrations `0001` e `0002` na etapa 2.
 A camada de dados usa transações com contexto de usuário, RLS forçada, textos
-cifrados e repositórios com filtros explícitos. Ainda não está exposta por endpoints.
+cifrados e repositórios com filtros explícitos. A etapa 3 expõe perfil/onboarding
+e exclusão; ledger/imports continuam sem endpoints. `0003` acrescenta os dois
+marcadores de ciclo de conta aprovados pelo Enzo.
 Leia `02-DADOS.md` para relações, índices, reversão e verificações de isolamento.
 
 Produção gratuita permanece uma hipótese: embedding e reranker precisam caber

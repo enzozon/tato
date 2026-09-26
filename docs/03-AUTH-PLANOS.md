@@ -81,3 +81,24 @@ Uma chamada autenticada antes da exclusão é revalidada quando tenta recriar a 
 Erros SQL e uso acidental de papel privilegiado viram 503 genérico, sem SQL,
 parâmetros ou detalhes do driver na resposta HTTP. Configuração HMAC ausente também
 fecha o acesso. No último segundo da janela Redis, `Retry-After` continua positivo.
+
+## Executar e configurar
+
+`make dev` carrega `.env`. Sem Supabase configurado, `/health` continua respondendo;
+as rotas privadas recusam acesso, sem token falso ou bypass de desenvolvimento.
+`make check` simula HTTP externo; `make integration` usa PostgreSQL real em
+`tato_test` e simula somente identidade/remoção Supabase.
+
+| Variável | Origem/uso |
+| --- | --- |
+| `SUPABASE_URL` | URL do projeto de desenvolvimento |
+| `SUPABASE_PUBLISHABLE_KEY` | Chave pública do projeto para validar bearer |
+| `SUPABASE_SECRET_KEY` | Chave administrativa exclusiva do servidor para exclusão |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Credenciais REST do Redis |
+| `TATO_ENV=development`, `RATE_LIMIT_BACKEND=memory` | Limite local de um processo |
+
+Não foram criados serviços hospedados, conforme escolha do Enzo. Integração real
+de e-mail/Google depende de configurar Auth e URLs de redirecionamento no Supabase;
+a interface pertence à etapa 9. Não afirmar que login real foi validado pelos mocks.
+Quota mensal de chat e reserva de agentes/fontes serão conectadas aos respectivos
+fluxos nas etapas seguintes; esta etapa aplica o limite técnico nas rotas de conta.

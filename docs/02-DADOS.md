@@ -127,3 +127,9 @@ o total retorna centavos positivos, excluindo transferências e o limite final d
 `make seed` insere exemplos sintéticos com UUIDs determinísticos, sem sobrescrever
 registros existentes. Exige banco local e chaves separadas no ambiente; não gera
 embeddings nem contas Supabase. `seed_data.py` contém o conjunto dos dez modelos.
+
+Na etapa 3, a revisão `0003` adiciona a `users` dois timestamps opcionais aprovados:
+`onboarding_completed_at` e `deletion_requested_at`. A exclusão usa duas transações:
+uma confirma intenção, outra remove após concluir chamadas externas. Locks por
+usuário serializam perfil, onboarding e exclusão, inclusive em processos distintos.
+Downgrade remove marcadores; não executar enquanto existirem exclusões pendentes.

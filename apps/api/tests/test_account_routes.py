@@ -31,6 +31,16 @@ def test_routes_require_session():
     with TestClient(app) as client:
         assert client.get("/me").status_code == 401
         assert client.post("/me/onboarding", json={"completed": True}).status_code == 401
+        assert client.request("DELETE", "/me", json={"confirm": True}).status_code == 401
+
+
+def test_account_openapi_contract():
+    schema = app.openapi()
+    for path, method in [("/me", "get"), ("/me", "delete"), ("/me/onboarding", "post")]:
+        assert schema["paths"][path][method]["security"] == [{"HTTPBearer": []}]
+    assert schema["components"]["schemas"]["DeletionInput"]["additionalProperties"] is False
+    assert schema["components"]["schemas"]["OnboardingInput"]["additionalProperties"] is False
+    assert "204" in schema["paths"]["/me"]["delete"]["responses"]
 
 
 def test_profile_contract_rejects_internal_fields(monkeypatch):
