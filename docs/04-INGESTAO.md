@@ -20,3 +20,14 @@ Identificador bancário permite deduplicar reexports. Sem identificador, a orige
 é hash do arquivo + linha: reimportar o mesmo arquivo não duplica, e duas compras
 iguais em linhas distintas são preservadas. Arquivos diferentes/reescritos sem ID
 exigem revisão de sobreposição; igualdade de valor e descrição não prova duplicata.
+
+## OFX
+
+Suporte restrito a um extrato bancário/cartão em BRL, com blocos `STMTTRN` e
+`FITID`, tanto folhas SGML sem fechamento quanto XML com fechamento. A origem
+usa FITID: reexportar o mesmo lançamento mantém sua identidade. Correções OFX,
+moedas diferentes, múltiplas contas e entidades XML são recusadas explicitamente.
+A data contábil preserva os oito primeiros dígitos de DTPOSTED, sem converter o
+dia para UTC. Os testes são sintéticos e não afirmam certificação OFX completa.
+
+Referência: [OFX Banking 2.3](https://financialdataexchange.org/common/Uploaded%20files/OFX%20files/OFX%20Banking%20Specification%20v2.3.pdf).

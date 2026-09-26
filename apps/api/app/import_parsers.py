@@ -21,6 +21,7 @@ class ParsedEntry(BaseModel):
     amount_cents: int = Field(ge=-(2**63), le=2**63 - 1)
     description: str = Field(min_length=1, max_length=5000)
     source_identity: str = Field(max_length=200)
+    kind: Literal["income", "expense", "transfer"] | None = None
 
 
 class CsvMapping(BaseModel):
