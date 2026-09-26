@@ -16,7 +16,7 @@
 
 ## Mapa
 
-- `apps/api/app/`: saúde, modelos, criptografia, repositórios e dados sintéticos.
+- `apps/api/app/`: sessão, conta, planos, limites, modelos, criptografia e repositórios.
 - `apps/api/migrations/`: schema congelado e RLS; não importar modelos vivos em revisions.
 - `apps/api/tests/`: testes da API e contratos.
 - `apps/web/`: Next.js 16 estático/PWA; implementação na etapa 9.
@@ -68,4 +68,5 @@
 - Somente segredos de desenvolvimento no `.env` ignorado; nunca em `NEXT_PUBLIC_*`.
 - Não cachear dados financeiros no service worker por padrão.
 - Progresso durável vai no diário; decisões arquiteturais vão em ADRs.
+- Rotas de conta usam `account_session`; não contornar bloqueios de exclusão pendente.
 - Registrar alterações duráveis na memória externa sem duplicar as regras do projeto.

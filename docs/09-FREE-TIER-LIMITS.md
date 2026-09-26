@@ -53,3 +53,12 @@ e reverteu migrations e executou nove testes de integração em 0,35 s.
 São tempos de uma execução, não extrapolação de capacidade nem faturamento mensal.
 Docker Desktop/WSL foram instalados para desenvolvimento local; nenhum plano pago,
 provedor LLM ou banco hospedado foi ativado. Custo contratado nesta etapa: R$ 0,00.
+
+## Medição da etapa 3: 26/09/2026
+
+[CI do PR 36275071998](https://github.com/enzozon/tato/actions/runs/36275071998),
+SHA `9a0f50f`: qualidade Python 20 s, infraestrutura 30 s. Os dois jobs passaram,
+incluindo quatorze testes de integração PostgreSQL. Tempos de execução não são
+minutos faturados nem medida de capacidade do SaaS. Supabase/Upstash continuam
+sem provisionamento; seus adapters HTTP foram testados com respostas simuladas.
+Nenhum serviço pago foi ativado nesta etapa; custo contratado R$ 0,00.

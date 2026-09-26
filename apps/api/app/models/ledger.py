@@ -1,8 +1,16 @@
-from datetime import date
+from datetime import date, datetime
 from typing import ClassVar
 from uuid import UUID
 
-from sqlalchemy import BigInteger, CheckConstraint, ForeignKeyConstraint, Index, UniqueConstraint
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    Column,
+    DateTime,
+    ForeignKeyConstraint,
+    Index,
+    UniqueConstraint,
+)
 from sqlmodel import Field
 
 from app.models.base import Record, TenantRecord
@@ -10,6 +18,12 @@ from app.models.base import Record, TenantRecord
 
 class User(Record, table=True):
     __tablename__: ClassVar[str] = "users"
+    onboarding_completed_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True))
+    )
+    deletion_requested_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True))
+    )
 
 
 class Account(TenantRecord, table=True):

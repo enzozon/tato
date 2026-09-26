@@ -6,6 +6,7 @@ LLM e RAG, limitado a serviços gratuitos. Em construção; use dados sintético
 ## Executar localmente
 
 Pré-requisitos: Git, uv e GNU Make. O uv instala o Python 3.12 indicado no projeto.
+Antes de `make dev`, prepare `.env` conforme abaixo; preserve um arquivo já existente.
 
 ```sh
 make sync
@@ -23,7 +24,7 @@ execute as receitas do Makefile diretamente no PowerShell, uma por vez.
 
 Instale Docker com Compose v2. Copie `.env.example` para `.env` (no PowerShell:
 `Copy-Item .env.example .env`) e ajuste a senha apenas localmente. Execute
-`make infra-up` para PostgreSQL 17 com pgvector disponível e Redis 7.4.
+`make infra-up` para PostgreSQL 17 com pgvector disponível e Redis 8.0.
 As portas 5432 e 6379 ficam vinculadas somente a `127.0.0.1`.
 
 `make infra-down` encerra os serviços preservando o volume do Postgres.
@@ -32,7 +33,7 @@ esse comando apagaria o banco. Alterar a senha no `.env` não muda a senha de
 um banco já inicializado no volume.
 
 A API de saúde e `make check` independem desses serviços. A camada de dados
-tem dez tabelas e duas migrations revisadas, incluindo pgvector e RLS.
+tem dez tabelas e três migrations revisadas, incluindo pgvector e RLS.
 
 ## Preparar o banco de desenvolvimento
 
@@ -48,14 +49,14 @@ make migrate
 make seed
 ```
 
-`db-init` provisiona apenas o papel local; `migrate` aplica as revisions até `0002`;
+`db-init` provisiona apenas o papel local; `migrate` aplica as revisions até `0003`;
 `seed` insere exemplos sintéticos sem sobrescrever registros. Não existe migração
 automática no startup da API. Guarde as chaves: sem elas, os textos não são recuperáveis.
 
-Nesta máquina, o `.env` já foi preparado sem publicar valores. Docker Desktop e WSL
-foram instalados em 23/09/2026, mas o Windows solicitou reinicialização para ativar
-a virtualização. Reinicie e abra o Docker antes dos comandos acima; migrations
-locais ainda não foram aplicadas. Elas foram aplicadas e revertidas em Postgres no CI.
+Nesta máquina, Docker Desktop e WSL estão operacionais. As migrations até `0002`
+e o seed sintético foram aplicados localmente em 23/09/2026. Os nove testes de
+integração passaram no banco descartável `tato_test`, incluindo RLS e pgvector.
+O `.env` local mantém as credenciais fora do Git.
 
 `make integration` exige as variáveis `TEST_DATABASE_ADMIN_URL` e `TEST_DATABASE_URL`
 apontando para o banco descartável `tato_test`, com migrations aplicadas e papel
@@ -63,10 +64,11 @@ restrito. Não use esse comando em dados reais. O CI prepara esse banco sozinho.
 
 ## Estado
 
-Etapa 2: domínio, criptografia de textos, deduplicação, repositórios, seeds e
-migrations verificadas. A API pública ainda oferece somente saúde e OpenAPI;
-auth HTTP, imports, LLM, RAG e interface entram nas próximas etapas. Não há deploy
-nem necessidade de contas externas para testes locais.
+Etapa 3: backend de sessão, perfil, onboarding, planos e exclusão recuperável.
+`GET /me`, `POST /me/onboarding` e `DELETE /me` exigem bearer Supabase; saúde
+continua pública. Supabase e Upstash são simulados nos testes locais; PostgreSQL
+e Redis são reais. Não há login visual, contas externas provisionadas nem deploy.
+Veja [configuração e limites da etapa](docs/03-AUTH-PLANOS.md).
 
 Veja [a arquitetura e o mapa do monorepo](docs/01-ARQUITETURA.md).
 O [diário](docs/DIARIO.md) registra evidências e limitações, e o
