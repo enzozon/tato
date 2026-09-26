@@ -72,3 +72,8 @@ uma conta que já pediu exclusão: `uv run --locked --env-file .env python
 scripts/retry_deletion.py UUID`, com `PYTHONPATH=apps/api`. Não aceita iniciar
 exclusão arbitrária. Repita após corrigir indisponibilidade; não há worker automático
 nesta etapa. Isso evita exigir um token que deixou de existir para terminar a remoção.
+
+Prova local: `tests/integration/test_account_lifecycle.py` usa PostgreSQL real e
+Supabase simulado. Testa duas visitas concorrentes, falha antes/depois da remoção
+externa, bloqueio persistido, cascata nas dez tabelas e preservação do outro usuário.
+Uma chamada autenticada antes da exclusão é revalidada quando tenta recriar a conta.
