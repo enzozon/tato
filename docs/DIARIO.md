@@ -131,3 +131,31 @@ solicitado para `users.onboarding_completed_at` e `users.deletion_requested_at`;
 nenhuma migration nova gerada enquanto aguarda resposta. Depois implementar
 `/me`, onboarding, exclusão recuperável, testes de concorrência/isolamento e CI.
 Interfaces de login e Google dependem da configuração Supabase e da etapa 9.
+
+## 26/09/2026 — Backend da etapa 3 entregue
+
+O checkpoint foi respondido: ambos os campos aprovados, serviços externos ainda
+não criados por escolha do Enzo. A migration `0003` foi gerada após aprovação e
+aplicada no banco local. Esta entrada substitui as pendências de schema acima.
+
+Entregues `/me`, onboarding explícito sem CPF, planos derivados do banco e limite
+por identidade. Exclusão confirma intenção antes de chamar Supabase, bloqueia
+operações enquanto pendente e remove dados/vetores por cascata. Um comando
+operacional retoma falhas mesmo quando a identidade externa já foi apagada.
+Revalidação sob lock impede que uma requisição antiga recrie a conta.
+
+Validação: 63 testes locais, ruff e mypy aprovados; cobertura 94,03%. Quatorze
+testes PostgreSQL/pgvector/RLS aprovados, incluindo concorrência, isolamento,
+falhas antes/depois do provedor e cascata completa. Smoke HTTP real: saúde 200
+e perfil anônimo 401. CI do código `9a0f50f` aprovado no push `36275070828` e no
+PR `36275071998`; migrations aplicadas/revertidas e sem drift no runner.
+
+PR 6 foi mesclado pelo usuário. Incorporadas atualizações aprovadas de main
+(mypy 2.3.1, Redis 8.0, Actions), preservando httpx em execução. PR 7 agora usa main.
+Nenhum segredo publicado, nenhum deploy e nenhum custo contratado.
+
+Limites reais: Supabase/Upstash hospedados e login e-mail/Google não foram testados;
+HTTP externo foi simulado, banco/Redis foram reais. Não há frontend ainda. Quotas
+mensais de chat e quantidade de agentes serão conectadas aos fluxos futuros;
+o limite técnico já protege conta/onboarding/exclusão. Retomada de exclusão após
+queda externa é operacional, não um worker automático. Parar antes da etapa 4.
