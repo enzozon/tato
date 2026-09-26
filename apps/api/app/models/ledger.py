@@ -53,6 +53,8 @@ class Category(TenantRecord, table=True):
 class Transaction(TenantRecord, table=True):
     __tablename__: ClassVar[str] = "transactions"
     __table_args__ = (
+        ForeignKeyConstraint(["user_id", "document_id"], ["documents.user_id", "documents.id"]),
+        Index("ix_transactions_user_document", "user_id", "document_id"),
         ForeignKeyConstraint(["user_id", "account_id"], ["accounts.user_id", "accounts.id"]),
         ForeignKeyConstraint(["user_id", "category_id"], ["categories.user_id", "categories.id"]),
         UniqueConstraint("user_id", "account_id", "dedup_key"),
@@ -68,6 +70,7 @@ class Transaction(TenantRecord, table=True):
         Index("ix_transactions_user_category", "user_id", "category_id"),
     )
     account_id: UUID
+    document_id: UUID | None = None
     category_id: UUID | None = None
     booked_on: date
     amount_cents: int = Field(sa_type=BigInteger)

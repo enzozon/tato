@@ -1,8 +1,12 @@
 # Ingestão — etapa 4 em andamento
 
 Plano: parsers CSV/OFX, extração PDF, regras determinísticas, persistência atômica,
-rotas autenticadas, testes e limites. Alterações de schema aguardam revisão;
-nenhuma migration nova foi aplicada nesta etapa.
+rotas autenticadas, testes e limites. Enzo aprovou `Document.account_id` e
+`Transaction.document_id`, opcionais e vinculados ao mesmo usuário, antes da
+migration `0004`. Uma fonte do plano equivale a uma conta/cartão importado.
+Índices por usuário/origem permitem contar fontes e rastrear arquivos. Nenhuma
+policy é relaxada. A exclusão isolada de documento com lançamentos é restringida;
+a exclusão total da conta continua removendo o conjunto em cascata.
 
 ## CSV e dinheiro
 
