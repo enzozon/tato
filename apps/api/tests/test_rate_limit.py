@@ -39,6 +39,13 @@ def test_memory_is_forbidden_outside_development(monkeypatch):
     assert error.value.status_code == 503
 
 
+def test_missing_hmac_key_fails_without_exposing_configuration(monkeypatch):
+    monkeypatch.delenv("DEDUP_HMAC_KEY")
+    with pytest.raises(HTTPException) as error:
+        rate.check_rate(uuid4(), 60)
+    assert error.value.status_code == 503
+
+
 @pytest.mark.parametrize("result", [[0, 12], [True, 60], [1], "bad", [1, -1]])
 def test_remote_response_is_checked(monkeypatch, result):
     monkeypatch.setenv("RATE_LIMIT_BACKEND", "upstash")

@@ -77,3 +77,7 @@ Prova local: `tests/integration/test_account_lifecycle.py` usa PostgreSQL real e
 Supabase simulado. Testa duas visitas concorrentes, falha antes/depois da remoção
 externa, bloqueio persistido, cascata nas dez tabelas e preservação do outro usuário.
 Uma chamada autenticada antes da exclusão é revalidada quando tenta recriar a conta.
+
+Erros SQL e uso acidental de papel privilegiado viram 503 genérico, sem SQL,
+parâmetros ou detalhes do driver na resposta HTTP. Configuração HMAC ausente também
+fecha o acesso. No último segundo da janela Redis, `Retry-After` continua positivo.

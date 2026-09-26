@@ -18,14 +18,18 @@ if count >= tonumber(ARGV[1]) then
 end
 local updated = redis.call('INCR', KEYS[1])
 if updated == 1 then redis.call('EXPIRE', KEYS[1], 60) end
-return {1, redis.call('TTL', KEYS[1])}
+return {1, math.max(1, redis.call('TTL', KEYS[1]))}
 """
 _windows: dict[str, tuple[int, float]] = {}
 _lock = Lock()
 
 
 def rate_key(owner: UUID) -> str:
-    digest = hmac.new(load_key("DEDUP_HMAC_KEY"), str(owner).encode(), hashlib.sha256).hexdigest()
+    try:
+        key = load_key("DEDUP_HMAC_KEY")
+    except (ValueError, KeyError):
+        raise HTTPException(503, "Controle de acesso não configurado.") from None
+    digest = hmac.new(key, str(owner).encode(), hashlib.sha256).hexdigest()
     return f"tato:rate:{digest}"
 
 

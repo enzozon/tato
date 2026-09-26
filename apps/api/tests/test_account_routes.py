@@ -8,6 +8,25 @@ from app.main import app
 from app.plans import FREE
 
 
+def test_storage_error_does_not_expose_query_or_parameters(monkeypatch):
+    from sqlalchemy.exc import OperationalError
+
+    app.dependency_overrides[current_identity] = lambda: Identity(id=uuid4())
+    app.dependency_overrides[routes.runtime_engine] = lambda: None
+
+    def fail(*args, **kwargs):
+        raise OperationalError("private query", {"secret": "never expose"}, Exception("private"))
+
+    monkeypatch.setattr(routes, "profile", fail)
+    try:
+        with TestClient(app) as client:
+            response = client.get("/me")
+            assert response.status_code == 503
+            assert "private" not in response.text and "never expose" not in response.text
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_routes_require_session():
     with TestClient(app) as client:
         assert client.get("/me").status_code == 401
