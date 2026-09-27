@@ -73,3 +73,40 @@ O timeout HTTP de 10 s limita cada espera de rede. Um prazo adicional de 15 s é
 conferido entre chunks para interromper respostas que chegam lentamente sem nunca
 estourar o timeout de leitura. Não é prazo global rígido: uma leitura já iniciada
 pode consumir seu próprio timeout; retries e destinos somam latência.
+
+## Ensaio e operação
+
+`make llm-smoke` usa exclusivamente um exemplo sintético fixo e valida seu valor.
+Só imprime tentativas, latência e uso; sai com erro quando desabilitado/indisponível.
+Não cadastra conta, não ativa faturamento e não modifica o ledger. Chaves de painel
+Supabase/Upstash não servem para esse teste: são necessárias chaves dos provedores LLM.
+
+```mermaid
+flowchart TD
+    A[Pedido e classificação] --> B{Dado pessoal?}
+    B -->|Sim| X[Indisponível: resposta determinística]
+    B -->|Não| C[Conta ativa e cache por usuário]
+    C --> D{Cache válido e guardrail aprovado?}
+    D -->|Sim| R[Resposta validada]
+    D -->|Não| E[Groq → Gemini → OpenRouter elegível]
+    E --> F{Schema e guardrail aprovados?}
+    F -->|Não há destino válido| X
+    F -->|Sim| G[Revalidar conta e cifrar cache]
+    G --> R
+```
+
+Streaming mostra pedaços antes da resposta terminar e reduz a espera percebida.
+Aqui preferimos validar o JSON completo; etapa 7 pode emitir via SSE o resultado
+validado. Não confundir streaming de transporte com autorização para mostrar
+números ainda não conferidos.
+
+| Destino permitido | Custo por 1.000 tokens no modo exigido | Condição |
+| --- | --- | --- |
+| Groq Free | US$ 0 dentro da quota | Conta sem faturamento; limite por modelo |
+| Gemini Free | US$ 0 dentro da quota | Somente público/sintético, projeto sem billing |
+| OpenRouter `:free` | US$ 0 | Modelo gratuito elegível e quota da conta |
+
+Não há conversão automática para modalidade paga. A confirmação no ambiente não
+é prova de plano: [preços Gemini](https://ai.google.dev/gemini-api/docs/pricing),
+[limites Groq](https://console.groq.com/docs/rate-limits) e painel precisam ser
+conferidos antes do primeiro ensaio. Uso remoto real ainda não foi medido.
