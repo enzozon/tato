@@ -151,11 +151,13 @@ decifrar e calcular ranking; a consulta vetorial usa CTE materializada autorizad
 FTS privado usa dados transitórios parametrizados, sem coluna textual persistente.
 Teto inicial: 1000 chunks privados por usuário, com erro explícito ao exceder.
 
-Antes de enviar texto privado ao Postgres para FTS, verificamos que logs de
+Antes de enviar qualquer pergunta ou texto privado ao Postgres, verificamos que logs de
 statements, duração e parâmetros em erro estejam desativados. O engine também
 oculta parâmetros. Reranker e código chamador só receberão candidatos autorizados.
 Embeddings e memória RAM não equivalem a ciphertext: essa exposição operacional
 continua exigindo ambiente protegido, sem logs externos de payload.
+Essa verificação ocorre antes da busca pública também: uma pergunta pode conter
+informação pessoal mesmo quando o usuário ainda não tem chunks privados.
 
 ## Indexação
 

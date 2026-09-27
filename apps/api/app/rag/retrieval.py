@@ -27,6 +27,16 @@ def search(
         raise ValueError("Consulta inválida.")
     if len(vector) != 384 or not all(math.isfinite(v) for v in vector) or not any(vector):
         raise ValueError("Vetor de consulta inválido.")
+    logging = session.execute(
+        text(
+            "SELECT current_setting('log_statement'), "
+            "current_setting('log_min_duration_statement'), "
+            "current_setting('log_min_duration_sample'), "
+            "current_setting('log_parameter_max_length_on_error')"
+        )
+    ).one()
+    if tuple(logging) != ("none", "-1", "-1", "0"):
+        raise ValueError("Busca exige logs de parâmetros e consultas desativados.")
     params = {"query": query, "vector": json.dumps(vector), "model": model, "owner": owner}
     candidates: dict[str, Hit] = {}
     dense: list[tuple[str, float]] = []
@@ -78,16 +88,6 @@ def search(
     if len(private) > 1000:
         raise ValueError("Limite técnico de 1000 chunks privados por usuário excedido.")
     if private:
-        logging = session.execute(
-            text(
-                "SELECT current_setting('log_statement'), "
-                "current_setting('log_min_duration_statement'), "
-                "current_setting('log_min_duration_sample'), "
-                "current_setting('log_parameter_max_length_on_error')"
-            )
-        ).one()
-        if tuple(logging) != ("none", "-1", "-1", "0"):
-            raise ValueError("Busca privada exige logs de parâmetros e consultas desativados.")
         payload = []
         for row in private:
             identifier = f"private:{row['id']}"

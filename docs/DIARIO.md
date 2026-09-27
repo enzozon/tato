@@ -235,7 +235,7 @@ piorou esta amostra em português, portanto ficou opcional. A falha RRF foi q05
 (renda irregular); reranker falhou em q02, q34 e q40. Casos não foram reescritos
 para aumentar a métrica. O CI passa a exigir ambos os baselines reais.
 
-Validação local: 153 testes unitários/HTTP, cobertura 83,99%, lint/mypy aprovados;
+Validação local: 154 testes unitários/HTTP, cobertura 84,26%, lint/mypy aprovados;
 27 integrações Postgres reais aprovadas; avaliação neural/SQL das 40 perguntas
 aprovada separadamente. Pico local de 770 MiB com encoder e 865 MiB com ambos
 os modelos: peso quantizado pequeno não implica processo pequeno.
@@ -247,3 +247,6 @@ Corpus/perguntas ainda precisam de revisão independente. A etapa permanece com
 essa pendência; PR deve ficar em rascunho, sem declarar conclusão integral.
 Supabase/Upstash hospedados e pendências pessoais da ingestão não foram resolvidos
 por este RAG. Nenhum gasto, deploy ou acesso a dados reais de usuários.
+Revisão final antecipou a checagem de logs do Postgres: perguntas também podem
+ser privadas, mesmo quando a busca só retorna conteúdo público. Teste bloqueia
+o envio de qualquer parâmetro antes de confirmar a configuração de logs.
