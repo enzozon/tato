@@ -94,3 +94,17 @@ duplicatas na mesma lista não ganham votos extras. Empates usam ID estável.
 `hit@5` é a fração de perguntas com pelo menos uma referência esperada no top-5.
 MRR usa o inverso da posição da primeira referência correta; ausência vale zero.
 Essas funções estão testadas, mas não representam avaliação do corpus ainda.
+
+## Busca híbrida
+
+`search` combina cosine exato e FTS português com RRF. Os candidatos públicos
+usam o índice GIN. Chunks privados são filtrados por usuário/modelo antes de
+decifrar e calcular ranking; a consulta vetorial usa CTE materializada autorizada.
+FTS privado usa dados transitórios parametrizados, sem coluna textual persistente.
+Teto inicial: 1000 chunks privados por usuário, com erro explícito ao exceder.
+
+Antes de enviar texto privado ao Postgres para FTS, verificamos que logs de
+statements, duração e parâmetros em erro estejam desativados. O engine também
+oculta parâmetros. Reranker e código chamador só receberão candidatos autorizados.
+Embeddings e memória RAM não equivalem a ciphertext: essa exposição operacional
+continua exigindo ambiente protegido, sem logs externos de payload.
