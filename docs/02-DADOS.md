@@ -133,3 +133,10 @@ Na etapa 3, a revisão `0003` adiciona a `users` dois timestamps opcionais aprov
 uma confirma intenção, outra remove após concluir chamadas externas. Locks por
 usuário serializam perfil, onboarding e exclusão, inclusive em processos distintos.
 Downgrade remove marcadores; não executar enquanto existirem exclusões pendentes.
+
+Na etapa 4, a revisão aprovada `0004` adiciona `documents.account_id` e
+`transactions.document_id`, opcionais, com FKs compostas pelo usuário. Índices
+`ix_documents_user_account` e `ix_transactions_user_document` atendem contagem de
+fontes e rastreamento da origem. Não se pode vincular arquivo/conta de outro dono,
+nem apagar isoladamente um documento referenciado por lançamentos. A cascata
+de exclusão total do usuário permanece válida. `NULL` preserva registros anteriores.

@@ -15,9 +15,26 @@ from app.database import tenant_session
 from app.import_service import store_import
 from app.main import app
 from app.models import Account, Category, Document, Rule, Subscription, Transaction, User
+from tests.test_import_ofx import ofx, statement
+from tests.test_import_pdf import synthetic_pdf
 
 pytestmark = pytest.mark.integration
 CSV = b"date,title,amount\n2026-09-01,Mercado sintetico,42.00\n2026-09-01,Mercado sintetico,42.00\n"
+
+
+@pytest.mark.parametrize("kind", ["ofx", "pdf"])
+def test_other_formats_persist_exact_money(runtime_engine, owners, accounts, kind):
+    content = ofx(statement()) if kind == "ofx" else synthetic_pdf("01/09/2026 Mercado 42,10")
+    owner, account = owners[0], accounts[0]
+    result = store_import(runtime_engine, owner, account, content, f"teste.{kind}", kind)
+    assert result.inserted == 1
+    if kind == "ofx":
+        content = ofx(statement(memo="Mercado revisado"))
+    repeated = store_import(runtime_engine, owner, account, content, f"novo.{kind}", kind)
+    assert repeated.duplicates == 1
+    with tenant_session(runtime_engine, owner) as session:
+        rows = session.exec(select(Transaction)).all()
+        assert len(rows) == 1 and rows[0].amount_cents == -4210
 
 
 @pytest.fixture
