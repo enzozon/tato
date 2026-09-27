@@ -63,3 +63,8 @@ revisar contas sem faturamento, preencher chaves de API e definir explicitamente
 automática de plano. Mudança de configuração exige reinício do processo.
 Nenhuma rota pública aceita classificação de privacidade fornecida pelo usuário.
 Integração com importação pessoal permanece bloqueada até revisão dos provedores.
+
+O teste de integração roda o Lua no Redis do Compose, verifica capacidade/TTL,
+simula indisponibilidade ao excluir e retoma a exclusão no PostgreSQL real.
+Nenhum teste usa credenciais de LLM. Os adapters são exercitados com transporte
+HTTP simulado, incluindo timeout, resposta truncada, uso ausente e modelo pago.
