@@ -31,6 +31,8 @@ class ProviderError(Exception):
 class LLMUnavailable(Exception):
     """Nenhum resultado validado: o chamador deve usar resposta determinística."""
 
+    attempts: tuple["Attempt", ...] = ()
+
 
 class LLMProvider(Protocol):
     name: ProviderName
@@ -43,8 +45,8 @@ class LLMProvider(Protocol):
 class Attempt:
     provider: ProviderName
     outcome: Literal["ok", "error", "invalid", "circuit_open", "policy"]
-    input_tokens: int = 0
-    output_tokens: int = 0
+    input_tokens: int | None = None
+    output_tokens: int | None = None
     elapsed_ms: int = 0
 
 

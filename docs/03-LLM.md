@@ -33,3 +33,12 @@ terminado em `:free`, schema suportado e `data_collection=deny`. Esses filtros
 não substituem revisar a conta sem faturamento e a disponibilidade do modelo.
 Erro de provedor não reproduz corpo, prompt ou credencial. HTTP 429 respeita
 Retry-After (segundos ou data); retry imediato é reservado a falhas transitórias.
+
+`Router` tenta no máximo duas chamadas por provedor: somente transporte/408/5xx
+admitem uma repetição com backoff de 250 ms. 429, credencial inválida e JSON sem
+validade abrem o circuito; a chamada seguinte pula esse destino até o prazo.
+Um teste reprova centavos inventados apesar de JSON válido. Se todos falharem,
+`LLMUnavailable` exige fallback determinístico no chamador. Metadados incluem
+somente destino, resultado, tempo e contagens; falha sem uso informado registra
+`None`, nunca custo zero presumido. Circuitos são locais ao processo, não quotas
+globais do fornecedor; reiniciar o processo perde esse estado transitório.
