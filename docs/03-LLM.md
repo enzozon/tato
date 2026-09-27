@@ -68,3 +68,8 @@ O teste de integração roda o Lua no Redis do Compose, verifica capacidade/TTL,
 simula indisponibilidade ao excluir e retoma a exclusão no PostgreSQL real.
 Nenhum teste usa credenciais de LLM. Os adapters são exercitados com transporte
 HTTP simulado, incluindo timeout, resposta truncada, uso ausente e modelo pago.
+
+O timeout HTTP de 10 s limita cada espera de rede. Um prazo adicional de 15 s é
+conferido entre chunks para interromper respostas que chegam lentamente sem nunca
+estourar o timeout de leitura. Não é prazo global rígido: uma leitura já iniciada
+pode consumir seu próprio timeout; retries e destinos somam latência.

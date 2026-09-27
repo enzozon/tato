@@ -2,6 +2,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
+from time import monotonic
 
 import httpx
 from pydantic import ValidationError
@@ -81,6 +82,7 @@ class HTTPProvider:
             if self.name == "openrouter":
                 body["provider"] = {"data_collection": "deny", "require_parameters": True}
         try:
+            started = monotonic()
             with self.client.stream(
                 "POST", url, headers=headers, json=body, timeout=10, follow_redirects=False
             ) as response:
@@ -93,6 +95,8 @@ class HTTPProvider:
                     )
                 content = bytearray()
                 for chunk in response.iter_bytes():
+                    if monotonic() - started > 15:
+                        raise ProviderError("response_deadline", retryable=True)
                     content.extend(chunk)
                     if len(content) > 128000:
                         raise ProviderError("response_too_large")

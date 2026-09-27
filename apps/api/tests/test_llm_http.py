@@ -111,3 +111,17 @@ def test_paid_openrouter_model_is_rejected_before_network():
         HTTPProvider("openrouter", "example:paid", "key", client).generate(
             Generation(instruction="x", data="x", classification="synthetic"), {}
         )
+
+
+def test_response_deadline_bounds_slow_stream(monkeypatch):
+    ticks = iter([0, 16])
+    monkeypatch.setattr("app.llm_http.monotonic", lambda: next(ticks))
+    with (
+        httpx.Client(
+            transport=httpx.MockTransport(lambda _: httpx.Response(200, content=b"{}"))
+        ) as client,
+        pytest.raises(ProviderError, match="response_deadline"),
+    ):
+        HTTPProvider("groq", "openai/gpt-oss-20b", "key", client).generate(
+            Generation(instruction="x", data="x", classification="synthetic"), {}
+        )
