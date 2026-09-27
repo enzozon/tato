@@ -108,3 +108,12 @@ statements, duração e parâmetros em erro estejam desativados. O engine també
 oculta parâmetros. Reranker e código chamador só receberão candidatos autorizados.
 Embeddings e memória RAM não equivalem a ciphertext: essa exposição operacional
 continua exigindo ambiente protegido, sem logs externos de payload.
+
+## Indexação
+
+`index_public` é administrativo e substitui atomicamente os chunks de um slug.
+`index_private` aceita PDF/nota/sumário, nunca transações CSV/OFX. Decifra sob
+contexto autorizado, faz inferência local fora do lock e revalida dono, exclusão
+e digest antes de gravar. Reindexação substitui somente o documento daquele dono;
+IDs estáveis por documento/posição permitem citar a origem. Não é histórico de
+versões: uma edição exige invalidar respostas anteriores que dependem do texto.
