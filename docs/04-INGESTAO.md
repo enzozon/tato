@@ -47,3 +47,16 @@ PDF digitalizado sem texto e PDF cifrado são recusados; não há OCR nesta etap
 Conteúdo extraído continua sendo dado não confiável. O teste com instruções
 maliciosas comprova extração literal, sem execução ou envio a provedor LLM.
 Referência: [segurança pypdf](https://pypdf.readthedocs.io/en/6.6.1/user/security.html).
+
+O parser determinístico de fatura exige linhas `DD/MM/AAAA descrição 42,00` ou
+data ISO; compras positivas viram despesas, estornos negativos viram receitas.
+Não infere ano de datas incompletas nem converte totais em lançamentos. Layouts
+ambíguos são recusados, indicando CSV/OFX como alternativa.
+
+## Categorias
+
+Regras habilitadas do próprio usuário são carregadas uma vez por importação,
+decifradas com contexto e aplicadas em ordem de prioridade/UUID. Correspondência
+literal ignora caixa/acentos; não executa regex do usuário. Sem regra, o lançamento
+fica sem categoria. O fallback LLM será conectado à camada de provedores da etapa 5;
+esta etapa não declara categorização por IA implementada nem transmite extratos.
