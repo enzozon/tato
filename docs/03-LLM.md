@@ -25,3 +25,11 @@ Referências consultadas em 27/09/2026: [Groq structured outputs](https://consol
 [limites OpenRouter](https://openrouter.ai/docs/api_reference/limits).
 JSON estruturado e streaming/tool calling não são combinados nesta implementação;
 SSE para o produto pertence à etapa 7 e não deve transmitir JSON parcial não validado.
+
+Os três adapters usam HTTP direto, destinos fixos e não seguem redirects. Respostas
+acima de 128 KB, recusadas, incompletas ou sem contagem válida são descartadas.
+Groq usa `openai/gpt-oss-20b`; Gemini usa `gemini-2.5-flash`; OpenRouter exige nome
+terminado em `:free`, schema suportado e `data_collection=deny`. Esses filtros
+não substituem revisar a conta sem faturamento e a disponibilidade do modelo.
+Erro de provedor não reproduz corpo, prompt ou credencial. HTTP 429 respeita
+Retry-After (segundos ou data); retry imediato é reservado a falhas transitórias.
