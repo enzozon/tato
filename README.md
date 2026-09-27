@@ -64,7 +64,13 @@ restrito. Não use esse comando em dados reais. O CI prepara esse banco sozinho.
 
 ## Estado
 
-Etapa 3: backend de sessão, perfil, onboarding, planos e exclusão recuperável.
+Etapa 4: ingestão local CSV/OFX/PDF com centavos exatos, deduplicação, regras
+determinísticas e documento cifrado. Após `GET /me`, crie a origem com
+`POST /accounts`, regras opcionais com `POST /rules` e envie `POST /import`.
+Veja [formatos, contrato e limitações](docs/04-INGESTAO.md). Fallback LLM depende
+da etapa 5; fixtures sintéticas ainda precisam de validação com exports bancários.
+
+Backend de sessão, perfil, onboarding, planos e exclusão recuperável da etapa 3:
 `GET /me`, `POST /me/onboarding` e `DELETE /me` exigem bearer Supabase; saúde
 continua pública. Supabase e Upstash são simulados nos testes locais; PostgreSQL
 e Redis são reais. Não há login visual, contas externas provisionadas nem deploy.

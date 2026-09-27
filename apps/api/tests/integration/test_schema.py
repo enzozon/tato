@@ -36,6 +36,8 @@ def test_constraints_reject_invalid_money_and_foreign_ownership(
         (Chunk, {"position": -1}, "23514"),
         (Transaction, {"account_id": other[Account].id}, "23503"),
         (Transaction, {"category_id": other[Category].id}, "23503"),
+        (Transaction, {"document_id": other[Document].id}, "23503"),
+        (Document, {"account_id": other[Account].id}, "23503"),
         (Rule, {"category_id": other[Category].id}, "23503"),
         (Chunk, {"document_id": other[Document].id}, "23503"),
     ]

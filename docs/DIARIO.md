@@ -159,3 +159,30 @@ HTTP externo foi simulado, banco/Redis foram reais. Não há frontend ainda. Quo
 mensais de chat e quantidade de agentes serão conectadas aos fluxos futuros;
 o limite técnico já protege conta/onboarding/exclusão. Retomada de exclusão após
 queda externa é operacional, não um worker automático. Parar antes da etapa 4.
+
+## 27/09/2026 — Ingestão local da etapa 4
+
+Enzo autorizou a etapa 4 e aprovou os vínculos opcionais de origem antes da
+migration 0004. PR 7 já mesclado pelo usuário; branch parte de main atualizado.
+CSV/OFX usam centavos exatos e identidade bancária quando disponível. Sem ID,
+hash do arquivo e linha preservam compras iguais; reexports exigem revisão de
+sobreposição. PDF aceita texto com data completa, sem OCR nem inferência de ano.
+
+Implementados upload autenticado com limite de corpo, persistência atômica cifrada,
+regras literais por usuário e cadastro de contas/regras pela API. Fonte Free é
+reservada na primeira importação; lock impede ultrapassar o limite em concorrência.
+As migrations estão aplicadas localmente e alembic check não encontrou divergência.
+
+Aprendizado: deduplicar por descrição/valor apagaria compras legítimas. Reexport
+com ID e valor divergente precisa falhar integralmente, preservando o histórico.
+O PDF roda em subprocesso sem segredos, mas isso não constitui sandbox do SO.
+
+Validação local: make check com 107 testes unitários/HTTP, cobertura 86,84%, ruff
+e mypy aprovados. Os 22 testes de integração exercitam PostgreSQL/pgvector/RLS, importações
+concorrentes, rollback, quotas, origem cifrada e fluxo HTTP completo. Testes usam
+dados sintéticos; não há comprovação de compatibilidade com extratos reais dos bancos.
+
+Pendências explícitas: fallback LLM aguarda provedores da etapa 5; PDF não usa
+structured output de LLM. Navegador conectado não apareceu na sessão, portanto
+login/configuração real de Supabase e Upstash continua sem validação. Credenciais
+de painel não equivalem às chaves de API necessárias. Sem deploy nem plano pago.
