@@ -60,3 +60,12 @@ decifradas com contexto e aplicadas em ordem de prioridade/UUID. Correspondênci
 literal ignora caixa/acentos; não executa regex do usuário. Sem regra, o lançamento
 fica sem categoria. O fallback LLM será conectado à camada de provedores da etapa 5;
 esta etapa não declara categorização por IA implementada nem transmite extratos.
+
+## Persistência
+
+Uma transação grava documento cifrado e lançamentos, sob lock por usuário. O
+arquivo inteiro é validado antes de gravar. Mudança de valor/data para o mesmo
+ID bancário resulta em 409 e rollback, sem sobrescrever histórico. O documento
+de origem permanece rastreável, e arquivos repetidos retornam contagem de duplicatas.
+Contagem de fontes usa documentos vinculados à conta, sob o mesmo lock; Free
+aceita uma conta/cartão. Limite técnico: 20 MiB de conteúdo cifrado por usuário.

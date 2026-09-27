@@ -36,11 +36,18 @@ class TransactionInput(BaseModel):
 
 
 def add_transaction(
-    session: Session, owner: UUID, data: TransactionInput, cipher_key: bytes, identity_key: bytes
+    session: Session,
+    owner: UUID,
+    data: TransactionInput,
+    cipher_key: bytes,
+    identity_key: bytes,
+    *,
+    document_id: UUID | None = None,
 ) -> UUID | None:
     record = Transaction(
         **data.model_dump(exclude={"description", "source_identity"}),
         user_id=owner,
+        document_id=document_id,
         description_ciphertext=encrypt_text(data.description, cipher_key, owner, "transaction"),
         dedup_key=dedup_key(identity_key, owner, data.account_id, data.source_identity),
     )
