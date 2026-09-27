@@ -38,3 +38,4 @@ class Chunk(TenantRecord, table=True):
     position: int = Field(ge=0)
     content_ciphertext: bytes
     embedding: list[float] | None = Field(default=None, sa_column=Column(Vector(384)))
+    embedding_model: str | None = Field(default=None, max_length=120)

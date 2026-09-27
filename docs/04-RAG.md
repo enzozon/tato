@@ -1,6 +1,6 @@
 # RAG — etapa 6
 
-Status: início; proposta de schema abaixo aguarda aprovação antes de migration.
+Status: início; schema abaixo aprovado por Enzo em 27/09/2026 antes da migration 0005.
 
 ## Plano da etapa
 
@@ -49,8 +49,8 @@ limitado, após decifrar; isso exige controlar logs de parâmetros e medir o cus
 Não apresentar essa busca como indexada em disco nem varrer usuários alheios.
 A busca pública usa seu índice GIN; a privada preserva a fronteira de usuário.
 
-Este checkpoint não autoriza migration por silêncio. Chunking, fusão e métricas
-podem avançar enquanto a decisão de schema está pendente.
+O checkpoint recebeu aprovação explícita. A migration 0005 implementa somente
+essa proposta; permissões de escrita em tabelas privadas não foram ampliadas.
 
 ## Chunking iniciado
 
