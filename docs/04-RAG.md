@@ -74,3 +74,14 @@ comercial e não será escolhido automaticamente para o SaaS.
 
 Referências: [modelo E5-small e licença MIT](https://huggingface.co/intfloat/multilingual-e5-small),
 [modelos fastembed](https://qdrant.github.io/fastembed/examples/Supported_Models/).
+
+Encoder local: E5-small com ONNX quantizado oficial, mean pooling e normalização.
+O registro usa 384 dimensões e identifica o artefato pelo SHA-256 dos pesos; trocar
+os pesos exige reindexar, pois não misturamos espaços vetoriais. Prefixos `query:`
+e `passage:` fazem parte do contrato do modelo, inclusive em português. Cada
+entrada é conferida com tokens especiais antes de inferir; não aceitar truncamento.
+
+Primeiro ensaio local em 27/09/2026: dois textos sintéticos geraram dois vetores
+de 384 dimensões; download e inferência juntos levaram 12,04 s. Não é benchmark
+de latência aquecida nem prova de RAM em hospedagem gratuita. Nenhum texto foi
+enviado para inferência externa; a rede foi usada somente para baixar pesos públicos.
