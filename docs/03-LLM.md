@@ -50,3 +50,16 @@ reaproveitar um ciphertext copiado para outro dono. Cada usuário ocupa um hash
 de até 64 entradas; ao encher, o hash é reiniciado. É cache descartável, nunca
 fonte de verdade. Conteúdo vencido não é devolvido mesmo se outras entradas
 mantiverem o hash ativo. A exclusão remove o hash inteiro.
+
+`llm_service.generate` exige usuário existente e ativo antes do cache/chamada e
+novamente antes de salvar/devolver. Assim, exclusão concorrente não repovoa cache.
+Uma resposta em cache passa outra vez pelo schema e pelo guardrail atual. Falha de
+cache permite chamar o router; falha ao remover cache durante exclusão mantém o
+marcador pendente para retomada. Preserve as credenciais Redis durante a exclusão.
+
+Configuração padrão: `LLM_ENABLED=false`, `LLM_CACHE=off`. Para ensaio remoto,
+revisar contas sem faturamento, preencher chaves de API e definir explicitamente
+`LLM_FREE_TIER_CONFIRMED=true`; isso é confirmação operacional, não detecção
+automática de plano. Mudança de configuração exige reinício do processo.
+Nenhuma rota pública aceita classificação de privacidade fornecida pelo usuário.
+Integração com importação pessoal permanece bloqueada até revisão dos provedores.

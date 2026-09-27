@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 from time import time
 from uuid import UUID
 
@@ -72,3 +73,8 @@ def put_cached(owner: UUID, field: str, content: str) -> None:
 
 def clear_cache(owner: UUID) -> None:
     redis_command(["DEL", cache_key(owner)])
+
+
+def clear_configured_cache(owner: UUID) -> None:
+    if os.environ.get("LLM_CACHE") == "redis" or os.environ.get("UPSTASH_REDIS_REST_URL"):
+        clear_cache(owner)
