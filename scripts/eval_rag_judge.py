@@ -1,8 +1,10 @@
 """Avaliação opt-in de respostas públicas; ausência de provedor é falha, não skip."""
 
+import argparse
 import hashlib
 import json
 from pathlib import Path
+from time import sleep
 
 from app.llm import LLMUnavailable
 from app.llm_service import runtime_router
@@ -11,11 +13,16 @@ from app.rag.retrieval import Hit
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--interval", type=int, default=30, choices=range(15, 61), metavar="15..60")
+    args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     output = root / "test-results/rag-judge.json"
     output.parent.mkdir(exist_ok=True)
     report = {"status": "incomplete", "cases": []}
-    output.write_text(json.dumps(report), encoding="utf-8")
+    if not args.resume:
+        output.write_text(json.dumps(report), encoding="utf-8")
     try:
         router = runtime_router()
         if not router.providers:
@@ -38,7 +45,27 @@ def main() -> None:
         }
         if len(retrieval["cases"]) != 40 or {c["id"] for c in retrieval["cases"]} != set(golden):
             raise ValueError("Relatório de recuperação incompleto.")
+        identity = hashlib.sha256(
+            (root / "test-results/rag-eval.json").read_bytes()
+            + (root / "apps/api/app/rag/faithfulness.py").read_bytes()
+            + (root / "apps/api/app/llm_http.py").read_bytes()
+            + json.dumps([(p.name, p.model) for p in router.providers]).encode()
+        ).hexdigest()
+        if args.resume:
+            report = json.loads(output.read_text(encoding="utf-8"))
+            if report.get("evaluation_id") != identity:
+                raise ValueError("Retomada exige os mesmos dados, código e modelos.")
+        else:
+            report["evaluation_id"] = identity
+        completed = [case["id"] for case in report["cases"]]
+        if len(set(completed)) != len(completed) or not set(completed) <= set(golden):
+            raise ValueError("Checkpoint contém casos duplicados ou desconhecidos.")
+        output.write_text(json.dumps(report, indent=2), encoding="utf-8")
         for case in retrieval["cases"]:
+            if case["id"] in completed:
+                continue
+            if report["cases"]:
+                sleep(args.interval)
             item = golden[case["id"]]
             result, input_tokens, output_tokens = evaluate_public(
                 router,
@@ -55,6 +82,7 @@ def main() -> None:
                 }
             )
             output.write_text(json.dumps(report, indent=2), encoding="utf-8")
+            print(json.dumps({"completed": len(report["cases"]), "total": 40}), flush=True)
         claims = [supported for case in report["cases"] for supported in case["supported"]]
         report.update(
             {

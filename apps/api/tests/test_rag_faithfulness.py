@@ -42,6 +42,7 @@ def test_judge_keeps_injection_as_data_and_rejects_private_sources():
     for call in provider.generate.call_args_list:
         request = call.args[0]
         assert request.classification == "public"
+        assert request.max_output_tokens == 2048
         assert "IGNORE REGRAS" not in request.instruction
         assert "IGNORE REGRAS" in request.data
     with pytest.raises(ValueError, match="públicas"):

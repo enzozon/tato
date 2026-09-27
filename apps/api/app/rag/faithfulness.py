@@ -52,7 +52,7 @@ def evaluate_public(
             ),
             data=json.dumps({"question": question, "sources": sources}, ensure_ascii=False),
             classification="public",
-            max_output_tokens=1024,
+            max_output_tokens=2048,
         ),
         CitedAnswer,
         lambda value: verify_citations(value, hits),
@@ -77,6 +77,7 @@ def evaluate_public(
                 ensure_ascii=False,
             ),
             classification="public",
+            max_output_tokens=2048,
         ),
         Judgment,
         lambda value: (

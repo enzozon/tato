@@ -33,6 +33,20 @@ gerações lógicas para 40 perguntas, além dos retries/fallbacks limitados do 
 Sem provedor, sai com erro e registra `status=incomplete`; não usa respostas
 falsas nem declara aprovação. Em 27/09/2026, as três chaves estavam ausentes.
 
+Após configurar Groq, o primeiro ensaio confirmou autenticação, mas encontrou
+limite de tokens por minuto e `json_validate_failed`. O teto de saída de gerador
+e judge passou para 2048 tokens, dentro do limite já permitido pela camada LLM.
+A repetição do caso antes inválido funcionou; isso não identifica sozinho a
+causa interna do provedor. O comando espera 30 segundos entre perguntas.
+
+Para retomar após interrupção, use `uv run --locked --env-file .env python
+scripts/eval_rag_judge.py --resume` com `PYTHONPATH=apps/api`. O checkpoint exige
+mesmo relatório de recuperação, código de avaliação/adapter e modelos; não
+repete casos completos. `--interval` aceita de 15 a 60 segundos. Uma nova execução
+sem `--resume` inicia relatório novo. Falhas continuam encerrando com erro, sem
+loop ilimitado. Contagens do relatório cobrem casos completos, não todo consumo
+de diagnósticos e tentativas anteriores que o provedor não informou.
+
 `test-results/rag-judge.json` guarda vereditos e tokens, não prompts pessoais.
 Faithfulness é a fração de afirmações apoiadas nos trechos citados; `answer_rate`
 mede respostas consideradas corretas frente à referência dourada. Abstenções
