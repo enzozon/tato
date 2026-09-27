@@ -4,12 +4,16 @@ from datetime import UTC, date, datetime
 
 import pytest
 from fastapi import HTTPException
+from fastapi.testclient import TestClient
 from sqlalchemy import update
 from sqlmodel import Session, select
 
+from app.account_routes import runtime_engine as engine_dependency
+from app.auth import Identity, current_identity
 from app.crypto import decrypt_text, encrypt_text
 from app.database import tenant_session
 from app.import_service import store_import
+from app.main import app
 from app.models import Account, Category, Document, Rule, Subscription, Transaction, User
 
 pytestmark = pytest.mark.integration
@@ -131,3 +135,36 @@ def test_rules_never_cross_owners(runtime_engine, owners, accounts):
     second = store_import(runtime_engine, owners[1], accounts[2], CSV, "a.csv", "csv")
     assert first.uncategorized == 2
     assert second.uncategorized == 0
+
+
+def test_http_setup_to_import(runtime_engine, owners, accounts):
+    owner = owners[0]
+    app.dependency_overrides[current_identity] = lambda: Identity(id=owner)
+    app.dependency_overrides[engine_dependency] = lambda: runtime_engine
+    try:
+        with TestClient(app) as client:
+            account = client.post(
+                "/accounts",
+                json={"name": "Conta teste", "kind": "checking", "opening_date": "2026-01-01"},
+            )
+            assert account.status_code == 201
+            for pattern in ["mercado", "padaria"]:
+                assert (
+                    client.post(
+                        "/rules", json={"category": "Compras", "pattern": pattern}
+                    ).status_code
+                    == 201
+                )
+            response = client.post(
+                "/import",
+                data={"account_id": account.json()["id"], "kind": "csv"},
+                files={"file": ("teste.csv", CSV)},
+            )
+            assert response.status_code == 200
+            assert response.json()["inserted"] == 2
+            assert response.json()["uncategorized"] == 0
+        with tenant_session(runtime_engine, owner) as session:
+            assert len(session.exec(select(Category)).all()) == 1
+            assert len(session.exec(select(Rule)).all()) == 2
+    finally:
+        app.dependency_overrides.clear()

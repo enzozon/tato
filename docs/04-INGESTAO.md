@@ -80,3 +80,13 @@ Testes em PostgreSQL real verificam duas importações concorrentes do mesmo arq
 disputa pela única fonte Free, segunda fonte Pro, regras isoladas por usuário,
 bloqueio durante exclusão e rollback por ID bancário divergente. As duas novas
 chaves compostas também são testadas com vínculos entre usuários distintos.
+
+## Preparação pela API
+
+Após `GET /me`, `POST /accounts` recebe `name`, `kind`, `opening_date` e
+`opening_balance_cents` (inteiro, padrão zero); devolve `id` para o multipart.
+`POST /rules` recebe `category`, `pattern` literal e `priority` (menor primeiro).
+Reutiliza a categoria pelo nome dentro do usuário; padrão cifrado e no máximo
+1000 regras por usuário. Os dois endpoints exigem bearer, ignoram nenhum campo
+desconhecido e bloqueiam exclusão pendente. Criar uma conta não consome a fonte
+Free: a reserva acontece na primeira importação confirmada.
