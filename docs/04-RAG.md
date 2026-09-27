@@ -117,3 +117,15 @@ contexto autorizado, faz inferência local fora do lock e revalida dono, exclus�
 e digest antes de gravar. Reindexação substitui somente o documento daquele dono;
 IDs estáveis por documento/posição permitem citar a origem. Não é histórico de
 versões: uma edição exige invalidar respostas anteriores que dependem do texto.
+
+`POST /rag/documents/{id}/index` indexa documento próprio; `POST /rag/search`
+recebe pergunta e opção `rerank` (padrão true). Bearer e conta ativa obrigatórios,
+rate limit antes da inferência, resposta sem cache HTTP. IDs de dono não são entrada.
+Cada resultado contém chunk_id, source, source_id, section e conteúdo autorizado.
+São fontes recuperadas, não afirmações financeiras geradas por LLM.
+
+Reranking usa MiniLM-L6 Apache-2.0 via fastembed: recebe apenas os 20 candidatos
+autorizados e devolve cinco. É modelo treinado principalmente em inglês; ganho em
+português ainda precisa de medição. O cross-encoder tem janela própria e pode
+truncar pares longos; isso afeta ranking, não a fonte armazenada/citada. Comparar
+sempre RRF puro e reranking no corpus, sem prometer melhora por usar mais um modelo.
