@@ -62,6 +62,8 @@ jobs:
           uv run --locked python scripts/seed_demo.py
           uv run --locked python scripts/seed_demo.py
       - run: make integration
+      - name: Avaliar RAG com modelos reais
+        run: make rag-eval
       - name: Validar reversão em banco descartável
         run: |
           uv run --locked alembic downgrade base

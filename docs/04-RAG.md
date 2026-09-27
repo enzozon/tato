@@ -119,7 +119,7 @@ IDs estáveis por documento/posição permitem citar a origem. Não é históric
 versões: uma edição exige invalidar respostas anteriores que dependem do texto.
 
 `POST /rag/documents/{id}/index` indexa documento próprio; `POST /rag/search`
-recebe pergunta e opção `rerank` (padrão true). Bearer e conta ativa obrigatórios,
+recebe pergunta e opção `rerank` (padrão false após avaliação). Bearer e conta ativa obrigatórios,
 rate limit antes da inferência, resposta sem cache HTTP. IDs de dono não são entrada.
 Cada resultado contém chunk_id, source, source_id, section e conteúdo autorizado.
 São fontes recuperadas, não afirmações financeiras geradas por LLM.
@@ -129,3 +129,21 @@ autorizados e devolve cinco. É modelo treinado principalmente em inglês; ganho
 português ainda precisa de medição. O cross-encoder tem janela própria e pode
 truncar pares longos; isso afeta ranking, não a fonte armazenada/citada. Comparar
 sempre RRF puro e reranking no corpus, sem prometer melhora por usar mais um modelo.
+
+## Primeira avaliação real — 27/09/2026
+
+Corpus: 200 documentos autorais curtos; dataset dourado: 40 perguntas, respostas
+esperadas e slugs relevantes. `make rag-index` indexa a base pública versionada
+com conexão administrativa; `make rag-eval` usa exclusivamente `tato_test`.
+
+| Modo | hit@5 | MRR no top-5 |
+| --- | --- | --- |
+| RRF | 0,975 (39/40) | 0,83542 |
+| RRF + MiniLM-L6 | 0,925 (37/40) | 0,80417 |
+
+O reranker piorou a recuperação em português nesta amostra; foi desativado por
+padrão e mantido como opção mensurável. Não alteramos perguntas para esconder
+falhas. Corpus/perguntas autorais não substituem avaliação independente.
+Tempos locais: indexação 6,772 s; 40 buscas SQL 0,367 s; 40 rerankings incluindo
+carga do modelo 14,098 s. Não são latências de produção nem teste de carga.
+Faithfulness por LLM ainda não executada. Detalhes e limitações em `evals/README.md`.

@@ -53,7 +53,10 @@ mypy_path = "apps/api"
 testpaths = ["apps/api/tests"]
 pythonpath = ["apps/api"]
 addopts = "--strict-config --strict-markers -m 'not integration'"
-markers = ["integration: exige PostgreSQL real em banco descartável tato_test"]
+markers = [
+    "integration: exige PostgreSQL real em banco descartável tato_test",
+    "eval: mede recuperação com modelos locais reais e banco tato_test",
+]
 
 [tool.coverage.run]
 source = ["apps/api/app"]

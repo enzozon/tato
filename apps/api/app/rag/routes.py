@@ -21,7 +21,7 @@ router = APIRouter(prefix="/rag", tags=["contexto e fontes"])
 class SearchInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     question: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
-    rerank: bool = True
+    rerank: bool = False
 
 
 def authorize(engine: EngineDep, owner: UUID, *, rate: bool = False) -> None:

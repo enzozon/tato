@@ -43,3 +43,9 @@ seed:
 
 llm-smoke:
 	uv run --locked --env-file .env python scripts/smoke_llm.py
+
+rag-index:
+	uv run --locked --env-file .env python scripts/index_knowledge.py
+
+rag-eval:
+	uv run --locked pytest -q -s evals/ -m eval

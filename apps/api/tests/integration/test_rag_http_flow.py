@@ -67,7 +67,7 @@ def test_http_search_isolates_sources_and_rechecks_deletion(
                 return hits
 
             monkeypatch.setattr(routes, "rerank", delete_during_reranking)
-            blocked = client.post("/rag/search", json={"question": "Reserva"})
+            blocked = client.post("/rag/search", json={"question": "Reserva", "rerank": True})
             assert blocked.status_code == 409
             assert "Reserva própria" not in blocked.text
     finally:
