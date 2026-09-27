@@ -75,3 +75,8 @@ aceita uma conta/cartão. Limite técnico: 20 MiB de conteúdo cifrado por usuá
 nunca caminhos usados no disco. Limite do corpo multipart é 3 MiB, antes de
 buffering, incluindo envio sem Content-Length. O arquivo individual continua
 limitado a 2 MiB. Resposta contém apenas IDs/contagens/aviso, com `no-store`.
+
+Testes em PostgreSQL real verificam duas importações concorrentes do mesmo arquivo,
+disputa pela única fonte Free, segunda fonte Pro, regras isoladas por usuário,
+bloqueio durante exclusão e rollback por ID bancário divergente. As duas novas
+chaves compostas também são testadas com vínculos entre usuários distintos.
