@@ -49,3 +49,6 @@ rag-index:
 
 rag-eval:
 	uv run --locked pytest -q -s evals/ -m eval
+
+rag-judge:
+	uv run --locked --env-file .env python scripts/eval_rag_judge.py

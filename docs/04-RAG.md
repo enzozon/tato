@@ -147,3 +147,16 @@ falhas. Corpus/perguntas autorais não substituem avaliação independente.
 Tempos locais: indexação 6,772 s; 40 buscas SQL 0,367 s; 40 rerankings incluindo
 carga do modelo 14,098 s. Não são latências de produção nem teste de carga.
 Faithfulness por LLM ainda não executada. Detalhes e limitações em `evals/README.md`.
+
+## Citações e fidelidade
+
+`rag/faithfulness.py` exige uma lista de chunk_ids em cada afirmação do contrato
+de avaliação. IDs fora das fontes recuperadas invalidam a resposta. Isso prova
+origem permitida, não que o texto seja verdadeiro: o judge compara afirmação e
+trecho citado. O comando opt-in envia somente conteúdo público; fontes privadas
+são recusadas antes de qualquer chamada externa. O chat de produção é etapa 7.
+
+Perguntas, documentos e respostas avaliadas ficam em dados JSON separados das
+instruções fixas. Essa separação reduz confusão, mas não garante imunidade a prompt
+injection. A validação estrutural também não autoriza números financeiros: totais
+pessoais continuarão sujeitos à conferência determinística da camada SQL.

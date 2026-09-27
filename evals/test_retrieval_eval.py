@@ -46,7 +46,14 @@ def test_real_hybrid_retrieval(admin_engine, runtime_engine, owners):
             rerank_seconds += perf_counter() - started
             raw.append([hit.source_id for hit in hits[:5]])
             reranked.append([hit.source_id for hit in refined])
-            cases.append({"id": item["id"], "rrf": raw[-1], "reranked": reranked[-1]})
+            cases.append(
+                {
+                    "id": item["id"],
+                    "rrf": raw[-1],
+                    "reranked": reranked[-1],
+                    "hits": [hit.model_dump(mode="json") for hit in hits[:5]],
+                }
+            )
         relevant = [set(item["relevant"]) for item in golden]
         report = {
             "embedding_model": model,
