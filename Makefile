@@ -1,6 +1,6 @@
 export PYTHONPATH := apps/api
 
-.PHONY: sync dev check lint typecheck test infra-up infra-down hooks migrate db-init integration seed
+.PHONY: sync dev check lint typecheck test infra-up infra-down hooks migrate db-init integration seed llm-smoke
 
 sync:
 	uv sync --locked
@@ -40,3 +40,6 @@ integration:
 
 seed:
 	uv run --locked --env-file .env python scripts/seed_demo.py
+
+llm-smoke:
+	uv run --locked --env-file .env python scripts/smoke_llm.py

@@ -64,6 +64,12 @@ restrito. Não use esse comando em dados reais. O CI prepara esse banco sozinho.
 
 ## Estado
 
+Etapa 5: camada LLM com adapters Groq/Gemini/OpenRouter, fallback limitado,
+circuit breaker, validação Pydantic/semântica e cache Redis cifrado por usuário.
+Desativada por padrão; dados pessoais bloqueados. `make llm-smoke` permite ensaio
+sintético após configuração de contas gratuitas. Veja [operação e limites](docs/03-LLM.md).
+O chat e seu streaming continuam previstos para a etapa 7.
+
 Etapa 4: ingestão local CSV/OFX/PDF com centavos exatos, deduplicação, regras
 determinísticas e documento cifrado. Após `GET /me`, crie a origem com
 `POST /accounts`, regras opcionais com `POST /rules` e envie `POST /import`.

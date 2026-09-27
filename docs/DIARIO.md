@@ -186,3 +186,33 @@ Pendências explícitas: fallback LLM aguarda provedores da etapa 5; PDF não us
 structured output de LLM. Navegador conectado não apareceu na sessão, portanto
 login/configuração real de Supabase e Upstash continua sem validação. Credenciais
 de painel não equivalem às chaves de API necessárias. Sem deploy nem plano pago.
+
+## 27/09/2026 — Camada LLM local da etapa 5
+
+Enzo pediu continuidade pelo plano após o resumo da etapa 4. Branch
+`etapa-05-camada-llm` baseada em `etapa-04-ingestao`, pois PR 8 ainda está aberto.
+A camada reutiliza httpx/Pydantic/Redis; nenhuma dependência adicionada ou migration.
+
+Implementados protocolo e contratos, três adapters HTTP, fallback na ordem aprovada,
+retry transitório limitado, circuit breaker, métricas sem payload e validação de
+centavos por fonte. Cache Redis cifrado usa HMAC do pedido e contexto por usuário;
+hit também exige validação. Exclusão concorrente é revalidada após geração; falha
+ao remover cache mantém marcador e pode ser retomada operacionalmente.
+
+Validação: make check aprovado com 137 testes unitários/HTTP, cobertura 87,50%;
+23 testes de integração PostgreSQL/pgvector/Redis aprovados. Lua, TTL/capacidade,
+exclusão após falha de Redis e isolamento foram exercitados em serviços reais.
+Provedores LLM foram simulados, incluindo 429, timeout, falhas, JSON inválido,
+valor inventado, saída incompleta e modelo pago. Chaves LLM ausentes no .env;
+nenhum ensaio remoto executado nem consumo remoto apresentado como medido.
+
+Aprendizado: validar JSON não valida dinheiro; conferir fonte e valor é uma etapa
+separada. Timeout por leitura não limita fluxo lento contínuo, por isso existe
+prazo adicional entre chunks. Cache precisa participar da exclusão e revalidar
+guardrails, não apenas reaproveitar uma resposta que já foi válida no passado.
+
+Limites: circuitos/serialização são por processo; geração pessoal segue bloqueada.
+`LLM_FREE_TIER_CONFIRMED` é declaração operacional, não detecção de billing.
+Etapa 4 ainda não chama LLM em uploads pessoais; PDF structured output e fixtures
+bancárias reais continuam pendentes. Supabase/Upstash hospedados não validados.
+Próxima etapa planejada é RAG (6), sem iniciá-la nesta entrega.

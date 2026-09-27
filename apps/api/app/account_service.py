@@ -10,6 +10,7 @@ from sqlmodel import Session
 
 from app.auth import Identity, delete_identity
 from app.database import tenant_session
+from app.llm_cache import clear_configured_cache
 from app.models import User
 from app.plans import Plan, user_plan
 from app.rate_limit import check_rate, clear_rate
@@ -80,4 +81,5 @@ def finish_deletion(engine: Engine, owner: UUID) -> None:
             raise ValueError("Conta não solicitou exclusão.")
         delete_identity(owner)
         clear_rate(owner)
+        clear_configured_cache(owner)
         session.delete(user)
