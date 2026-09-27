@@ -140,3 +140,28 @@ Na etapa 4, a revisão aprovada `0004` adiciona `documents.account_id` e
 fontes e rastreamento da origem. Não se pode vincular arquivo/conta de outro dono,
 nem apagar isoladamente um documento referenciado por lançamentos. A cascata
 de exclusão total do usuário permanece válida. `NULL` preserva registros anteriores.
+
+Na etapa 6, a revisão aprovada `0005` cria `knowledge_chunks`: corpus público
+autoral, sem vínculo com usuário, com runtime somente SELECT. `slug, position`
+é único; vetor de 384 dimensões e identificação do modelo são obrigatórios.
+O GIN sobre `search_vector` acelera FTS português. Não há índice ANN inicial:
+distância exata é suficiente para o corpus pequeno e evita filtragem tardia.
+`chunks.embedding_model` opcional separa vetores antigos de novas indexações.
+Chunks privados continuam com RLS, cifra e FK composta; não ganham FTS persistente.
+
+```mermaid
+erDiagram
+    USERS ||--o{ DOCUMENTS : possui
+    DOCUMENTS ||--o{ CHUNKS : divide
+    KNOWLEDGE_CHUNKS {
+        uuid id PK
+        string slug
+        int position
+        string embedding_model
+        vector embedding
+        tsvector search_vector
+    }
+```
+
+A tabela pública não se relaciona aos usuários. Indexação administrativa não
+é permissão para indexar dados pessoais nela. O runtime não pode escrevê-la.

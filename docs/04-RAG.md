@@ -1,6 +1,7 @@
 # RAG — etapa 6
 
-Status: início; schema abaixo aprovado por Enzo em 27/09/2026 antes da migration 0005.
+Status: engine e avaliação de recuperação implementados; judge remoto pendente.
+Schema abaixo aprovado por Enzo em 27/09/2026 antes da migration 0005.
 
 ## Plano da etapa
 
@@ -17,6 +18,53 @@ Não usar recuperação vetorial para somas, saldos ou valores financeiros exato
 Modelo de embedding é um mapa: textos parecidos ficam próximos, mas proximidade
 não prova igualdade nem autoriza calcular dinheiro. As 384 coordenadas são o
 formato do modelo escolhido, não 384 categorias financeiras interpretáveis.
+
+## Do texto à fonte
+
+Imagine uma biblioteca em que cada parágrafo ganha um endereço num mapa. O
+encoder transforma texto em 384 números; textos com sentido próximo tendem a
+apontar para direções próximas. Cosine compara essas direções, não verifica
+verdade. Uma frase sobre dívida quitada pode ficar perto de outra sobre dívida
+em aberto. O vetor não é cifra: pode revelar informação sem guardar texto literal.
+
+Um token é uma unidade do tokenizer, frequentemente parte de palavra. Contar
+caracteres ou palavras não substitui contar tokens reais do modelo. Por isso
+o mesmo tokenizer acompanha chunking e embedding, e textos acima da janela
+são recusados em vez de truncados silenciosamente pelo nosso encoder.
+
+```mermaid
+flowchart TD
+    D[Documento] --> C[Seções e frases com tokenizer]
+    C --> E[Embedding local de 384 dimensões]
+    E --> I[Índice com origem e modelo]
+    Q[Pergunta conceitual] --> V[Vetor da pergunta]
+    Q --> T[Termos FTS português]
+    I --> A[Escopo público ou usuário autorizado]
+    A --> V
+    A --> T
+    V --> R[RRF dos rankings]
+    T --> R
+    R --> O[Reranker opcional: top 20 para 5]
+    R --> F[Fontes com chunk_id]
+    O --> F
+```
+
+Cortar no meio de uma condição pode separar uma regra de sua exceção. O chunker
+preserva seções e tenta terminar em frases; overlap repete contexto entre trechos
+da mesma seção, limitado a 15% do alvo. Frases longas caem para palavras inteiras.
+Não há overlap entre títulos distintos, nem preenchimento de documentos curtos.
+O alvo de 480 deixa espaço para prefixo e tokens especiais na janela de 512.
+
+FTS encontra flexões e termos exatos, enquanto o vetor ajuda com paráfrases.
+FTS nativo com ts_rank_cd não é BM25. RRF funde posições porque suas pontuações
+não têm a mesma escala. O cross-encoder lê pergunta e trecho juntos para
+reordenar candidatos; não encontra uma fonte ausente do top-20. A medição abaixo
+mostra por que adicionar essa etapa não garante melhora em português.
+
+Já “quanto gastei?” é uma tarefa de livro-caixa: selecionar registros e somar
+centavos. Um vizinho no mapa pode falar de gastos parecidos e omitir lançamentos.
+O RAG serve para explicar o conceito e recuperar contexto; valores pessoais
+exatos precisam de SQL autorizado e conferência de origem antes da apresentação.
 
 ## Checkpoint de schema proposto
 

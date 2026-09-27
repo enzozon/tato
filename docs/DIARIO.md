@@ -216,3 +216,34 @@ Limites: circuitos/serialização são por processo; geração pessoal segue blo
 Etapa 4 ainda não chama LLM em uploads pessoais; PDF structured output e fixtures
 bancárias reais continuam pendentes. Supabase/Upstash hospedados não validados.
 Próxima etapa planejada é RAG (6), sem iniciá-la nesta entrega.
+
+## Etapa 6 — engine RAG e experimento de recuperação — 27/09/2026
+
+PRs 8 e 9 revisados e mesclados após CI verde, preservando commits pequenos.
+Enzo aprovou o schema público/privado antes da migration 0005, aplicada localmente
+e no banco descartável. Branch `etapa-06-rag-engine`; etapa 7 não iniciada.
+
+Implementados chunking por seção/frase com tokenizer real, E5-small quantizado
+multilíngue local, cosine + FTS português + RRF, reindexação atômica e rotas
+autenticadas com fontes. Busca privada filtra antes de decifrar/rankear; exclusão
+concorrente bloqueia nova indexação e entrega da resposta. Público é somente
+leitura para runtime. Inferência real exercitada na CPU, sem provedores externos.
+
+Corpus autoral: 200 documentos; conjunto dourado: 40 perguntas. RRF hit@5 0,975
+e MRR 0,83542; reranker hit@5 0,925 e MRR 0,80417. Aprendizado: o modelo adicional
+piorou esta amostra em português, portanto ficou opcional. A falha RRF foi q05
+(renda irregular); reranker falhou em q02, q34 e q40. Casos não foram reescritos
+para aumentar a métrica. O CI passa a exigir ambos os baselines reais.
+
+Validação local: 153 testes unitários/HTTP, cobertura 83,99%, lint/mypy aprovados;
+27 integrações Postgres reais aprovadas; avaliação neural/SQL das 40 perguntas
+aprovada separadamente. Pico local de 770 MiB com encoder e 865 MiB com ambos
+os modelos: peso quantizado pequeno não implica processo pequeno.
+
+Judge público e contrato de citações implementados/testados, mas a fidelidade
+remota não foi medida: chaves ausentes, comando termina incompleto/erro.
+Testes simulados de delimitação de instruções não provam resistência real de LLM.
+Corpus/perguntas ainda precisam de revisão independente. A etapa permanece com
+essa pendência; PR deve ficar em rascunho, sem declarar conclusão integral.
+Supabase/Upstash hospedados e pendências pessoais da ingestão não foram resolvidos
+por este RAG. Nenhum gasto, deploy ou acesso a dados reais de usuários.
