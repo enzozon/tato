@@ -42,3 +42,11 @@ Um teste reprova centavos inventados apesar de JSON válido. Se todos falharem,
 somente destino, resultado, tempo e contagens; falha sem uso informado registra
 `None`, nunca custo zero presumido. Circuitos são locais ao processo, não quotas
 globais do fornecedor; reiniciar o processo perde esse estado transitório.
+
+O cache Redis armazena respostas cifradas por usuário, com TTL de uma hora.
+A chave do pedido usa HMAC de instrução/dados/schema/modelos; trocar qualquer um
+invalida a reutilização. O contexto AES-GCM inclui usuário e pedido, impedindo
+reaproveitar um ciphertext copiado para outro dono. Cada usuário ocupa um hash
+de até 64 entradas; ao encher, o hash é reiniciado. É cache descartável, nunca
+fonte de verdade. Conteúdo vencido não é devolvido mesmo se outras entradas
+mantiverem o hash ativo. A exclusão remove o hash inteiro.
