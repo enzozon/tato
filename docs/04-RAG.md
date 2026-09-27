@@ -85,3 +85,12 @@ Primeiro ensaio local em 27/09/2026: dois textos sintéticos geraram dois vetore
 de 384 dimensões; download e inferência juntos levaram 12,04 s. Não é benchmark
 de latência aquecida nem prova de RAM em hospedagem gratuita. Nenhum texto foi
 enviado para inferência externa; a rede foi usada somente para baixar pesos públicos.
+
+## Fusão e métricas
+
+RRF funciona como votação pela posição, evitando somar distâncias vetoriais com
+scores textuais que têm escalas diferentes. Cada lista concede `1/(60+posição)`;
+duplicatas na mesma lista não ganham votos extras. Empates usam ID estável.
+`hit@5` é a fração de perguntas com pelo menos uma referência esperada no top-5.
+MRR usa o inverso da posição da primeira referência correta; ausência vale zero.
+Essas funções estão testadas, mas não representam avaliação do corpus ainda.
