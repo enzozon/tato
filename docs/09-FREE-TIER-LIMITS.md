@@ -44,6 +44,22 @@ Na etapa 11, `quota-watch` registrará medição, data e origem, usando API quan
 disponível ou contador próprio/registro manual explicitamente identificado.
 Não fingiremos coleta automática de um provedor que não expõe esses dados.
 
+## Atualização local — 27/09/2026
+
+Camada LLM implementada sem chamadas remotas: chaves Groq/Gemini/OpenRouter ausentes.
+Não há taxa real de tokens nem estimativa confiável de dias até esgotar. Adapters
+reportam contagens recebidas; falhas sem contagem retornam uso desconhecido.
+`make llm-smoke` permitirá medir com dados sintéticos quando contas gratuitas
+estiverem conferidas. Modelo pago OpenRouter é recusado antes de fazer HTTP.
+
+O cache foi exercitado no Redis local: TTL de uma hora, até 64 respostas por usuário,
+remoção na exclusão e fallback sem cache quando indisponível. Isso comprova lógica,
+não capacidade ou latência do Upstash hospedado. Sem nova contratação.
+
+Amostra CI da etapa 4: [execução 36295671630](https://github.com/enzozon/tato/actions/runs/36295671630),
+qualidade Python 33 s e infraestrutura 32 s (início UTC 04:54:41 de 27/09/2026).
+São durações observadas dos jobs, não minutos mensais faturados.
+
 ## Medição da etapa 2: 23/09/2026
 
 [Execução 35926485225](https://github.com/enzozon/tato/actions/runs/35926485225),
