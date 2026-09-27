@@ -69,3 +69,9 @@ ID bancário resulta em 409 e rollback, sem sobrescrever histórico. O documento
 de origem permanece rastreável, e arquivos repetidos retornam contagem de duplicatas.
 Contagem de fontes usa documentos vinculados à conta, sob o mesmo lock; Free
 aceita uma conta/cartão. Limite técnico: 20 MiB de conteúdo cifrado por usuário.
+
+`POST /import` recebe multipart com `account_id`, `kind` (csv/ofx/pdf), `file` e
+`mapping` JSON opcional para CSV. Bearer obrigatório; nomes de arquivo são dados,
+nunca caminhos usados no disco. Limite do corpo multipart é 3 MiB, antes de
+buffering, incluindo envio sem Content-Length. O arquivo individual continua
+limitado a 2 MiB. Resposta contém apenas IDs/contagens/aviso, com `no-store`.

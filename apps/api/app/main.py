@@ -6,9 +6,13 @@ from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.account_routes import router
+from app.import_routes import router as import_router
+from app.upload_limit import UploadLimit
 
 app = FastAPI(title="API financeira", version="0.1.0")
 app.include_router(router)
+app.include_router(import_router)
+app.add_middleware(UploadLimit)
 
 
 @app.exception_handler(SQLAlchemyError)
