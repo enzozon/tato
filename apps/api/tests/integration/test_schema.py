@@ -103,7 +103,7 @@ def test_rls_is_forced_on_all_domain_tables(admin_engine: Engine) -> None:
             text(
                 "SELECT relrowsecurity, relforcerowsecurity FROM pg_class "
                 "WHERE relnamespace = 'public'::regnamespace AND relkind = 'r' "
-                "AND relname <> 'alembic_version'"
+                "AND relname NOT IN ('alembic_version', 'knowledge_chunks')"
             )
         ).all()
     assert len(rows) == 10

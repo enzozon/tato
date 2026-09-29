@@ -13,6 +13,10 @@
 - `make db-init` / `make migrate` / `make seed`: papel local, migrations e dados sintéticos.
 - `make integration`: testes Postgres/RLS; exige URLs de teste no banco descartável `tato_test`.
 - `make llm-smoke`: ensaio remoto sintético opt-in; exige chaves e confirmação de free tier.
+- `make rag-index`: indexa base pública com conexão administrativa, nunca uploads privados.
+- `make rag-eval`: modelos reais + banco descartável `tato_test`; baseline em `evals/`.
+- `make rag-judge`: avaliação LLM pública opt-in; indisponibilidade não é aprovação.
+- `make rag-measure`: memória/latência local de inferência CPU, sem serviço pago.
 - Windows: uv e GNU Make no PATH; Docker com Compose v2 para infraestrutura.
 
 ## Mapa
@@ -23,7 +27,7 @@
 - `apps/api/tests/`: testes da API e contratos.
 - `apps/web/`: Next.js 16 estático/PWA; implementação na etapa 9.
 - `packages/mascot/`: identidade e futura arte/persona; nenhuma duplicação no app.
-- `evals/`: avaliação RAG; implementação na etapa 6.
+- `apps/api/app/rag/`, `knowledge/`, `evals/`: recuperação isolada, corpus público e avaliações.
 - `docs/`: arquitetura, ADRs, diário e experimento de quotas.
 - `.codex/skills/`: instruções específicas de commits e futuras rotinas do projeto.
 - `.github/`: CI e atualizações mensais; deploy ainda não implementado.

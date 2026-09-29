@@ -216,3 +216,65 @@ Limites: circuitos/serialização são por processo; geração pessoal segue blo
 Etapa 4 ainda não chama LLM em uploads pessoais; PDF structured output e fixtures
 bancárias reais continuam pendentes. Supabase/Upstash hospedados não validados.
 Próxima etapa planejada é RAG (6), sem iniciá-la nesta entrega.
+
+## Etapa 6 — engine RAG e experimento de recuperação — 27/09/2026
+
+PRs 8 e 9 revisados e mesclados após CI verde, preservando commits pequenos.
+Enzo aprovou o schema público/privado antes da migration 0005, aplicada localmente
+e no banco descartável. Branch `etapa-06-rag-engine`; etapa 7 não iniciada.
+
+Implementados chunking por seção/frase com tokenizer real, E5-small quantizado
+multilíngue local, cosine + FTS português + RRF, reindexação atômica e rotas
+autenticadas com fontes. Busca privada filtra antes de decifrar/rankear; exclusão
+concorrente bloqueia nova indexação e entrega da resposta. Público é somente
+leitura para runtime. Inferência real exercitada na CPU, sem provedores externos.
+
+Corpus autoral: 200 documentos; conjunto dourado: 40 perguntas. RRF hit@5 0,975
+e MRR 0,83542; reranker hit@5 0,925 e MRR 0,80417. Aprendizado: o modelo adicional
+piorou esta amostra em português, portanto ficou opcional. A falha RRF foi q05
+(renda irregular); reranker falhou em q02, q34 e q40. Casos não foram reescritos
+para aumentar a métrica. O CI passa a exigir ambos os baselines reais.
+
+Validação local: 154 testes unitários/HTTP, cobertura 84,26%, lint/mypy aprovados;
+27 integrações Postgres reais aprovadas; avaliação neural/SQL das 40 perguntas
+aprovada separadamente. Pico local de 770 MiB com encoder e 865 MiB com ambos
+os modelos: peso quantizado pequeno não implica processo pequeno.
+
+Judge público e contrato de citações implementados/testados, mas a fidelidade
+remota não foi medida: chaves ausentes, comando termina incompleto/erro.
+Testes simulados de delimitação de instruções não provam resistência real de LLM.
+Corpus/perguntas ainda precisam de revisão independente. A etapa permanece com
+essa pendência; PR deve ficar em rascunho, sem declarar conclusão integral.
+Supabase/Upstash hospedados e pendências pessoais da ingestão não foram resolvidos
+por este RAG. Nenhum gasto, deploy ou acesso a dados reais de usuários.
+Revisão final antecipou a checagem de logs do Postgres: perguntas também podem
+ser privadas, mesmo quando a busca só retorna conteúdo público. Teste bloqueia
+o envio de qualquer parâmetro antes de confirmar a configuração de logs.
+
+## Etapa 6 — pendência de avaliação remota resolvida — 28/09/2026
+
+Enzo adicionou Groq no `.env` e autorizou continuar. Presença da chave e flags
+conferidas sem expor valores. Smoke sintético real aprovado; nenhum dado privado
+foi enviado. O primeiro judge parou após dois casos; diagnósticos encontraram
+HTTP 429 e JSON inválido. Aumentar teto de saída para 2048 resolveu o caso inválido
+observado; intervalo de 30 s permitiu completar o conjunto sem novas interrupções.
+Adicionada retomada com identidade de dados/código/modelos e teste que prova
+que casos completos não são repetidos. Suíte: 155 testes, cobertura 84,26%.
+
+Resultado Groq `openai/gpt-oss-20b`: 71 de 75 afirmações sustentadas (94,67%),
+40 perguntas consideradas respondidas. Falhas em q13, q20 e q21 preservadas.
+Controle separado com afirmação contraditória foi rejeitado pelo judge.
+Gerador e avaliador usam o mesmo modelo; isso limita a independência da medição.
+Não há garantia de segurança para números financeiros: chat continua etapa 7.
+
+Consumo dos casos completos: 84.397 tokens de entrada, 41.122 de saída; demais
+diagnósticos não estão integralmente contabilizados. Quota observada de 8000
+tokens/minuto mostrou o primeiro gargalo real do provedor. Nenhuma mudança paga.
+Recuperação antes/depois manteve os baselines. A pendência de chave/judge foi
+resolvida; PR 10 pode sair de rascunho após CI final. Sem merge ou etapa 7 nesta sessão.
+
+O CI final expôs variação no mesmo SHA: push com MRR RRF 0,81250 e PR com 0,83542,
+sem mudança de hit@5, corpus ou pesos. Causa ambiental não isolada; hipótese de
+quantização/CPU permanece aberta. Removida a exigência adicional de MRR invariável
+entre runners, mantendo o gate hit@5 solicitado e o desvio MRR visível no relatório.
+O baseline não foi reduzido. Portabilidade numérica precisa de validação no deploy.

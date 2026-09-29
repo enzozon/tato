@@ -1,0 +1,44 @@
+{
+  "measured_on": "2026-09-28",
+  "code_commit": "20b3b4e",
+  "questions": 40,
+  "claims": 75,
+  "supported_claims": 71,
+  "faithfulness": 0.9466666666666667,
+  "answer_rate": 1.0,
+  "input_tokens_completed_cases": 84397,
+  "output_tokens_completed_cases": 41122,
+  "providers": [
+    {
+      "name": "groq",
+      "model": "openai/gpt-oss-20b"
+    }
+  ],
+  "same_generator_and_judge": true,
+  "corpus_sha256": "b743f8b79f272422cecde747206db550a5d0d6c9c4f50a5086ad04aa13e018db",
+  "golden_sha256": "b2164548d472845c67a87ca34ea6e04883d80d23dacedf8c1de9517ffb235470",
+  "unsupported_claim_positions": {
+    "q13": [
+      2
+    ],
+    "q20": [
+      3
+    ],
+    "q21": [
+      4,
+      5
+    ]
+  },
+  "negative_control": {
+    "synthetic_control": true,
+    "judgment": {
+      "supported": [
+        false
+      ],
+      "answers_question": false
+    },
+    "input_tokens": 497,
+    "output_tokens": 200
+  },
+  "automatic_quality_threshold": null
+}

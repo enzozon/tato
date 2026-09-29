@@ -78,3 +78,47 @@ incluindo quatorze testes de integração PostgreSQL. Tempos de execução não 
 minutos faturados nem medida de capacidade do SaaS. Supabase/Upstash continuam
 sem provisionamento; seus adapters HTTP foram testados com respostas simuladas.
 Nenhum serviço pago foi ativado nesta etapa; custo contratado R$ 0,00.
+
+## Medição local da etapa 6: 27/09/2026
+
+`make rag-measure`, Windows 10 build 19045, CPU, threads=2, modelos já baixados:
+
+| Medida | Resultado observado |
+| --- | --- |
+| Carregar E5-small quantizado + primeira consulta | 2,092 s |
+| Pico de memória do processo com encoder | 770,07 MiB |
+| Carregar reranker + primeiro lote de 20 | 0,682 s |
+| Pico com ambos os modelos | 865,45 MiB |
+| Consulta aquecida, média de 5 | 0,005 s |
+| Reranking de 20 aquecido, média de 5 | 0,279 s |
+
+Pico de working set inclui Python, bibliotecas, tokenizer, buffers e pesos; não
+é apenas tamanho do ONNX. Um processo limitado a 512 MiB não foi validado por
+esse ensaio. Compatibilidade com hospedagem e concorrência precisa de medição
+no ambiente escolhido antes do deploy; não extrapolar usuários suportados.
+
+Downloads públicos iniciais e inferência real foram executados sem API LLM.
+O primeiro ensaio do encoder levou cerca de 12 s com download; o do reranker,
+8,25 s. Esses tempos não são cold starts de um serviço hospedado.
+Corpus de 200 textos indexado em 6,772 s; 40 buscas SQL em 0,367 s; 40 rerankings
+incluindo carga em 14,098 s. Detalhes de qualidade em `04-RAG.md`.
+Judge remoto indisponível: três chaves LLM ausentes; consumo remoto não medido.
+Custo contratado nesta etapa: R$ 0,00. Não houve deploy nem contratação.
+
+## Groq real — retomada em 28/09/2026
+
+Enzo configurou a chave local e confirmou o uso gratuito. O smoke sintético
+consumiu 287 tokens de entrada e 120 de saída, com 483 ms medidos na chamada.
+A primeira sequência de RAG encontrou HTTP 429: limite retornado de 8000 tokens
+por minuto para `openai/gpt-oss-20b` nessa conta. É observação do ensaio, não
+promessa universal de quota. Nenhum upgrade ou faturamento foi habilitado.
+
+Com intervalo de 30 s entre perguntas, concluímos 40 casos (80 gerações lógicas):
+84.397 tokens de entrada e 41.122 de saída nos casos completos. Controle negativo
+separado: 497 de entrada e 200 de saída. Diagnósticos e chamadas interrompidas
+também podem consumir quota; esses totais não representam o consumo integral da
+conta. Não houve medição de saldo diário de quota ou confirmação de fatura.
+
+Aprendizado operacional: respeitar tokens/minuto exige espaçamento mesmo quando
+requisições/dia parecem abundantes. Checkpoint evita repetir casos concluídos;
+falhas de quota não ativam modelo pago nem tornam a avaliação aprovada.

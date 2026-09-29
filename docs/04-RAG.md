@@ -1,0 +1,259 @@
+# RAG — etapa 6
+
+Status: engine, recuperação e primeira medição de fidelidade implementados.
+Schema abaixo aprovado por Enzo em 27/09/2026 antes da migration 0005.
+
+## Plano da etapa
+
+1. Separar conhecimento público de conteúdo privado e revisar o schema.
+2. Validar fastembed multilíngue, tokenizer real, modelo de 384 dimensões e RAM.
+3. Implementar chunking por seção/frase, alvo 400–480 tokens e overlap de 15%.
+4. Indexar documentos com origem, modelo e conteúdo rastreáveis.
+5. Recuperar por cosine e FTS português, combinar com RRF e reranquear top-20 → top-5.
+6. Provar isolamento no Postgres, inclusive antes de ranking/reranking.
+7. Construir base autoral de 200 textos e dataset dourado de 40 perguntas.
+8. Medir hit@5/MRR, comparação com reranking e faithfulness; integrar checks ao CI.
+
+Não usar recuperação vetorial para somas, saldos ou valores financeiros exatos.
+Modelo de embedding é um mapa: textos parecidos ficam próximos, mas proximidade
+não prova igualdade nem autoriza calcular dinheiro. As 384 coordenadas são o
+formato do modelo escolhido, não 384 categorias financeiras interpretáveis.
+
+## Do texto à fonte
+
+Imagine uma biblioteca em que cada parágrafo ganha um endereço num mapa. O
+encoder transforma texto em 384 números; textos com sentido próximo tendem a
+apontar para direções próximas. Cosine compara essas direções, não verifica
+verdade. Uma frase sobre dívida quitada pode ficar perto de outra sobre dívida
+em aberto. O vetor não é cifra: pode revelar informação sem guardar texto literal.
+
+Um token é uma unidade do tokenizer, frequentemente parte de palavra. Contar
+caracteres ou palavras não substitui contar tokens reais do modelo. Por isso
+o mesmo tokenizer acompanha chunking e embedding, e textos acima da janela
+são recusados em vez de truncados silenciosamente pelo nosso encoder.
+
+```mermaid
+flowchart TD
+    D[Documento] --> C[Seções e frases com tokenizer]
+    C --> E[Embedding local de 384 dimensões]
+    E --> I[Índice com origem e modelo]
+    Q[Pergunta conceitual] --> V[Vetor da pergunta]
+    Q --> T[Termos FTS português]
+    I --> A[Escopo público ou usuário autorizado]
+    A --> V
+    A --> T
+    V --> R[RRF dos rankings]
+    T --> R
+    R --> O[Reranker opcional: top 20 para 5]
+    R --> F[Fontes com chunk_id]
+    O --> F
+```
+
+Cortar no meio de uma condição pode separar uma regra de sua exceção. O chunker
+preserva seções e tenta terminar em frases; overlap repete contexto entre trechos
+da mesma seção, limitado a 15% do alvo. Frases longas caem para palavras inteiras.
+Não há overlap entre títulos distintos, nem preenchimento de documentos curtos.
+O alvo de 480 deixa espaço para prefixo e tokens especiais na janela de 512.
+
+FTS encontra flexões e termos exatos, enquanto o vetor ajuda com paráfrases.
+FTS nativo com ts_rank_cd não é BM25. RRF funde posições porque suas pontuações
+não têm a mesma escala. O cross-encoder lê pergunta e trecho juntos para
+reordenar candidatos; não encontra uma fonte ausente do top-20. A medição abaixo
+mostra por que adicionar essa etapa não garante melhora em português.
+
+Já “quanto gastei?” é uma tarefa de livro-caixa: selecionar registros e somar
+centavos. Um vizinho no mapa pode falar de gastos parecidos e omitir lançamentos.
+O RAG serve para explicar o conceito e recuperar contexto; valores pessoais
+exatos precisam de SQL autorizado e conferência de origem antes da apresentação.
+
+## Checkpoint de schema proposto
+
+Criar `knowledge_chunks` exclusivamente para material público autoral do repositório:
+
+| Coluna | Tipo e regra |
+| --- | --- |
+| id | UUID, chave primária estável por slug/posição |
+| slug | varchar(160), identificador do documento |
+| position | inteiro >= 0; único com slug |
+| section | varchar(200), título usado na citação |
+| content | text público, não cifrado |
+| content_digest | varchar(64), SHA-256 do texto |
+| embedding | vector(384), obrigatório |
+| embedding_model | varchar(120), identificador/versionamento do encoder |
+| search_vector | tsvector gerado com configuração portuguese; índice GIN |
+
+O papel runtime terá somente SELECT nessa tabela. Atualização da base pública é
+comando administrativo explícito; uploads não podem escrever nela. Não adicionar
+ANN inicialmente: cosine exato evita candidatos de outro usuário antes do filtro.
+
+Adicionar a `chunks` somente `embedding_model`, varchar(120), opcional. Chunks
+antigos com embedding sem identificação não entram na nova busca até reindexar.
+Manter ciphertext, vínculo com documento, usuário e RLS existentes. Nenhuma nova
+coluna privada de texto/tsvector em claro será persistida.
+
+Trade-off: um índice FTS privado persistente revelaria lexemas apesar da cifragem
+do texto. A proposta é FTS privado transitório sobre o conjunto autorizado e
+limitado, após decifrar; isso exige controlar logs de parâmetros e medir o custo.
+Não apresentar essa busca como indexada em disco nem varrer usuários alheios.
+A busca pública usa seu índice GIN; a privada preserva a fronteira de usuário.
+
+O checkpoint recebeu aprovação explícita. A migration 0005 implementa somente
+essa proposta; permissões de escrita em tabelas privadas não foram ampliadas.
+
+## Chunking iniciado
+
+`chunk_markdown` mantém seções e usa frases como unidades. Frases maiores que a
+janela são repartidas por palavras, sem cortar caracteres. Cada chunk tem no
+máximo 480 tokens contados pelo tokenizer recebido, sem truncamento/padding.
+Os 32 tokens restantes da janela E5 de 512 ficam disponíveis para prefixo e tokens
+especiais; o encoder confere o limite final.
+
+Overlap é uma cauda de palavras de até 15% do alvo, dentro da mesma seção. Pode
+ser menor quando uma frase inteira precisa caber; não duplicamos metade de um
+documento só para atingir uma porcentagem exata. Últimos chunks podem ser curtos.
+Textos vazios não geram chunks, palavras indivisíveis grandes demais são recusadas.
+
+`fastembed` substitui código próprio de inferência ONNX; `tokenizers` fornece a
+contagem real usada no chunking. Ambos estão fixados no lockfile. A versão 0.8.1
+do fastembed não lista E5-small diretamente; registramos o modelo
+ONNX oficial, sem usar código remoto de Python. Reranker leve em inglês foi
+medido em português, sem ganho nesta amostra. Jina v2 multilíngue tem licença não
+comercial e não será escolhido automaticamente para o SaaS.
+
+Referências: [modelo E5-small e licença MIT](https://huggingface.co/intfloat/multilingual-e5-small),
+[modelos fastembed](https://qdrant.github.io/fastembed/examples/Supported_Models/).
+
+Encoder local: E5-small com ONNX quantizado oficial, mean pooling e normalização.
+O registro usa 384 dimensões e identifica o artefato pelo SHA-256 dos pesos; trocar
+os pesos exige reindexar, pois não misturamos espaços vetoriais. Prefixos `query:`
+e `passage:` fazem parte do contrato do modelo, inclusive em português. Cada
+entrada é conferida com tokens especiais antes de inferir; não aceitar truncamento.
+
+Primeiro ensaio local em 27/09/2026: dois textos sintéticos geraram dois vetores
+de 384 dimensões; download e inferência juntos levaram 12,04 s. Não é benchmark
+de latência aquecida nem prova de RAM em hospedagem gratuita. Nenhum texto foi
+enviado para inferência externa; a rede foi usada somente para baixar pesos públicos.
+
+## Fusão e métricas
+
+RRF funciona como votação pela posição, evitando somar distâncias vetoriais com
+scores textuais que têm escalas diferentes. Cada lista concede `1/(60+posição)`;
+duplicatas na mesma lista não ganham votos extras. Empates usam ID estável.
+`hit@5` é a fração de perguntas com pelo menos uma referência esperada no top-5.
+MRR usa o inverso da posição da primeira referência correta; ausência vale zero.
+Essas funções estão testadas, mas não representam avaliação do corpus ainda.
+
+## Busca híbrida
+
+`search` combina cosine exato e FTS português com RRF. Os candidatos públicos
+usam o índice GIN. Chunks privados são filtrados por usuário/modelo antes de
+decifrar e calcular ranking; a consulta vetorial usa CTE materializada autorizada.
+FTS privado usa dados transitórios parametrizados, sem coluna textual persistente.
+Teto inicial: 1000 chunks privados por usuário, com erro explícito ao exceder.
+
+Antes de enviar qualquer pergunta ou texto privado ao Postgres, verificamos que logs de
+statements, duração e parâmetros em erro estejam desativados. O engine também
+oculta parâmetros. Reranker e código chamador só receberão candidatos autorizados.
+Embeddings e memória RAM não equivalem a ciphertext: essa exposição operacional
+continua exigindo ambiente protegido, sem logs externos de payload.
+Essa verificação ocorre antes da busca pública também: uma pergunta pode conter
+informação pessoal mesmo quando o usuário ainda não tem chunks privados.
+
+## Indexação
+
+`index_public` é administrativo e substitui atomicamente os chunks de um slug.
+`index_private` aceita PDF/nota/sumário, nunca transações CSV/OFX. Decifra sob
+contexto autorizado, faz inferência local fora do lock e revalida dono, exclusão
+e digest antes de gravar. Reindexação substitui somente o documento daquele dono;
+IDs estáveis por documento/posição permitem citar a origem. Não é histórico de
+versões: uma edição exige invalidar respostas anteriores que dependem do texto.
+
+`POST /rag/documents/{id}/index` indexa documento próprio; `POST /rag/search`
+recebe pergunta e opção `rerank` (padrão false após avaliação). Bearer e conta ativa obrigatórios,
+rate limit antes da inferência, resposta sem cache HTTP. IDs de dono não são entrada.
+Cada resultado contém chunk_id, source, source_id, section e conteúdo autorizado.
+São fontes recuperadas, não afirmações financeiras geradas por LLM.
+
+Reranking usa MiniLM-L6 Apache-2.0 via fastembed: recebe apenas os 20 candidatos
+autorizados e devolve cinco. É modelo treinado principalmente em inglês; ganho em
+português ainda precisa de medição. O cross-encoder tem janela própria e pode
+truncar pares longos; isso afeta ranking, não a fonte armazenada/citada. Comparar
+sempre RRF puro e reranking no corpus, sem prometer melhora por usar mais um modelo.
+
+## Primeira avaliação real — 27/09/2026
+
+Corpus: 200 documentos autorais curtos; dataset dourado: 40 perguntas, respostas
+esperadas e slugs relevantes. `make rag-index` indexa a base pública versionada
+com conexão administrativa; `make rag-eval` usa exclusivamente `tato_test`.
+
+| Modo | hit@5 | MRR no top-5 |
+| --- | --- | --- |
+| RRF | 0,975 (39/40) | 0,83542 |
+| RRF + MiniLM-L6 | 0,925 (37/40) | 0,80417 |
+
+O reranker piorou a recuperação em português nesta amostra; foi desativado por
+padrão e mantido como opção mensurável. Não alteramos perguntas para esconder
+falhas. Corpus/perguntas autorais não substituem avaliação independente.
+Tempos locais: indexação 6,772 s; 40 buscas SQL 0,367 s; 40 rerankings incluindo
+carga do modelo 14,098 s. Não são latências de produção nem teste de carga.
+Faithfulness remota medida na retomada de 28/09/2026, conforme resultados abaixo.
+Detalhes de execução em `evals/README.md`.
+
+## Fidelidade com Groq real — 28/09/2026
+
+Modelo `openai/gpt-oss-20b` como gerador e judge; temperatura zero, até 2048 tokens
+de saída por chamada. Fontes públicas do RRF, mesmos 200 documentos e 40 perguntas.
+Recuperação antes/depois do ajuste de geração permaneceu em hit@5 0,975 e MRR
+0,83542; reranking em 0,925 e 0,80417. Não alteramos corpus nem perguntas.
+
+| Métrica | Observado |
+| --- | --- |
+| Afirmações sustentadas segundo o judge | 71/75 (94,67%) |
+| Perguntas consideradas respondidas pelo judge | 40/40 |
+| Tokens de entrada dos casos completos | 84.397 |
+| Tokens de saída dos casos completos | 41.122 |
+
+Falhas preservadas: q13, afirmação 2; q20, afirmação 3; q21, afirmações 4 e 5.
+As perguntas tratam de taxas equivalentes, percentual do CDI e tipos de risco.
+`answer_rate=1` não elimina essas falhas: responder à pergunta e sustentar cada
+afirmação são critérios distintos. Resumo em `evals/faithfulness-measurement.json`.
+
+Um controle sintético separado apresentou uma afirmação que contradizia a fonte:
+o judge a rejeitou (`supported=false`, `answers_question=false`). Um controle
+não prova robustez geral. Usar o mesmo modelo nas duas funções traz viés; faltam
+avaliação humana independente e incerteza estatística de repetições. O relatório
+guarda vereditos/posições, não transcrições completas para auditoria semântica.
+
+O primeiro ensaio encontrou HTTP 429 (limite observado de 8000 tokens/minuto) e
+`json_validate_failed`. Espaçamento de 30 s entre perguntas e teto de saída maior
+permitiram concluir o ensaio. O CI continua validando recuperação real sem chave;
+o judge é remoto opt-in. A medição de 94,67% não é um selo de segurança para chat
+financeiro: os guardrails determinísticos continuam obrigatórios na etapa 7.
+
+### Variação observada no CI
+
+No SHA 43b9e4c, [push](https://github.com/enzozon/tato/actions/runs/36512445988)
+registrou MRR RRF 0,81250 e reranker 0,81667; o
+[PR](https://github.com/enzozon/tato/actions/runs/36512448126) reproduziu
+0,83542 e 0,80417. Hashes do corpus, perguntas e pesos foram iguais; hit@5
+permaneceu 0,975/0,925. A causa ambiental ainda não foi isolada. Quantização
+dependente de instruções da CPU é uma hipótese, não uma conclusão demonstrada.
+
+O teste inicialmente exigia também MRR não inferior em qualquer runner. O gate
+agora usa hit@5, conforme critério original da etapa, e mostra a diferença de MRR
+explicitamente. Valores de referência e falhas não foram removidos ou reduzidos.
+Antes de hospedar, validar encoder e índice no ambiente alvo; esta amostra não
+prova equivalência numérica entre CPUs nem permite misturar ambientes sem avaliação.
+
+## Citações e fidelidade
+
+`rag/faithfulness.py` exige uma lista de chunk_ids em cada afirmação do contrato
+de avaliação. IDs fora das fontes recuperadas invalidam a resposta. Isso prova
+origem permitida, não que o texto seja verdadeiro: o judge compara afirmação e
+trecho citado. O comando opt-in envia somente conteúdo público; fontes privadas
+são recusadas antes de qualquer chamada externa. O chat de produção é etapa 7.
+
+Perguntas, documentos e respostas avaliadas ficam em dados JSON separados das
+instruções fixas. Essa separação reduz confusão, mas não garante imunidade a prompt
+injection. A validação estrutural também não autoriza números financeiros: totais
+pessoais continuarão sujeitos à conferência determinística da camada SQL.

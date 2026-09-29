@@ -66,7 +66,7 @@ Integração com importação pessoal permanece bloqueada até revisão dos prov
 
 O teste de integração roda o Lua no Redis do Compose, verifica capacidade/TTL,
 simula indisponibilidade ao excluir e retoma a exclusão no PostgreSQL real.
-Nenhum teste usa credenciais de LLM. Os adapters são exercitados com transporte
+Testes automáticos locais não usam credenciais de LLM. Os adapters são exercitados com transporte
 HTTP simulado, incluindo timeout, resposta truncada, uso ausente e modelo pago.
 
 O timeout HTTP de 10 s limita cada espera de rede. Um prazo adicional de 15 s é
@@ -109,4 +109,7 @@ números ainda não conferidos.
 Não há conversão automática para modalidade paga. A confirmação no ambiente não
 é prova de plano: [preços Gemini](https://ai.google.dev/gemini-api/docs/pricing),
 [limites Groq](https://console.groq.com/docs/rate-limits) e painel precisam ser
-conferidos antes do primeiro ensaio. Uso remoto real ainda não foi medido.
+conferidos antes do primeiro ensaio. Após configurar Groq, o smoke sintético real
+passou: 287 tokens de entrada, 120 de saída, 483 ms reportados pela chamada.
+A etapa 6 mediu também geração/judge públicos; consumo e falhas em `04-RAG.md`.
+Gemini/OpenRouter continuam sem ensaio remoto. Dados pessoais seguem bloqueados.

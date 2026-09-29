@@ -64,6 +64,15 @@ restrito. Não use esse comando em dados reais. O CI prepara esse banco sozinho.
 
 ## Estado
 
+Etapa 6: indexação local E5-small (384 dimensões), busca híbrida Postgres/FTS/RRF,
+citações e reranking opcional. Base pública com 200 documentos e 40 perguntas:
+hit@5 RRF 0,975; reranker 0,925, portanto desativado por padrão. Rotas autenticadas
+`POST /rag/documents/{id}/index` e `POST /rag/search` retornam fontes autorizadas.
+Veja [RAG, medições e limites](docs/04-RAG.md). `make rag-index` carrega a base pública;
+`make rag-eval` exige banco descartável. Judge Groq real mediu 71/75 afirmações
+sustentadas (94,67%); quatro falhas permanecem documentadas. O judge é opt-in,
+enquanto o CI exige recuperação real. Chat de produção continua na etapa 7.
+
 Etapa 5: camada LLM com adapters Groq/Gemini/OpenRouter, fallback limitado,
 circuit breaker, validação Pydantic/semântica e cache Redis cifrado por usuário.
 Desativada por padrão; dados pessoais bloqueados. `make llm-smoke` permite ensaio
@@ -73,8 +82,8 @@ O chat e seu streaming continuam previstos para a etapa 7.
 Etapa 4: ingestão local CSV/OFX/PDF com centavos exatos, deduplicação, regras
 determinísticas e documento cifrado. Após `GET /me`, crie a origem com
 `POST /accounts`, regras opcionais com `POST /rules` e envie `POST /import`.
-Veja [formatos, contrato e limitações](docs/04-INGESTAO.md). Fallback LLM depende
-da etapa 5; fixtures sintéticas ainda precisam de validação com exports bancários.
+Veja [formatos, contrato e limitações](docs/04-INGESTAO.md). Fallback LLM em uploads
+pessoais permanece bloqueado; fixtures sintéticas ainda exigem exports bancários reais.
 
 Backend de sessão, perfil, onboarding, planos e exclusão recuperável da etapa 3:
 `GET /me`, `POST /me/onboarding` e `DELETE /me` exigem bearer Supabase; saúde
@@ -98,8 +107,8 @@ Commits seguem [AGENTS.md](AGENTS.md): uma ideia, corpo explicando o porquê e
 até 400 linhas de adições + remoções, exceto lockfiles e migrations autogeradas.
 
 O CI possui dois jobs: qualidade Python (via pre-commit) e infraestrutura local
-(Compose, migrations, pgvector, RLS, seeds e Redis em ambiente descartável).
+(Compose, migrations, pgvector, RLS, seeds, Redis e avaliação RAG real).
 Testes de integração são separados dos unitários, mas obrigatórios no CI.
 Dependabot roda mensalmente.
-Build do frontend/API Docker, evals RAG e auditorias adicionais entram com as etapas
+Build do frontend/API Docker e auditorias adicionais entram com as etapas
 correspondentes; não há jobs vazios que simulem essas verificações.

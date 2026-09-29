@@ -1,6 +1,6 @@
 export PYTHONPATH := apps/api
 
-.PHONY: sync dev check lint typecheck test infra-up infra-down hooks migrate db-init integration seed llm-smoke
+.PHONY: sync dev check lint typecheck test infra-up infra-down hooks migrate db-init integration seed llm-smoke rag-index rag-eval rag-judge rag-measure
 
 sync:
 	uv sync --locked
@@ -43,3 +43,15 @@ seed:
 
 llm-smoke:
 	uv run --locked --env-file .env python scripts/smoke_llm.py
+
+rag-index:
+	uv run --locked --env-file .env python scripts/index_knowledge.py
+
+rag-eval:
+	uv run --locked pytest -q -s evals/ -m eval
+
+rag-judge:
+	uv run --locked --env-file .env python scripts/eval_rag_judge.py
+
+rag-measure:
+	uv run --locked python scripts/measure_rag.py
