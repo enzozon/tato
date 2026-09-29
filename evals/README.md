@@ -8,7 +8,11 @@ Cria usuários sintéticos e remove os registros de avaliação ao terminar.
 
 O relatório completo fica em `test-results/rag-eval.json` (ignorado pelo Git),
 incluindo hashes dos dados, modelo, rankings por pergunta e tempos. O baseline
-versionado exige hit@5 e MRR pelo menos iguais aos medidos para ambos os modos.
+versionado exige hit@5 pelo menos igual ao medido para ambos os modos.
+MRR é reportado com desvio explícito contra a referência, sem exigir igualdade
+entre ambientes. No mesmo SHA, dois runners tiveram RRF MRR 0,83542 e 0,81250,
+mantendo hit@5 0,975. A origem ambiental da diferença não foi isolada; não houve
+alteração dos valores no baseline. Este gate segue o critério hit@5 do plano original.
 MRR é calculado no top-5, logo uma fonte fora dele recebe zero. `make check`
 continua rápido; o CI executa a avaliação real no job de infraestrutura.
 

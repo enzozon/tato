@@ -272,3 +272,9 @@ diagnósticos não estão integralmente contabilizados. Quota observada de 8000
 tokens/minuto mostrou o primeiro gargalo real do provedor. Nenhuma mudança paga.
 Recuperação antes/depois manteve os baselines. A pendência de chave/judge foi
 resolvida; PR 10 pode sair de rascunho após CI final. Sem merge ou etapa 7 nesta sessão.
+
+O CI final expôs variação no mesmo SHA: push com MRR RRF 0,81250 e PR com 0,83542,
+sem mudança de hit@5, corpus ou pesos. Causa ambiental não isolada; hipótese de
+quantização/CPU permanece aberta. Removida a exigência adicional de MRR invariável
+entre runners, mantendo o gate hit@5 solicitado e o desvio MRR visível no relatório.
+O baseline não foi reduzido. Portabilidade numérica precisa de validação no deploy.

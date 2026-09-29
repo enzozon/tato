@@ -230,6 +230,21 @@ permitiram concluir o ensaio. O CI continua validando recuperação real sem cha
 o judge é remoto opt-in. A medição de 94,67% não é um selo de segurança para chat
 financeiro: os guardrails determinísticos continuam obrigatórios na etapa 7.
 
+### Variação observada no CI
+
+No SHA 43b9e4c, [push](https://github.com/enzozon/tato/actions/runs/36512445988)
+registrou MRR RRF 0,81250 e reranker 0,81667; o
+[PR](https://github.com/enzozon/tato/actions/runs/36512448126) reproduziu
+0,83542 e 0,80417. Hashes do corpus, perguntas e pesos foram iguais; hit@5
+permaneceu 0,975/0,925. A causa ambiental ainda não foi isolada. Quantização
+dependente de instruções da CPU é uma hipótese, não uma conclusão demonstrada.
+
+O teste inicialmente exigia também MRR não inferior em qualquer runner. O gate
+agora usa hit@5, conforme critério original da etapa, e mostra a diferença de MRR
+explicitamente. Valores de referência e falhas não foram removidos ou reduzidos.
+Antes de hospedar, validar encoder e índice no ambiente alvo; esta amostra não
+prova equivalência numérica entre CPUs nem permite misturar ambientes sem avaliação.
+
 ## Citações e fidelidade
 
 `rag/faithfulness.py` exige uma lista de chunk_ids em cada afirmação do contrato
