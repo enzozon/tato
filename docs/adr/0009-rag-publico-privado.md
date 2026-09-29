@@ -34,4 +34,5 @@ Escala maior exige revisar esse teto e medir alternativas, sem relaxar isolament
 Indexação revalida exclusão e digest após inferência; IDs estáveis não preservam
 versões antigas. Atualização de fonte exige invalidar respostas dependentes.
 O corpus e as perguntas são autorais, portanto têm viés de construção conjunta.
-Faithfulness por LLM é avaliação separada e permanece pendente sem chaves.
+Faithfulness por LLM é avaliação separada; estava pendente na decisão inicial.
+Em 28/09/2026 foi medida com Groq: 94,67%, com falhas preservadas em `04-RAG.md`.

@@ -250,3 +250,25 @@ por este RAG. Nenhum gasto, deploy ou acesso a dados reais de usuários.
 Revisão final antecipou a checagem de logs do Postgres: perguntas também podem
 ser privadas, mesmo quando a busca só retorna conteúdo público. Teste bloqueia
 o envio de qualquer parâmetro antes de confirmar a configuração de logs.
+
+## Etapa 6 — pendência de avaliação remota resolvida — 28/09/2026
+
+Enzo adicionou Groq no `.env` e autorizou continuar. Presença da chave e flags
+conferidas sem expor valores. Smoke sintético real aprovado; nenhum dado privado
+foi enviado. O primeiro judge parou após dois casos; diagnósticos encontraram
+HTTP 429 e JSON inválido. Aumentar teto de saída para 2048 resolveu o caso inválido
+observado; intervalo de 30 s permitiu completar o conjunto sem novas interrupções.
+Adicionada retomada com identidade de dados/código/modelos e teste que prova
+que casos completos não são repetidos. Suíte: 155 testes, cobertura 84,26%.
+
+Resultado Groq `openai/gpt-oss-20b`: 71 de 75 afirmações sustentadas (94,67%),
+40 perguntas consideradas respondidas. Falhas em q13, q20 e q21 preservadas.
+Controle separado com afirmação contraditória foi rejeitado pelo judge.
+Gerador e avaliador usam o mesmo modelo; isso limita a independência da medição.
+Não há garantia de segurança para números financeiros: chat continua etapa 7.
+
+Consumo dos casos completos: 84.397 tokens de entrada, 41.122 de saída; demais
+diagnósticos não estão integralmente contabilizados. Quota observada de 8000
+tokens/minuto mostrou o primeiro gargalo real do provedor. Nenhuma mudança paga.
+Recuperação antes/depois manteve os baselines. A pendência de chave/judge foi
+resolvida; PR 10 pode sair de rascunho após CI final. Sem merge ou etapa 7 nesta sessão.

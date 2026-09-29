@@ -21,8 +21,9 @@ independente nem perguntas reais de usuários. hit@5 encontra ao menos uma fonte
 aceita, não mede cobertura de todas as partes de uma pergunta. Não reduzir o
 baseline para esconder regressão: revisar causa, exemplos e decisão explicitamente.
 Perguntas sobre totais pessoais exigem SQL, não esse benchmark conceitual.
-Faithfulness ainda não foi medida por LLM; um gate de recuperação verde não é
-aprovação de respostas geradas. Chaves/quota ausentes não contam como sucesso.
+Faithfulness foi medida com Groq real: 71/75 afirmações sustentadas (94,67%).
+Um gate de recuperação verde não é aprovação de respostas geradas.
+Chaves/quota ausentes não contam como sucesso.
 
 ## Judge opt-in
 
@@ -31,7 +32,8 @@ recuperados para gerar respostas com citações e julgar cada afirmação. Preci
 da habilitação gratuita da camada LLM e de chave local configurada. São até 80
 gerações lógicas para 40 perguntas, além dos retries/fallbacks limitados do router.
 Sem provedor, sai com erro e registra `status=incomplete`; não usa respostas
-falsas nem declara aprovação. Em 27/09/2026, as três chaves estavam ausentes.
+falsas nem declara aprovação. A primeira medição completa usou somente Groq;
+o resumo está em `faithfulness-measurement.json`, com falhas e consumo registrados.
 
 Após configurar Groq, o primeiro ensaio confirmou autenticação, mas encontrou
 limite de tokens por minuto e `json_validate_failed`. O teto de saída de gerador
@@ -52,7 +54,8 @@ Faithfulness é a fração de afirmações apoiadas nos trechos citados; `answer
 mede respostas consideradas corretas frente à referência dourada. Abstenções
 não produzem afirmações para o denominador e reduzem answer_rate. Se nenhuma
 afirmação existir, a medição falha. Resultado baixo é registrado, não mascarado
-por fallback. Não existe baseline de judge até executar uma medição real.
+por fallback. A medição versionada é referência observada, não limiar automático
+de aprovação: há quatro afirmações sem suporte, mesmo com answer_rate de 1,0.
 
 O judge pode compartilhar modelo com o gerador e errar; não é prova formal nem
 substitui revisão humana. Testes unitários validam contratos, recusa de fontes

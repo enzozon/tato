@@ -69,8 +69,9 @@ citações e reranking opcional. Base pública com 200 documentos e 40 perguntas
 hit@5 RRF 0,975; reranker 0,925, portanto desativado por padrão. Rotas autenticadas
 `POST /rag/documents/{id}/index` e `POST /rag/search` retornam fontes autorizadas.
 Veja [RAG, medições e limites](docs/04-RAG.md). `make rag-index` carrega a base pública;
-`make rag-eval` exige banco descartável. Judge LLM preparado, ainda não medido por
-ausência de chaves. Não há respostas de chat de produção nesta etapa.
+`make rag-eval` exige banco descartável. Judge Groq real mediu 71/75 afirmações
+sustentadas (94,67%); quatro falhas permanecem documentadas. O judge é opt-in,
+enquanto o CI exige recuperação real. Chat de produção continua na etapa 7.
 
 Etapa 5: camada LLM com adapters Groq/Gemini/OpenRouter, fallback limitado,
 circuit breaker, validação Pydantic/semântica e cache Redis cifrado por usuário.

@@ -1,6 +1,6 @@
 # RAG — etapa 6
 
-Status: engine e avaliação de recuperação implementados; judge remoto pendente.
+Status: engine, recuperação e primeira medição de fidelidade implementados.
 Schema abaixo aprovado por Enzo em 27/09/2026 antes da migration 0005.
 
 ## Plano da etapa
@@ -106,7 +106,7 @@ essa proposta; permissões de escrita em tabelas privadas não foram ampliadas.
 janela são repartidas por palavras, sem cortar caracteres. Cada chunk tem no
 máximo 480 tokens contados pelo tokenizer recebido, sem truncamento/padding.
 Os 32 tokens restantes da janela E5 de 512 ficam disponíveis para prefixo e tokens
-especiais; o encoder ainda deverá conferir o limite final.
+especiais; o encoder confere o limite final.
 
 Overlap é uma cauda de palavras de até 15% do alvo, dentro da mesma seção. Pode
 ser menor quando uma frase inteira precisa caber; não duplicamos metade de um
@@ -115,9 +115,9 @@ Textos vazios não geram chunks, palavras indivisíveis grandes demais são recu
 
 `fastembed` substitui código próprio de inferência ONNX; `tokenizers` fornece a
 contagem real usada no chunking. Ambos estão fixados no lockfile. A versão 0.8.1
-do fastembed não lista E5-small diretamente; será necessário registrar o modelo
-ONNX oficial, sem usar código remoto de Python. Reranker leve em inglês precisa
-ser medido em português; não assumir ganho. Jina v2 multilíngue tem licença não
+do fastembed não lista E5-small diretamente; registramos o modelo
+ONNX oficial, sem usar código remoto de Python. Reranker leve em inglês foi
+medido em português, sem ganho nesta amostra. Jina v2 multilíngue tem licença não
 comercial e não será escolhido automaticamente para o SaaS.
 
 Referências: [modelo E5-small e licença MIT](https://huggingface.co/intfloat/multilingual-e5-small),
@@ -196,7 +196,39 @@ padrão e mantido como opção mensurável. Não alteramos perguntas para escond
 falhas. Corpus/perguntas autorais não substituem avaliação independente.
 Tempos locais: indexação 6,772 s; 40 buscas SQL 0,367 s; 40 rerankings incluindo
 carga do modelo 14,098 s. Não são latências de produção nem teste de carga.
-Faithfulness por LLM ainda não executada. Detalhes e limitações em `evals/README.md`.
+Faithfulness remota medida na retomada de 28/09/2026, conforme resultados abaixo.
+Detalhes de execução em `evals/README.md`.
+
+## Fidelidade com Groq real — 28/09/2026
+
+Modelo `openai/gpt-oss-20b` como gerador e judge; temperatura zero, até 2048 tokens
+de saída por chamada. Fontes públicas do RRF, mesmos 200 documentos e 40 perguntas.
+Recuperação antes/depois do ajuste de geração permaneceu em hit@5 0,975 e MRR
+0,83542; reranking em 0,925 e 0,80417. Não alteramos corpus nem perguntas.
+
+| Métrica | Observado |
+| --- | --- |
+| Afirmações sustentadas segundo o judge | 71/75 (94,67%) |
+| Perguntas consideradas respondidas pelo judge | 40/40 |
+| Tokens de entrada dos casos completos | 84.397 |
+| Tokens de saída dos casos completos | 41.122 |
+
+Falhas preservadas: q13, afirmação 2; q20, afirmação 3; q21, afirmações 4 e 5.
+As perguntas tratam de taxas equivalentes, percentual do CDI e tipos de risco.
+`answer_rate=1` não elimina essas falhas: responder à pergunta e sustentar cada
+afirmação são critérios distintos. Resumo em `evals/faithfulness-measurement.json`.
+
+Um controle sintético separado apresentou uma afirmação que contradizia a fonte:
+o judge a rejeitou (`supported=false`, `answers_question=false`). Um controle
+não prova robustez geral. Usar o mesmo modelo nas duas funções traz viés; faltam
+avaliação humana independente e incerteza estatística de repetições. O relatório
+guarda vereditos/posições, não transcrições completas para auditoria semântica.
+
+O primeiro ensaio encontrou HTTP 429 (limite observado de 8000 tokens/minuto) e
+`json_validate_failed`. Espaçamento de 30 s entre perguntas e teto de saída maior
+permitiram concluir o ensaio. O CI continua validando recuperação real sem chave;
+o judge é remoto opt-in. A medição de 94,67% não é um selo de segurança para chat
+financeiro: os guardrails determinísticos continuam obrigatórios na etapa 7.
 
 ## Citações e fidelidade
 
