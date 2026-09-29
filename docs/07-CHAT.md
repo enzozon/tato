@@ -45,6 +45,13 @@ interrompidos serão finalizados como falha, sem executar gravações de novo.
 Histórico recupera os últimos turnos concluídos com limite de texto; apagar
 a conta remove também todos os turnos. A migration `0006` implementa esse contrato.
 
+`chat_history.reserve_turn` aplica a quota sob `account_session`. Um identificador
+repetido com conteúdo diferente retorna 409; o mesmo conteúdo recupera o estado
+anterior antes de checar quota. Pending com cinco minutos de idade vira failed
+na repetição, sem reexecutar ações. A finalização revalida estado e exclusão da
+conta na mesma transação de eventual lançamento. O histórico carrega até dez
+turnos completos e 12 mil caracteres, preservando pares inteiros.
+
 ## Limites atuais
 
 Os adapters de LLM recusam dados pessoais. A avaliação da etapa 6 autorizou

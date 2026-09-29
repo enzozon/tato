@@ -300,3 +300,8 @@ Migration `0006` aplicada aos bancos locais `tato_test` e `tato`; sem drift.
 Upgrade/downgrade/upgrade testado somente em `tato_test`. Isolamento de leitura
 e escrita, unicidade por usuário, estados válidos e cascade cobertos em Postgres.
 Verificação: 162 testes locais, cobertura 84,61%, 29 integrações aprovadas.
+
+Reserva de mensagens implementada sob lock por usuário. Repetições não gastam
+quota; pedidos antigos de outro mês não entram na contagem UTC. Histórico é
+cifrado e limitado; retomada de pending antigo não repete efeitos. Testes reais
+disputam a última vaga com threads, tanto com IDs iguais quanto diferentes.
