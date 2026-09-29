@@ -278,3 +278,17 @@ sem mudança de hit@5, corpus ou pesos. Causa ambiental não isolada; hipótese 
 quantização/CPU permanece aberta. Removida a exigência adicional de MRR invariável
 entre runners, mantendo o gate hit@5 solicitado e o desvio MRR visível no relatório.
 O baseline não foi reduzido. Portabilidade numérica precisa de validação no deploy.
+
+## Etapa 7 — início em 28/09/2026
+
+PR #10 integrado por autorização do Enzo, preservando os commits, após os quatro
+checks verdes no SHA `1c31eaf`. Merge `8f80267`; branch `etapa-07-chat-intencao`.
+Plano e proposta de tabela `chat_turns` em `07-CHAT.md`; checkpoint solicitado,
+sem migration enquanto não houver aprovação.
+
+Primeira ferramenta analítica reutiliza `expense_total`, recebe intervalo tipado
+e rejeita SQL livre e proprietário no payload. Resultado leva parâmetros da fonte;
+redação monetária usa somente inteiros. Nenhuma chamada externa de LLM adicionada.
+Verificação: 162 testes unitários/HTTP, cobertura 84,49%, ruff e mypy aprovados;
+teste de integração da ferramenta/repositório aprovado em PostgreSQL real.
+Histórico, roteamento, lançamento e SSE continuam pendentes nesta etapa.
