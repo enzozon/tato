@@ -17,7 +17,7 @@ ferramenta permitida, mas não escreve SQL nem calcula o valor apresentado.
 Estimativa: 10–12 commits pequenos, cada um validado com `make check`.
 Não adicionaremos dependências para os contratos e ferramentas iniciais.
 
-## Schema proposto — aguardando aprovação
+## Schema aprovado em 29/09/2026
 
 Uma tabela `chat_turns` representa pergunta e resposta juntas. Isso evita duas
 tabelas para um histórico único por usuário; conversas separadas ficam fora
@@ -43,7 +43,7 @@ Repetir o mesmo `request_id` não consome novamente nem repete lançamentos.
 Reserva e contagem usam o lock por usuário que já existe. Turnos pendentes
 interrompidos serão finalizados como falha, sem executar gravações de novo.
 Histórico recupera os últimos turnos concluídos com limite de texto; apagar
-a conta remove também todos os turnos. Nenhuma migration foi criada ainda.
+a conta remove também todos os turnos. A migration `0006` implementa esse contrato.
 
 ## Limites atuais
 

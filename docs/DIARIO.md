@@ -292,3 +292,11 @@ redação monetária usa somente inteiros. Nenhuma chamada externa de LLM adicio
 Verificação: 162 testes unitários/HTTP, cobertura 84,49%, ruff e mypy aprovados;
 teste de integração da ferramenta/repositório aprovado em PostgreSQL real.
 Histórico, roteamento, lançamento e SSE continuam pendentes nesta etapa.
+
+### Schema do chat aprovado — 29/09/2026
+
+Enzo aprovou `chat_turns` e a contagem de pedidos aceitos, inclusive falhas.
+Migration `0006` aplicada aos bancos locais `tato_test` e `tato`; sem drift.
+Upgrade/downgrade/upgrade testado somente em `tato_test`. Isolamento de leitura
+e escrita, unicidade por usuário, estados válidos e cascade cobertos em Postgres.
+Verificação: 162 testes locais, cobertura 84,61%, 29 integrações aprovadas.
