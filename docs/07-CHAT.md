@@ -64,3 +64,9 @@ SSE só poderá transmitir conteúdo após validação: transmitir tokens brutos
 descobrir um número inventado depois seria tarde demais. A primeira ferramenta
 é `expense_total`, com intervalo `[start, end)` e centavos vindos do SQL existente.
 Sua citação identifica a ferramenta e os parâmetros, sem expor SQL interno.
+
+O classificador local reconhece despesas do mês atual/anterior, conceitos com
+"o que é" e lançamentos como "gastei 42,05 no mercado ontem". Valores ambíguos
+ou múltiplos lançamentos pedem esclarecimento. Datas relativas usam a data de
+referência do servidor. A interface de classificação LLM usa structured output
+e mantém classificação pessoal, portanto continua bloqueada pela política atual.
