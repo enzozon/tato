@@ -60,7 +60,9 @@ def add_transaction(
     return session.scalar(statement)
 
 
-def expense_total(session: Session, owner: UUID, start: date, end: date) -> int:
+def expense_total(
+    session: Session, owner: UUID, start: date, end: date, *, category_id: UUID | None = None
+) -> int:
     """Centavos positivos de despesas no intervalo [start, end)."""
     if end <= start:
         raise ValueError("O fim deve ser posterior ao início.")
@@ -70,6 +72,8 @@ def expense_total(session: Session, owner: UUID, start: date, end: date) -> int:
         Transaction.booked_on >= start,
         Transaction.booked_on < end,
     )
+    if category_id is not None:
+        statement = statement.where(Transaction.category_id == category_id)
     return int(session.exec(statement).one())
 
 

@@ -70,3 +70,7 @@ O classificador local reconhece despesas do mês atual/anterior, conceitos com
 ou múltiplos lançamentos pedem esclarecimento. Datas relativas usam a data de
 referência do servidor. A interface de classificação LLM usa structured output
 e mantém classificação pessoal, portanto continua bloqueada pela política atual.
+
+Os contratos separam resposta, fonte SQL, prévia de lançamento e trechos citados.
+Filtro por categoria continua no SQL. As frases da persona ficam exclusivamente
+em `packages/mascot/identity.json`, inclusive orientação para confirmar a prévia.

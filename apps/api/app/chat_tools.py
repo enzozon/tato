@@ -15,6 +15,7 @@ class ExpenseQuery(BaseModel):
     tool: Literal["expense_total"]
     start: date
     end: date
+    category_id: UUID | None = None
 
     @model_validator(mode="after")
     def valid_period(self) -> Self:
@@ -31,9 +32,14 @@ class ExpenseResult(BaseModel):
 
 def run_expense_query(session: Session, owner: UUID, query: ExpenseQuery) -> ExpenseResult:
     """O chamador fornece a sessão RLS e o proprietário autenticado."""
+    amount = (
+        expense_total(session, owner, query.start, query.end)
+        if query.category_id is None
+        else expense_total(session, owner, query.start, query.end, category_id=query.category_id)
+    )
     return ExpenseResult(
         source=query,
-        amount_cents=expense_total(session, owner, query.start, query.end),
+        amount_cents=amount,
     )
 
 
