@@ -278,3 +278,52 @@ sem mudança de hit@5, corpus ou pesos. Causa ambiental não isolada; hipótese 
 quantização/CPU permanece aberta. Removida a exigência adicional de MRR invariável
 entre runners, mantendo o gate hit@5 solicitado e o desvio MRR visível no relatório.
 O baseline não foi reduzido. Portabilidade numérica precisa de validação no deploy.
+
+## Etapa 7 — início em 28/09/2026
+
+PR #10 integrado por autorização do Enzo, preservando os commits, após os quatro
+checks verdes no SHA `1c31eaf`. Merge `8f80267`; branch `etapa-07-chat-intencao`.
+Plano e proposta de tabela `chat_turns` em `07-CHAT.md`; checkpoint solicitado,
+sem migration enquanto não houver aprovação.
+
+Primeira ferramenta analítica reutiliza `expense_total`, recebe intervalo tipado
+e rejeita SQL livre e proprietário no payload. Resultado leva parâmetros da fonte;
+redação monetária usa somente inteiros. Nenhuma chamada externa de LLM adicionada.
+Verificação: 162 testes unitários/HTTP, cobertura 84,49%, ruff e mypy aprovados;
+teste de integração da ferramenta/repositório aprovado em PostgreSQL real.
+Histórico, roteamento, lançamento e SSE continuam pendentes nesta etapa.
+
+### Schema do chat aprovado — 29/09/2026
+
+Enzo aprovou `chat_turns` e a contagem de pedidos aceitos, inclusive falhas.
+Migration `0006` aplicada aos bancos locais `tato_test` e `tato`; sem drift.
+Upgrade/downgrade/upgrade testado somente em `tato_test`. Isolamento de leitura
+e escrita, unicidade por usuário, estados válidos e cascade cobertos em Postgres.
+Verificação: 162 testes locais, cobertura 84,61%, 29 integrações aprovadas.
+
+Reserva de mensagens implementada sob lock por usuário. Repetições não gastam
+quota; pedidos antigos de outro mês não entram na contagem UTC. Histórico é
+cifrado e limitado; retomada de pending antigo não repete efeitos. Testes reais
+disputam a última vaga com threads, tanto com IDs iguais quanto diferentes.
+
+### Fluxos de conversa implementados — 03/10/2026
+
+Quatro intenções conectadas ao histórico e à API: despesas SQL com categoria,
+conceitos com fontes isoladas, prévia/confirmar lançamento e conversa local.
+Identidade/frases do mascote centralizadas em `packages/mascot/identity.json`.
+SSE entrega status e resposta validada inteira; não transmite tokens crus.
+Testes reais cobrem confirmação concorrente, rollback se a resposta não for
+salva, fonte maliciosa inerte e exclusão durante processamento.
+
+Docker estava desligado nesta retomada e foi iniciado; nenhuma alteração remota
+ou contratação. Verificação local: 181 testes, cobertura 83,39%, 38 integrações.
+Uma revisão encontrou que `Literal[True]` aceita `1`; corrigido antes da conversão.
+Na separação de commits, o hook ocultou o registro de rotas ainda não staged e
+recusou testes dependentes. Os lotes foram isolados e revalidados; nenhum hook
+foi pulado. Maior commit desta retomada: 394 linhas.
+
+Limite explícito: política pessoal permanece bloqueada e conversa livre por IA
+não está habilitada. Classificador estruturado possui fallback local limitado;
+conceitos mostram fontes em vez de gerar afirmações não verificadas. Detalhes
+no ADR 0010. Frontend continua etapa 9. PR #11 permanece sem merge; CI remoto
+será revalidado após envio final. Não avançar à etapa 8 automaticamente.
