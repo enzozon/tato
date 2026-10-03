@@ -140,3 +140,18 @@ Lançamentos importados já alimentam o mesmo ledger consultado pelo chat.
 `account_id` também filtra consultas analíticas e é validado contra o dono da
 sessão. Para períodos históricos, use `quanto gastei de 2026-01-01 a 2026-01-31?`:
 as duas datas da pergunta são inclusivas; o SQL recebe fim exclusivo no dia seguinte.
+
+O cliente do chat usa `POST /import/preview` com multipart (`account_id`, `kind`,
+`file`, `mapping` opcional). A resposta traz período, contagem, créditos/débitos
+em centavos, até 50 linhas e `receipt` assinado, válido por 15 minutos. Nada é
+gravado. Para confirmar, reenvia o mesmo arquivo/campos e `receipt` para
+`POST /import/confirm`. A assinatura vincula usuário, conta, bytes, mapeamento
+e resultado do parser; mudança ou expiração exige nova prévia. A confirmação
+revalida autorização, plano e deduplicação na transação de persistência.
+Totais da prévia são brutos, antes da deduplicação. O endpoint legado `/import`
+continua disponível para clientes existentes; o fluxo novo exige revisão.
+
+PDF de conta não pode passar pelo parser genérico de fatura: sinais diferentes
+inverteriam receitas/despesas. Layout não suportado é recusado explicitamente.
+Os exemplos locais ficam ignorados no Git, sem cópias em fixtures ou envio ao LLM.
+Free permanece com uma fonte; múltiplas contas usam Pro sintético em testes locais.

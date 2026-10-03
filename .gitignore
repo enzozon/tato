@@ -20,3 +20,5 @@ playwright-report/
 *.sqlite*
 .DS_Store
 Thumbs.db
+extratos_exemplo/
+extrato_exemplos/

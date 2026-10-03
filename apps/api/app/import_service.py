@@ -39,9 +39,14 @@ def active_account(session: Session, owner: UUID, account_id: UUID) -> None:
         raise HTTPException(404, "Conta de origem não encontrada.")
 
 
-def authorize_import(engine: Engine, owner: UUID, account_id: UUID) -> None:
+def authorize_import(
+    engine: Engine, owner: UUID, account_id: UUID, kind: ImportKind | None = None
+) -> None:
     with account_session(engine, owner) as session:
         active_account(session, owner, account_id)
+        account = session.get(Account, account_id)
+        if kind == "pdf" and account is not None and account.kind != "credit_card":
+            raise HTTPException(422, "PDF de movimentação de conta ainda não tem layout validado.")
         check_rate(owner, user_plan(session, owner).requests_per_minute)
 
 
@@ -64,7 +69,7 @@ def store_import(
     kind: ImportKind,
     mapping: CsvMapping | None = None,
 ) -> ImportResult:
-    authorize_import(engine, owner, account_id)
+    authorize_import(engine, owner, account_id, kind)
     text, entries = parse_upload(content, kind, mapping)
     cipher_key, identity_key = load_key("DATA_ENCRYPTION_KEY"), load_key("DEDUP_HMAC_KEY")
     digest = dedup_key(

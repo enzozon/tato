@@ -69,3 +69,16 @@ def test_import_requires_authentication():
             files={"file": ("x.csv", b"synthetic")},
         )
     assert response.status_code == 401
+
+
+def test_confirmation_requires_receipt_before_persistence(client, monkeypatch):
+    def unexpected(*args):
+        pytest.fail("Não pode gravar sem revisão.")
+
+    monkeypatch.setattr(routes, "store_import", unexpected)
+    response = client.post(
+        "/import/confirm",
+        data={"account_id": str(uuid4()), "kind": "csv"},
+        files={"file": ("x.csv", b"synthetic")},
+    )
+    assert response.status_code == 422
