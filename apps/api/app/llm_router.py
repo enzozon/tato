@@ -6,6 +6,7 @@ from time import monotonic, sleep
 from pydantic import BaseModel, ValidationError
 
 from app.llm import Attempt, Generation, LLMProvider, LLMUnavailable, ProviderError
+from app.llm_policy import personal_allowed
 
 
 @dataclass(frozen=True)
@@ -27,12 +28,15 @@ class Router:
     def generate[T: BaseModel](
         self, request: Generation, output: type[T], guard: Callable[[T], bool]
     ) -> Routed[T]:
-        if request.classification == "personal":
+        if request.classification == "personal" and not personal_allowed("groq"):
             raise LLMUnavailable("Dados pessoais ainda não habilitados para provedores.")
         attempts: list[Attempt] = []
         # ponytail: serializa por processo; limites compartilhados antes de escalar.
         with self.lock:
             for provider in self.providers:
+                if request.classification == "personal" and not personal_allowed(provider.name):
+                    attempts.append(Attempt(provider.name, "policy"))
+                    continue
                 if self.blocked_until.get(provider.name, 0) > monotonic():
                     attempts.append(Attempt(provider.name, "circuit_open"))
                     continue
