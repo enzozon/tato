@@ -79,3 +79,8 @@ em `packages/mascot/identity.json`, inclusive orientação para confirmar a pré
 validada e recupera a mesma resposta em retries. Datas relativas usam São Paulo;
 quota continua UTC. Conceitos retornam fontes locais com até cinco trechos,
 sem geração livre de afirmações. Falhas encerram o turno sem gravar a exceção.
+
+A confirmação recebe somente `confirm: true`, nunca valores financeiros do
+cliente. Reabre a prévia cifrada e revalida a conta sob lock. A identidade
+`chat:<turn_id>` deduplica a transação; gravação e atualização da resposta ocorrem
+na mesma transação. Confirmação repetida retorna o mesmo ID, sem nova quota.
