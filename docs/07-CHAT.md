@@ -84,3 +84,21 @@ A confirmação recebe somente `confirm: true`, nunca valores financeiros do
 cliente. Reabre a prévia cifrada e revalida a conta sob lock. A identidade
 `chat:<turn_id>` deduplica a transação; gravação e atualização da resposta ocorrem
 na mesma transação. Confirmação repetida retorna o mesmo ID, sem nova quota.
+
+## API e entrega
+
+| Rota | Contrato |
+|---|---|
+| `POST /chat` | `request_id`, `question`, `account_id` opcional; retorna `ChatReply` |
+| `POST /chat/stream` | Mesmo corpo; eventos `status`, `reply` ou `error`, `done` |
+| `POST /chat/{turn_id}/confirm` | `confirm: true`; confirma a prévia daquele usuário |
+| `GET /chat` | Últimos pares completos de pedido e resposta, dentro dos limites |
+
+Todas exigem Bearer e usam `Cache-Control: no-store`. O SSE informa andamento,
+executa processamento fora do event loop e entrega a resposta inteira após
+validação/persistência. Não simula streaming de tokens. Falha depois dos headers
+vem em evento `error` com status, sem detalhes internos. JSON escapa quebras de
+linha no payload e impede injeção de eventos. Uma desconexão não cancela efeitos
+já iniciados: reenviar o mesmo `request_id` recupera o resultado sem duplicação.
+Antes de enviar dados, a conta é revalidada; exclusão pendente bloqueia a entrega.
+O futuro frontend deve apresentar fontes como texto, nunca HTML executável.

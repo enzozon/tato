@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.account_routes import router
+from app.chat_routes import router as chat_router
 from app.import_routes import router as import_router
 from app.import_setup import router as setup_router
 from app.rag.routes import router as rag_router
@@ -16,6 +17,7 @@ app.include_router(router)
 app.include_router(import_router)
 app.include_router(setup_router)
 app.include_router(rag_router)
+app.include_router(chat_router)
 app.add_middleware(UploadLimit)
 
 
