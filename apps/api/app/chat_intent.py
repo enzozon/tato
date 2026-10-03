@@ -87,16 +87,22 @@ def classify(
     local = local_intent(question, today)
     if not isinstance(local.choice, Conversation) or not local.choice.clarify:
         return local
+    history = list(history)
+    while True:
+        payload = json.dumps(
+            {"question": question, "today": today.isoformat(), "history": history},
+            ensure_ascii=False,
+        )
+        if len(payload) <= 16000 or not history:
+            break
+        history.pop(0)
     request = Generation(
         instruction=(
             "Classifique em analytical, entry, conceptual ou conversation. Não invente "
             "datas, valores ou categorias. Use conversation com clarify=true se ambíguo. "
             "Analytical suporta apenas total de despesas em período; não saldo ou previsão."
         ),
-        data=json.dumps(
-            {"question": question, "today": today.isoformat(), "history": history},
-            ensure_ascii=False,
-        ),
+        data=payload,
         classification="personal",
     )
     try:

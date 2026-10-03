@@ -74,3 +74,8 @@ e mantém classificação pessoal, portanto continua bloqueada pela política at
 Os contratos separam resposta, fonte SQL, prévia de lançamento e trechos citados.
 Filtro por categoria continua no SQL. As frases da persona ficam exclusivamente
 em `packages/mascot/identity.json`, inclusive orientação para confirmar a prévia.
+
+`chat_service.respond` reserva o turno antes de processar, armazena a resposta
+validada e recupera a mesma resposta em retries. Datas relativas usam São Paulo;
+quota continua UTC. Conceitos retornam fontes locais com até cinco trechos,
+sem geração livre de afirmações. Falhas encerram o turno sem gravar a exceção.
