@@ -16,6 +16,30 @@ BOUNDARY = (
 )
 
 
+def strict_schema(schema: dict[str, object]) -> dict[str, object]:
+    """Adapta campos opcionais e uniões discriminadas ao subconjunto estrito do Groq."""
+
+    def visit(value: object) -> object:
+        if isinstance(value, list):
+            return [visit(item) for item in value]
+        if not isinstance(value, dict):
+            return value
+        result = {str(key): visit(item) for key, item in value.items() if key != "default"}
+        properties = result.get("properties")
+        if isinstance(properties, dict):
+            result["required"] = list(properties)
+            result["additionalProperties"] = False
+        if "discriminator" in result:
+            result.pop("discriminator")
+            if "oneOf" in result:
+                result["anyOf"] = result.pop("oneOf")
+        return result
+
+    result = visit(schema)
+    assert isinstance(result, dict)
+    return result
+
+
 def retry_after(value: str | None) -> int:
     try:
         seconds = int(value or "60")
@@ -38,6 +62,8 @@ class HTTPProvider:
         # Defesa também no adapter: chamar diretamente não contorna a política.
         if request.classification == "personal" and not personal_allowed(self.name):
             raise ProviderError("personal_data_disabled")
+        if self.name == "groq":
+            schema = strict_schema(schema)
         system = BOUNDARY + request.instruction
         data = json.dumps({"untrusted_data": request.data}, ensure_ascii=False)
         headers = {"Authorization": f"Bearer {self.api_key}"}

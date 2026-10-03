@@ -11,7 +11,8 @@ from app.account_service import account_session
 from app.categorization import normalize
 from app.chat_contracts import ChatInput, ChatReply
 from app.chat_history import finish_turn, recent_history, reserve_turn
-from app.chat_intent import Analytical, Conceptual, Conversation, Entry, classify
+from app.chat_intent import Analytical, Conceptual, Conversation, Entry, classify, model_history
+from app.chat_language import cited_explanation, conversation
 from app.chat_tools import ExpenseQuery, render_expense, run_expense_query
 from app.crypto import load_key
 from app.import_service import active_account
@@ -38,15 +39,21 @@ def build_reply(
     engine: Engine, owner: UUID, data: ChatInput, turn_id: UUID, key: bytes
 ) -> ChatReply:
     today = datetime.now(ZoneInfo("America/Sao_Paulo")).date()
-    choice = classify(
-        engine, owner, data.question, today, recent_history(engine, owner, key)
-    ).choice
+    history = model_history(recent_history(engine, owner, key))
+    choice = classify(engine, owner, data.question, today, history).choice
     reply = ChatReply(turn_id=turn_id, intent=choice.intent, message=phrase("clarify"))
     if isinstance(choice, Conversation):
-        reply.message = phrase("clarify" if choice.clarify else "greeting")
+        reply.message = (
+            phrase("clarify")
+            if choice.clarify
+            else conversation(engine, owner, data.question, history)
+        )
     elif isinstance(choice, Conceptual):
         reply.sources = conceptual_sources(engine, owner, data.question, key)
         reply.message = phrase("sources" if reply.sources else "no_sources")
+        explanation = cited_explanation(engine, owner, data.question, reply.sources)
+        if explanation is not None and not explanation.abstained:
+            reply.claims = explanation.claims
     else:
         with account_session(engine, owner) as session:
             require_active(session, owner)

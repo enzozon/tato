@@ -45,6 +45,21 @@ class Decision(BaseModel):
     choice: Annotated[Analytical | Entry | Conceptual | Conversation, Field(discriminator="intent")]
 
 
+def model_history(history: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    """Envia só diálogo, sem anexos, fontes privadas ou metadados de conta."""
+    result = []
+    for question, answer in history:
+        try:
+            request, response = json.loads(question), json.loads(answer)
+            if isinstance(request, dict) and isinstance(response, dict):
+                q, a = request.get("question"), response.get("message")
+                if isinstance(q, str) and isinstance(a, str):
+                    result.append((q, a))
+        except (ValueError, TypeError):
+            continue
+    return result
+
+
 def local_intent(question: str, today: date) -> Decision:
     text = normalize(question.strip()).rstrip("?.!")
     period = re.fullmatch(
@@ -113,10 +128,12 @@ def classify(
         instruction=(
             "Classifique em analytical, entry, conceptual ou conversation. Não invente "
             "datas, valores ou categorias. Use conversation com clarify=true se ambíguo. "
+            "Para acolhimento ou conversa sem cálculo use conversation com clarify=false. "
             "Analytical suporta apenas total de despesas em período; não saldo ou previsão."
         ),
         data=payload,
         classification="personal",
+        max_output_tokens=2048,
     )
     try:
         return generate(

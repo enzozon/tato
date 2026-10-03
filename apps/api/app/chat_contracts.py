@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_vali
 
 from app.chat_intent import Entry
 from app.chat_tools import ExpenseResult
+from app.rag.faithfulness import Claim
 from app.rag.retrieval import Hit
 
 
@@ -25,6 +26,7 @@ class ChatReply(BaseModel):
     draft: Entry | None = None
     transaction_id: UUID | None = None
     sources: list[Hit] = Field(default_factory=list, max_length=5, repr=False)
+    claims: list[Claim] = Field(default_factory=list, max_length=5, repr=False)
 
 
 class Confirmation(BaseModel):

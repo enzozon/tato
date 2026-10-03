@@ -107,26 +107,34 @@ Confirmação exige o booleano JSON `true`; `1`, `1.0` e strings são recusados.
 `Literal[True]` isoladamente aceita igualdade com `1` no Pydantic, por isso a
 checagem acontece antes da conversão do schema.
 
-## Próximo checkpoint: LLM pessoal
+## Conversa por Groq e minimização de contexto
 
-Proposta para concluir a conversa livre: autorizar somente Groq para perguntas
-e histórico limitado do próprio usuário, após verificar Zero Data Retention
-habilitado na organização. Gemini e OpenRouter continuam proibidos para dados
-pessoais. Em erro/quota, usar fallback local; não trocar o destino desses dados.
-Não enviar ledger completo nem credenciais. Isso ainda não foi aprovado/ativado.
+Enzo autorizou perguntas/histórico pessoal somente no Groq e confirmou ZDR
+ativo na organização da chave em 03/10/2026. É confirmação do proprietário;
+o navegador indisponível impediu verificação independente. As duas flags
+`GROQ_PERSONAL_DATA_ENABLED` e `GROQ_ZDR_CONFIRMED` são obrigatórias.
+Gemini/OpenRouter permanecem bloqueados para dados pessoais, inclusive fallback.
 
-A [documentação oficial de dados do Groq](https://console.groq.com/docs/your-data),
-consultada em 03/10/2026, permite ativar ZDR em Data Controls. Sem esse controle,
-há retenção excepcional de entradas/saídas por até 30 dias para confiabilidade
-e investigação de abuso. A configuração real da organização não foi verificada.
-Essa informação não comprova conformidade de produção do produto.
+O histórico enviado contém somente pergunta/resposta textual; IDs, rascunhos
+e conteúdo de anexos/fontes são removidos. Conversa livre usa os últimos dois
+pares, valida saída e cai na frase local se o provedor/guardrail falhar.
+O filtro lexical de números e recomendações é conservador e não prova ausência
+de toda paráfrase indevida. Cálculos continuam exclusivamente nas ferramentas SQL.
+Para conceitos, a geração só pode selecionar trechos literais de fontes públicas
+com IDs válidos; fontes privadas não são enviadas ao modelo.
+
+Groq exige todas as propriedades no `required`, inclusive campos anuláveis.
+O adapter transforma uma cópia do schema, remove defaults e usa `anyOf` na união;
+a validação Pydantic original continua obrigatória depois da resposta.
+Ensaio sintético real: conversa 351/206 tokens e 718 ms; classificação após
+correção do schema 635/161 tokens e 578 ms. Não é avaliação exaustiva do modelo.
 
 ## Importação no contexto da conversa
 
-PicPay e Banestes são as prioridades informadas pelo Enzo. Revisão da prévia
-antes de importar foi aprovada. A autorização de Groq foi dada condicionada
-à verificação de ZDR; o navegador desta sessão estava indisponível, portanto
-a ativação continua pendente de confirmação do controle no painel.
+Prioridades aprovadas: movimentações de conta e faturas de cartão de PicPay,
+Banestes e Sicoob/Sicoobcard, sempre com revisão da prévia. Layouts específicos
+ainda dependem de amostras anonimizadas; não assumir compatibilidade por marca.
+O limite Free continua em uma fonte enquanto não houver decisão de alteração.
 
 Lançamentos importados já alimentam o mesmo ledger consultado pelo chat.
 `account_id` também filtra consultas analíticas e é validado contra o dono da
