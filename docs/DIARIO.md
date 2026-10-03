@@ -305,3 +305,25 @@ Reserva de mensagens implementada sob lock por usuário. Repetições não gasta
 quota; pedidos antigos de outro mês não entram na contagem UTC. Histórico é
 cifrado e limitado; retomada de pending antigo não repete efeitos. Testes reais
 disputam a última vaga com threads, tanto com IDs iguais quanto diferentes.
+
+### Fluxos de conversa implementados — 03/10/2026
+
+Quatro intenções conectadas ao histórico e à API: despesas SQL com categoria,
+conceitos com fontes isoladas, prévia/confirmar lançamento e conversa local.
+Identidade/frases do mascote centralizadas em `packages/mascot/identity.json`.
+SSE entrega status e resposta validada inteira; não transmite tokens crus.
+Testes reais cobrem confirmação concorrente, rollback se a resposta não for
+salva, fonte maliciosa inerte e exclusão durante processamento.
+
+Docker estava desligado nesta retomada e foi iniciado; nenhuma alteração remota
+ou contratação. Verificação local: 181 testes, cobertura 83,39%, 38 integrações.
+Uma revisão encontrou que `Literal[True]` aceita `1`; corrigido antes da conversão.
+Na separação de commits, o hook ocultou o registro de rotas ainda não staged e
+recusou testes dependentes. Os lotes foram isolados e revalidados; nenhum hook
+foi pulado. Maior commit desta retomada: 394 linhas.
+
+Limite explícito: política pessoal permanece bloqueada e conversa livre por IA
+não está habilitada. Classificador estruturado possui fallback local limitado;
+conceitos mostram fontes em vez de gerar afirmações não verificadas. Detalhes
+no ADR 0010. Frontend continua etapa 9. PR #11 permanece sem merge; CI remoto
+será revalidado após envio final. Não avançar à etapa 8 automaticamente.

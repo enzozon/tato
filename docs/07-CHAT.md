@@ -106,3 +106,17 @@ O futuro frontend deve apresentar fontes como texto, nunca HTML executável.
 Confirmação exige o booleano JSON `true`; `1`, `1.0` e strings são recusados.
 `Literal[True]` isoladamente aceita igualdade com `1` no Pydantic, por isso a
 checagem acontece antes da conversão do schema.
+
+## Próximo checkpoint: LLM pessoal
+
+Proposta para concluir a conversa livre: autorizar somente Groq para perguntas
+e histórico limitado do próprio usuário, após verificar Zero Data Retention
+habilitado na organização. Gemini e OpenRouter continuam proibidos para dados
+pessoais. Em erro/quota, usar fallback local; não trocar o destino desses dados.
+Não enviar ledger completo nem credenciais. Isso ainda não foi aprovado/ativado.
+
+A [documentação oficial de dados do Groq](https://console.groq.com/docs/your-data),
+consultada em 03/10/2026, permite ativar ZDR em Data Controls. Sem esse controle,
+há retenção excepcional de entradas/saídas por até 30 dias para confiabilidade
+e investigação de abuso. A configuração real da organização não foi verificada.
+Essa informação não comprova conformidade de produção do produto.

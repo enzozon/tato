@@ -64,6 +64,14 @@ restrito. Não use esse comando em dados reais. O CI prepara esse banco sozinho.
 
 ## Estado
 
+Etapa 7: chat autenticado com `POST /chat`, `POST /chat/stream`, `GET /chat` e
+`POST /chat/{turn_id}/confirm`. Despesas vêm de SQL, lançamentos exigem prévia
+e confirmação, fontes conceituais vêm da busca isolada. Histórico cifrado,
+quota mensal e retries idempotentes estão implementados. SSE entrega eventos
+de progresso e resposta validada inteira. Veja [contratos e exemplos](docs/07-CHAT.md).
+O reconhecimento local é limitado aos formatos documentados; LLM pessoal segue
+bloqueado. Ainda não há conversa livre por IA, frontend ou deploy de produção.
+
 Etapa 6: indexação local E5-small (384 dimensões), busca híbrida Postgres/FTS/RRF,
 citações e reranking opcional. Base pública com 200 documentos e 40 perguntas:
 hit@5 RRF 0,975; reranker 0,925, portanto desativado por padrão. Rotas autenticadas
@@ -71,13 +79,13 @@ hit@5 RRF 0,975; reranker 0,925, portanto desativado por padrão. Rotas autentic
 Veja [RAG, medições e limites](docs/04-RAG.md). `make rag-index` carrega a base pública;
 `make rag-eval` exige banco descartável. Judge Groq real mediu 71/75 afirmações
 sustentadas (94,67%); quatro falhas permanecem documentadas. O judge é opt-in,
-enquanto o CI exige recuperação real. Chat de produção continua na etapa 7.
+enquanto o CI exige recuperação real. A etapa 7 integra as fontes ao chat local.
 
 Etapa 5: camada LLM com adapters Groq/Gemini/OpenRouter, fallback limitado,
 circuit breaker, validação Pydantic/semântica e cache Redis cifrado por usuário.
 Desativada por padrão; dados pessoais bloqueados. `make llm-smoke` permite ensaio
 sintético após configuração de contas gratuitas. Veja [operação e limites](docs/03-LLM.md).
-O chat e seu streaming continuam previstos para a etapa 7.
+O chat da etapa 7 respeita esse bloqueio e usa fallback local.
 
 Etapa 4: ingestão local CSV/OFX/PDF com centavos exatos, deduplicação, regras
 determinísticas e documento cifrado. Após `GET /me`, crie a origem com

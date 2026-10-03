@@ -165,3 +165,11 @@ erDiagram
 
 A tabela pública não se relaciona aos usuários. Indexação administrativa não
 é permissão para indexar dados pessoais nela. O runtime não pode escrevê-la.
+
+## Histórico do chat — etapa 7
+
+`chat_turns` foi aprovado em 29/09/2026 e criado pela migration `0006`.
+FK `user_id` com cascade e FORCE RLS protege perguntas/respostas cifradas.
+A unicidade `(user_id, request_id)` torna retries idempotentes; o índice
+`(user_id, created_at, id)` atende histórico e contagem mensal da quota.
+Estados e confirmação atômica estão em [07-CHAT.md](07-CHAT.md).
