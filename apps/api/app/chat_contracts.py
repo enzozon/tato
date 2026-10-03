@@ -1,7 +1,7 @@
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 from app.chat_intent import Entry
 from app.chat_tools import ExpenseResult
@@ -30,3 +30,10 @@ class ChatReply(BaseModel):
 class Confirmation(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     confirm: Literal[True]
+
+    @field_validator("confirm", mode="before")
+    @classmethod
+    def explicit_true(cls, value: object) -> object:
+        if value is not True:
+            raise ValueError("Confirmação exige o booleano true.")
+        return value

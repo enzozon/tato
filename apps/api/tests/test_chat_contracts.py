@@ -14,7 +14,7 @@ def test_chat_rejects_control_fields_and_bounds():
     for extra in [{"user_id": str(uuid4())}, {"classification": "public"}, {"question": " "}]:
         with pytest.raises(ValidationError):
             ChatInput.model_validate({"request_id": uuid4(), "question": "oi"} | extra)
-    for value in [False, "true", 0]:
+    for value in [False, "true", 0, 1, 1.0]:
         with pytest.raises(ValidationError):
             Confirmation(confirm=value)
     assert Confirmation(confirm=True).confirm

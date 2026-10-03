@@ -54,7 +54,7 @@ def test_confirm_requires_explicit_true_and_history_contract(client, monkeypatch
     reply = ChatReply(turn_id=uuid4(), intent="entry", message="Registrado")
     monkeypatch.setattr(routes, "confirm_entry", lambda *a: reply)
     assert client.post(f"/chat/{reply.turn_id}/confirm", json={"confirm": True}).status_code == 200
-    for value in [False, "true"]:
+    for value in [False, "true", 1, 1.0]:
         assert (
             client.post(f"/chat/{reply.turn_id}/confirm", json={"confirm": value}).status_code
             == 422

@@ -102,3 +102,7 @@ linha no payload e impede injeção de eventos. Uma desconexão não cancela efe
 já iniciados: reenviar o mesmo `request_id` recupera o resultado sem duplicação.
 Antes de enviar dados, a conta é revalidada; exclusão pendente bloqueia a entrega.
 O futuro frontend deve apresentar fontes como texto, nunca HTML executável.
+
+Confirmação exige o booleano JSON `true`; `1`, `1.0` e strings são recusados.
+`Literal[True]` isoladamente aceita igualdade com `1` no Pydantic, por isso a
+checagem acontece antes da conversão do schema.
