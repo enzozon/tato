@@ -40,7 +40,7 @@ def test_reply_paths(context, monkeypatch):
         Analytical(start=date(2026, 1, 1), end=date(2026, 2, 1)),
     ]
     monkeypatch.setattr(service, "conceptual_sources", lambda *a: [])
-    context.get.return_value = Mock(user_id=owner)
+    context.get.return_value = Mock(user_id=owner, deletion_requested_at=None)
     monkeypatch.setattr(
         service, "run_expense_query", lambda s, o, q: ExpenseResult(source=q, amount_cents=4200)
     )

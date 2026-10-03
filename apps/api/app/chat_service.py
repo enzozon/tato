@@ -14,6 +14,7 @@ from app.chat_history import finish_turn, recent_history, reserve_turn
 from app.chat_intent import Analytical, Conceptual, Conversation, Entry, classify
 from app.chat_tools import ExpenseQuery, render_expense, run_expense_query
 from app.crypto import load_key
+from app.import_service import active_account
 from app.llm import LLMUnavailable
 from app.llm_service import require_active
 from app.mascot import phrase
@@ -56,6 +57,8 @@ def build_reply(
                 else:
                     reply.draft, reply.message, reply.mood = choice, phrase("draft"), "atento"
             elif isinstance(choice, Analytical):
+                if data.account_id is not None:
+                    active_account(session, owner, data.account_id)
                 category_id = None
                 if choice.category is not None:
                     categories = session.exec(
@@ -75,6 +78,7 @@ def build_reply(
                     start=choice.start,
                     end=choice.end,
                     category_id=category_id,
+                    account_id=data.account_id,
                 )
                 reply.expense = run_expense_query(session, owner, query)
                 reply.message = render_expense(reply.expense)

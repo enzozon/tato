@@ -47,6 +47,19 @@ class Decision(BaseModel):
 
 def local_intent(question: str, today: date) -> Decision:
     text = normalize(question.strip()).rstrip("?.!")
+    period = re.fullmatch(
+        r"quanto gastei(?: com (.{1,80}?))? de (\d{4}-\d{2}-\d{2}) a (\d{4}-\d{2}-\d{2})",
+        text,
+    )
+    if period:
+        try:
+            start = date.fromisoformat(period[2])
+            end = date.fromisoformat(period[3]) + timedelta(days=1)
+            if end > start:
+                return Decision(choice=Analytical(start=start, end=end, category=period[1]))
+        except (ValueError, OverflowError):
+            pass
+        return Decision(choice=Conversation())
     match = re.fullmatch(
         r"quanto gastei(?: com (.{1,80}?))? "
         r"(este mes|esse mes|neste mes|nesse mes|mes passado|no mes passado)",

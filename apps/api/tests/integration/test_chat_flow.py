@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import func, update
 from sqlmodel import select
 
-from app import chat_entry, chat_service
+from app import chat_entry, chat_service, import_service
 from app.account_routes import runtime_engine as engine_dependency
 from app.auth import Identity, current_identity
 from app.crypto import encrypt_text
@@ -26,6 +26,7 @@ def client(runtime_engine, owners, monkeypatch):
     for variable in ["DATA_ENCRYPTION_KEY", "DEDUP_HMAC_KEY"]:
         monkeypatch.setenv(variable, base64.b64encode(KEY).decode())
     monkeypatch.setattr(routes, "check_rate", lambda *a: None)
+    monkeypatch.setattr(import_service, "check_rate", lambda *a: None)
     app.dependency_overrides[current_identity] = lambda: Identity(id=owners[0])
     app.dependency_overrides[engine_dependency] = lambda: runtime_engine
     try:
@@ -191,3 +192,28 @@ def test_deletion_during_processing_blocks_sse_payload(client, admin_engine, own
     )
     assert "event: error" in response.text
     assert "event: reply" not in response.text
+
+
+def test_imported_transactions_feed_chat_with_account_scope(client, runtime_engine, owners):
+    owner, other = owners
+    first, second, foreign = (account(runtime_engine, user) for user in [owner, owner, other])
+    csv = b"date,title,amount\n2026-01-10,Compra sintetica,42.05\n"
+    imported = client.post(
+        "/import",
+        data={"account_id": str(first), "kind": "csv"},
+        files={"file": ("sintetico.csv", csv, "text/csv")},
+    )
+    assert imported.status_code == 200 and imported.json()["inserted"] == 1
+    body = {"question": "quanto gastei de 2026-01-01 a 2026-01-31?", "account_id": str(first)}
+    result = client.post("/chat", json=body | {"request_id": str(uuid4())})
+    assert result.status_code == 200
+    assert result.json()["expense"]["amount_cents"] == 4205
+    assert result.json()["expense"]["source"]["account_id"] == str(first)
+    result = client.post(
+        "/chat", json=body | {"request_id": str(uuid4()), "account_id": str(second)}
+    )
+    assert result.json()["expense"]["amount_cents"] == 0
+    result = client.post(
+        "/chat", json=body | {"request_id": str(uuid4()), "account_id": str(foreign)}
+    )
+    assert result.status_code == 404

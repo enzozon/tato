@@ -46,3 +46,12 @@ def test_personal_question_does_not_reach_provider(monkeypatch):
     )
     result = classify(None, uuid4(), "gastei talvez quarenta", date(2026, 1, 1), [])
     assert isinstance(result.choice, Conversation) and result.choice.clarify
+
+
+def test_explicit_period_is_inclusive_and_rejects_invalid_dates():
+    today = date(2026, 10, 3)
+    result = local_intent("quanto gastei de 2026-01-01 a 2026-01-31?", today).choice
+    assert isinstance(result, Analytical)
+    assert (result.start, result.end) == (date(2026, 1, 1), date(2026, 2, 1))
+    for period in ["2026-02-30 a 2026-03-01", "2026-03-02 a 2026-03-01", "9999-12-31 a 9999-12-31"]:
+        assert isinstance(local_intent(f"quanto gastei de {period}", today).choice, Conversation)

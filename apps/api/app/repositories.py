@@ -61,7 +61,13 @@ def add_transaction(
 
 
 def expense_total(
-    session: Session, owner: UUID, start: date, end: date, *, category_id: UUID | None = None
+    session: Session,
+    owner: UUID,
+    start: date,
+    end: date,
+    *,
+    category_id: UUID | None = None,
+    account_id: UUID | None = None,
 ) -> int:
     """Centavos positivos de despesas no intervalo [start, end)."""
     if end <= start:
@@ -74,6 +80,8 @@ def expense_total(
     )
     if category_id is not None:
         statement = statement.where(Transaction.category_id == category_id)
+    if account_id is not None:
+        statement = statement.where(Transaction.account_id == account_id)
     return int(session.exec(statement).one())
 
 

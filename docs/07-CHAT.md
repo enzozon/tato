@@ -120,3 +120,15 @@ consultada em 03/10/2026, permite ativar ZDR em Data Controls. Sem esse controle
 há retenção excepcional de entradas/saídas por até 30 dias para confiabilidade
 e investigação de abuso. A configuração real da organização não foi verificada.
 Essa informação não comprova conformidade de produção do produto.
+
+## Importação no contexto da conversa
+
+PicPay e Banestes são as prioridades informadas pelo Enzo. Revisão da prévia
+antes de importar foi aprovada. A autorização de Groq foi dada condicionada
+à verificação de ZDR; o navegador desta sessão estava indisponível, portanto
+a ativação continua pendente de confirmação do controle no painel.
+
+Lançamentos importados já alimentam o mesmo ledger consultado pelo chat.
+`account_id` também filtra consultas analíticas e é validado contra o dono da
+sessão. Para períodos históricos, use `quanto gastei de 2026-01-01 a 2026-01-31?`:
+as duas datas da pergunta são inclusivas; o SQL recebe fim exclusivo no dia seguinte.
