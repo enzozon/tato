@@ -169,3 +169,9 @@ Não é prova universal de segurança nem avaliação humana independente.
 Em 04/10/2026 Enzo autorizou avançar à etapa 8 mantendo pendentes os layouts de
 faturas PicPay/Banestes e conta/cartão Sicoob. Não há novos exemplos nem acesso
 bancário utilizável no Windows. Essa pendência não é contada como implementada.
+
+Primeira medição ampliada: 18/20. Em s02, sugestão numérica de duração foi
+rejeitada; s03 encontrou o circuito aberto resultante. O guardrail impediu a
+entrega, mas fallback não contou como sucesso. Instrução da persona foi ajustada
+para hábitos sem quantidades e sem repetir alegações do usuário. A medição inicial
+está preservada em evals/chat-measurement.json; nova rodada será registrada.

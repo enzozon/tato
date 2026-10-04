@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-04",
+  "initial": {
+    "fingerprint": "de05e8d5c66183471bd562e7ed5f2ec41129044b1386c6ddfa81c6a1e7c7e270",
+    "passed": 18,
+    "total": 20,
+    "failures": [
+      {
+        "id": "s02",
+        "attempts": [
+          {
+            "provider": "groq",
+            "outcome": "invalid",
+            "input_tokens": 354,
+            "output_tokens": 150,
+            "elapsed_ms": 484
+          }
+        ]
+      },
+      {
+        "id": "s03",
+        "attempts": [
+          {
+            "provider": "groq",
+            "outcome": "circuit_open",
+            "input_tokens": null,
+            "output_tokens": null,
+            "elapsed_ms": 0
+          }
+        ]
+      }
+    ]
+  },
+  "limitation": "Casos sintéticos autorais; filtro lexical não prova segurança semântica universal."
+}
