@@ -90,3 +90,21 @@ Reutiliza a categoria pelo nome dentro do usuário; padrão cifrado e no máximo
 1000 regras por usuário. Os dois endpoints exigem bearer, ignoram nenhum campo
 desconhecido e bloqueiam exclusão pendente. Criar uma conta não consome a fonte
 Free: a reserva acontece na primeira importação confirmada.
+# Layouts de conta validados em 03/10/2026
+
+PicPay: extrato PDF textual com cabeçalhos diários e sinais `+R$`/`−R$`.
+Banestes: extrato de conta corrente com dia separado de `MES/AA`, valores
+assinados e descrições que podem ocupar mais de uma linha. Saldos e linhas
+de valor zero não viram transações. Layouts divergentes falham explicitamente.
+O tipo da conta deve corresponder ao documento: conta corrente e fatura não
+compartilham a convenção de sinais. PicPay preserva o nome da operação;
+contrapartes multilinha não são reconstruídas por inferência.
+
+Verificação local dos exemplos fornecidos: PicPay 36 lançamentos, Banestes 8;
+Banestes sem movimentos recusado sem gravação. Os arquivos ficam somente na
+pasta ignorada `extratos_exemplo/`; testes versionados são integralmente sintéticos.
+Isso valida os layouts observados, não todas as versões dos aplicativos.
+Sicoob, Sicoobcard e faturas específicas de PicPay/Banestes ainda não têm amostras.
+Sem ID bancário, PDFs diferentes com períodos sobrepostos podem duplicar compras.
+Revise a prévia antes de confirmar; não há reconciliação automática de transferências
+entre contas próprias ou do pagamento de fatura com as compras no cartão.

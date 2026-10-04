@@ -14,6 +14,7 @@ from app import llm_cache
 from app.account_service import account_session
 from app.llm import Generation, LLMProvider, LLMUnavailable, ProviderName
 from app.llm_http import HTTPProvider
+from app.llm_policy import personal_allowed
 from app.llm_router import Routed, Router
 from app.models import User
 
@@ -49,7 +50,7 @@ def require_active(session: Session, owner: UUID) -> None:
 def generate[T: BaseModel](
     engine: Engine, owner: UUID, request: Generation, output: type[T], guard: Callable[[T], bool]
 ) -> Routed[T]:
-    if request.classification == "personal":
+    if request.classification == "personal" and not personal_allowed("groq"):
         raise LLMUnavailable("Dados pessoais ainda não habilitados para provedores.")
     router = runtime_router()
     mode = os.environ.get("LLM_CACHE", "off")

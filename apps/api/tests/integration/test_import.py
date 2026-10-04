@@ -12,9 +12,11 @@ from app.account_routes import runtime_engine as engine_dependency
 from app.auth import Identity, current_identity
 from app.crypto import decrypt_text, encrypt_text
 from app.database import tenant_session
+from app.import_preview import preview_import
 from app.import_service import store_import
 from app.main import app
 from app.models import Account, Category, Document, Rule, Subscription, Transaction, User
+from tests.test_bank_pdf import BANESTES, PICPAY
 from tests.test_import_ofx import ofx, statement
 from tests.test_import_pdf import synthetic_pdf
 
@@ -22,10 +24,65 @@ pytestmark = pytest.mark.integration
 CSV = b"date,title,amount\n2026-09-01,Mercado sintetico,42.00\n2026-09-01,Mercado sintetico,42.00\n"
 
 
+def test_preview_does_not_write_and_checks_tenant(runtime_engine, owners, accounts):
+    result = preview_import(runtime_engine, owners[0], accounts[0], CSV, "csv", None)
+    assert result.count == 2 and result.debits_cents == 8400
+    with tenant_session(runtime_engine, owners[0]) as session:
+        assert not session.exec(select(Document)).all()
+        assert not session.exec(select(Transaction)).all()
+    with pytest.raises(HTTPException) as error:
+        preview_import(runtime_engine, owners[1], accounts[0], CSV, "csv", None)
+    assert error.value.status_code == 404
+    with pytest.raises(HTTPException) as error:
+        preview_import(
+            runtime_engine,
+            owners[0],
+            accounts[0],
+            synthetic_pdf("01/09/2026 Mercado 42,10"),
+            "pdf",
+            None,
+        )
+    assert error.value.status_code == 422
+
+
+def test_bank_preview_confirm_with_local_pro(
+    runtime_engine, admin_engine, owners, accounts, monkeypatch
+):
+    monkeypatch.setattr("app.import_service.extract_pdf", lambda content: content.decode())
+    owner = owners[0]
+    with Session(admin_engine) as session, session.begin():
+        session.add(Subscription(user_id=owner, plan="pro", status="active"))
+    app.dependency_overrides[current_identity] = lambda: Identity(id=owner)
+    app.dependency_overrides[engine_dependency] = lambda: runtime_engine
+    try:
+        with TestClient(app) as client:
+            for account, text, count in zip(accounts[:2], [PICPAY, BANESTES], [2, 3], strict=True):
+                data = {"account_id": str(account), "kind": "pdf"}
+                files = {"file": ("sintetico.pdf", text.encode())}
+                preview = client.post("/import/preview", data=data, files=files)
+                assert preview.status_code == 200
+                assert preview.json()["count"] == count
+                assert preview.headers["cache-control"] == "no-store"
+                data["receipt"] = preview.json()["receipt"]
+                result = client.post("/import/confirm", data=data, files=files)
+                assert result.status_code == 200 and result.json()["inserted"] == count
+                replay = client.post("/import/confirm", data=data, files=files)
+                assert replay.json()["inserted"] == 0
+        with tenant_session(runtime_engine, owner) as session:
+            assert len(session.exec(select(Transaction)).all()) == 5
+    finally:
+        app.dependency_overrides.clear()
+
+
 @pytest.mark.parametrize("kind", ["ofx", "pdf"])
 def test_other_formats_persist_exact_money(runtime_engine, owners, accounts, kind):
     content = ofx(statement()) if kind == "ofx" else synthetic_pdf("01/09/2026 Mercado 42,10")
     owner, account = owners[0], accounts[0]
+    if kind == "pdf":
+        with tenant_session(runtime_engine, owner) as session:
+            row = session.get(Account, account)
+            row.kind = "credit_card"
+            session.add(row)
     result = store_import(runtime_engine, owner, account, content, f"teste.{kind}", kind)
     assert result.inserted == 1
     if kind == "ofx":

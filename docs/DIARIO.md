@@ -278,3 +278,82 @@ sem mudança de hit@5, corpus ou pesos. Causa ambiental não isolada; hipótese 
 quantização/CPU permanece aberta. Removida a exigência adicional de MRR invariável
 entre runners, mantendo o gate hit@5 solicitado e o desvio MRR visível no relatório.
 O baseline não foi reduzido. Portabilidade numérica precisa de validação no deploy.
+
+## Etapa 7 — início em 28/09/2026
+
+PR #10 integrado por autorização do Enzo, preservando os commits, após os quatro
+checks verdes no SHA `1c31eaf`. Merge `8f80267`; branch `etapa-07-chat-intencao`.
+Plano e proposta de tabela `chat_turns` em `07-CHAT.md`; checkpoint solicitado,
+sem migration enquanto não houver aprovação.
+
+Primeira ferramenta analítica reutiliza `expense_total`, recebe intervalo tipado
+e rejeita SQL livre e proprietário no payload. Resultado leva parâmetros da fonte;
+redação monetária usa somente inteiros. Nenhuma chamada externa de LLM adicionada.
+Verificação: 162 testes unitários/HTTP, cobertura 84,49%, ruff e mypy aprovados;
+teste de integração da ferramenta/repositório aprovado em PostgreSQL real.
+Histórico, roteamento, lançamento e SSE continuam pendentes nesta etapa.
+
+### Schema do chat aprovado — 29/09/2026
+
+Enzo aprovou `chat_turns` e a contagem de pedidos aceitos, inclusive falhas.
+Migration `0006` aplicada aos bancos locais `tato_test` e `tato`; sem drift.
+Upgrade/downgrade/upgrade testado somente em `tato_test`. Isolamento de leitura
+e escrita, unicidade por usuário, estados válidos e cascade cobertos em Postgres.
+Verificação: 162 testes locais, cobertura 84,61%, 29 integrações aprovadas.
+
+Reserva de mensagens implementada sob lock por usuário. Repetições não gastam
+quota; pedidos antigos de outro mês não entram na contagem UTC. Histórico é
+cifrado e limitado; retomada de pending antigo não repete efeitos. Testes reais
+disputam a última vaga com threads, tanto com IDs iguais quanto diferentes.
+
+### Fluxos de conversa implementados — 03/10/2026
+
+Quatro intenções conectadas ao histórico e à API: despesas SQL com categoria,
+conceitos com fontes isoladas, prévia/confirmar lançamento e conversa local.
+Identidade/frases do mascote centralizadas em `packages/mascot/identity.json`.
+SSE entrega status e resposta validada inteira; não transmite tokens crus.
+Testes reais cobrem confirmação concorrente, rollback se a resposta não for
+salva, fonte maliciosa inerte e exclusão durante processamento.
+
+Docker estava desligado nesta retomada e foi iniciado; nenhuma alteração remota
+ou contratação. Verificação local: 181 testes, cobertura 83,39%, 38 integrações.
+Uma revisão encontrou que `Literal[True]` aceita `1`; corrigido antes da conversão.
+Na separação de commits, o hook ocultou o registro de rotas ainda não staged e
+recusou testes dependentes. Os lotes foram isolados e revalidados; nenhum hook
+foi pulado. Maior commit desta retomada: 394 linhas.
+
+Limite explícito: política pessoal permanece bloqueada e conversa livre por IA
+não está habilitada. Classificador estruturado possui fallback local limitado;
+conceitos mostram fontes em vez de gerar afirmações não verificadas. Detalhes
+no ADR 0010. Frontend continua etapa 9. PR #11 permanece sem merge; CI remoto
+será revalidado após envio final. Não avançar à etapa 8 automaticamente.
+
+## 03/10/2026 — conversa Groq e prévia bancária
+
+Groq pessoal aprovado, ZDR confirmado por Enzo; navegador indisponível impede
+verificação independente. Flags locais habilitadas, sem alterar segredos. Ensaio
+real sintético de conversa e classificação passou; foi necessário adaptar schema
+Pydantic ao `required` estrito do Groq. Histórico enviado exclui fontes e IDs.
+
+Prévia assinada sem gravação, confirmação vinculada ao mesmo arquivo, conta e
+usuário, expiração e deduplicação foram verificadas. Free segue com uma fonte;
+Pro sintético local valida duas contas. Sem alteração de cobrança ou schema.
+Layouts locais PicPay (36 movimentos) e Banestes (8) lidos sem LLM; originais
+ignorados no Git. Banestes sem movimentos é recusado. Fixtures inteiramente
+sintéticas, sem copiar contrapartes/valores dos PDFs fornecidos.
+
+Validação: 205 testes unitários/HTTP, cobertura 84,58%; 40 integrações passaram
+antes do cenário bancário novo, e as 10 integrações de importação passaram após
+adicioná-lo. CI final e combinação com dependências serão conferidos antes do merge.
+Enzo autorizou integrar PRs pendentes incluindo 11. PR 14 exige remover ignore
+mypy obsoleto após atualização SQLModel, detectado no CI; não ignorar esse check.
+
+iPhone com Windows não oferece o controle oficial de apps disponível no Mac.
+MCP não fornece acesso bancário sozinho. Próximo caminho é validar disponibilidade
+do histórico do cartão no Internet Banking com login manual; nenhuma conexão
+bancária automática implementada, nenhuma credencial solicitada ou pagamento feito.
+
+Consolidação: PRs 12–16 integrados após checks verdes (14 corrigido). PR 11
+recebeu a base atualizada sem conflito. SQLModel 0.0.47, Uvicorn 0.54.0, Ruff
+0.16.9 e Redis 8.10: make check com 205 testes/84,58% e 41 integrações locais
+aprovados; PostgreSQL e Redis saudáveis. CI final do PR 11 antecede seu merge.

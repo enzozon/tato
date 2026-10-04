@@ -113,3 +113,12 @@ conferidos antes do primeiro ensaio. Após configurar Groq, o smoke sintético r
 passou: 287 tokens de entrada, 120 de saída, 483 ms reportados pela chamada.
 A etapa 6 mediu também geração/judge públicos; consumo e falhas em `04-RAG.md`.
 Gemini/OpenRouter continuam sem ensaio remoto. Dados pessoais seguem bloqueados.
+# Política pessoal aprovada em 03/10/2026
+
+Enzo autorizou somente Groq e confirmou ZDR ativo na organização da chave.
+O navegador da sessão estava indisponível; a confirmação é do titular, não uma
+auditoria visual independente. `GROQ_PERSONAL_DATA_ENABLED=true` e
+`GROQ_ZDR_CONFIRMED=true` são exigidos junto das flags de LLM/free tier.
+Serviço, router e adapter aplicam a mesma política. Falha/429 no Groq nunca envia
+perguntas ou histórico pessoais a Gemini/OpenRouter. O fallback é local.
+As flags são declaração operacional; a API não verifica o painel automaticamente.

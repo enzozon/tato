@@ -64,6 +64,17 @@ restrito. Não use esse comando em dados reais. O CI prepara esse banco sozinho.
 
 ## Estado
 
+Etapa 7: chat autenticado com `POST /chat`, `POST /chat/stream`, `GET /chat` e
+`POST /chat/{turn_id}/confirm`. Despesas vêm de SQL, lançamentos exigem prévia
+e confirmação, fontes conceituais vêm da busca isolada. Histórico cifrado,
+quota mensal e retries idempotentes estão implementados. SSE entrega eventos
+de progresso e resposta validada inteira. Veja [contratos e exemplos](docs/07-CHAT.md).
+Conversa livre disponível por Groq com autorização e confirmação de ZDR; fallback
+local em falhas. Perguntas e histórico mínimo são pessoais, sem envio de extratos.
+Importação com prévia assinada em `/import/preview` e confirmação em `/import/confirm`.
+PDFs de conta PicPay/Banestes validados nos layouts locais; cartões/Sicoob pendentes.
+Ainda não há frontend ou deploy de produção.
+
 Etapa 6: indexação local E5-small (384 dimensões), busca híbrida Postgres/FTS/RRF,
 citações e reranking opcional. Base pública com 200 documentos e 40 perguntas:
 hit@5 RRF 0,975; reranker 0,925, portanto desativado por padrão. Rotas autenticadas
@@ -71,19 +82,19 @@ hit@5 RRF 0,975; reranker 0,925, portanto desativado por padrão. Rotas autentic
 Veja [RAG, medições e limites](docs/04-RAG.md). `make rag-index` carrega a base pública;
 `make rag-eval` exige banco descartável. Judge Groq real mediu 71/75 afirmações
 sustentadas (94,67%); quatro falhas permanecem documentadas. O judge é opt-in,
-enquanto o CI exige recuperação real. Chat de produção continua na etapa 7.
+enquanto o CI exige recuperação real. A etapa 7 integra as fontes ao chat local.
 
 Etapa 5: camada LLM com adapters Groq/Gemini/OpenRouter, fallback limitado,
 circuit breaker, validação Pydantic/semântica e cache Redis cifrado por usuário.
-Desativada por padrão; dados pessoais bloqueados. `make llm-smoke` permite ensaio
+Desativada por padrão; dados pessoais exigem opt-in Groq/ZDR. `make llm-smoke` permite ensaio
 sintético após configuração de contas gratuitas. Veja [operação e limites](docs/03-LLM.md).
-O chat e seu streaming continuam previstos para a etapa 7.
+O chat respeita a política pessoal; Gemini/OpenRouter não recebem esse conteúdo.
 
 Etapa 4: ingestão local CSV/OFX/PDF com centavos exatos, deduplicação, regras
 determinísticas e documento cifrado. Após `GET /me`, crie a origem com
 `POST /accounts`, regras opcionais com `POST /rules` e envie `POST /import`.
 Veja [formatos, contrato e limitações](docs/04-INGESTAO.md). Fallback LLM em uploads
-pessoais permanece bloqueado; fixtures sintéticas ainda exigem exports bancários reais.
+pessoais permanece bloqueado. Exemplos privados não entram no Git nem no LLM.
 
 Backend de sessão, perfil, onboarding, planos e exclusão recuperável da etapa 3:
 `GET /me`, `POST /me/onboarding` e `DELETE /me` exigem bearer Supabase; saúde

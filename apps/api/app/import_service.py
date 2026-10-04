@@ -8,6 +8,7 @@ from sqlalchemy import Engine, func
 from sqlmodel import Session, col, select
 
 from app.account_service import account_session
+from app.bank_pdf import bank_layout, parse_bank_statement
 from app.categorization import load_rules, match_category
 from app.crypto import dedup_key, encrypt_text, load_key
 from app.import_parsers import CsvMapping, ParsedEntry, decode_file, parse_csv
@@ -39,7 +40,9 @@ def active_account(session: Session, owner: UUID, account_id: UUID) -> None:
         raise HTTPException(404, "Conta de origem não encontrada.")
 
 
-def authorize_import(engine: Engine, owner: UUID, account_id: UUID) -> None:
+def authorize_import(
+    engine: Engine, owner: UUID, account_id: UUID, kind: ImportKind | None = None
+) -> None:
     with account_session(engine, owner) as session:
         active_account(session, owner, account_id)
         check_rate(owner, user_plan(session, owner).requests_per_minute)
@@ -50,7 +53,11 @@ def parse_upload(
 ) -> tuple[str, list[ParsedEntry]]:
     if kind == "pdf":
         text = extract_pdf(content)
-        return text, parse_invoice(text, content)
+        return text, (
+            parse_bank_statement(text, content)
+            if bank_layout(text)
+            else parse_invoice(text, content)
+        )
     text = decode_file(content)
     return text, parse_csv(content, mapping) if kind == "csv" else parse_ofx(content)
 
@@ -64,7 +71,7 @@ def store_import(
     kind: ImportKind,
     mapping: CsvMapping | None = None,
 ) -> ImportResult:
-    authorize_import(engine, owner, account_id)
+    authorize_import(engine, owner, account_id, kind)
     text, entries = parse_upload(content, kind, mapping)
     cipher_key, identity_key = load_key("DATA_ENCRYPTION_KEY"), load_key("DEDUP_HMAC_KEY")
     digest = dedup_key(
@@ -77,6 +84,7 @@ def store_import(
     )
     with account_session(engine, owner) as session:
         active_account(session, owner, account_id)
+        validate_pdf_account(session, account_id, kind, text)
         previous = session.exec(
             select(Document).where(Document.user_id == owner, Document.digest == digest)
         ).first()
@@ -163,3 +171,11 @@ def store_import(
             warning=warning,
         )
     return result
+
+
+def validate_pdf_account(session: Session, account_id: UUID, kind: ImportKind, text: str) -> None:
+    if kind != "pdf":
+        return
+    account = session.get(Account, account_id)
+    if account is None or (bank_layout(text) is None) != (account.kind == "credit_card"):
+        raise HTTPException(422, "Tipo de conta incompatível com o layout PDF reconhecido.")

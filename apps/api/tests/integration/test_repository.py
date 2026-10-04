@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy import Engine
 from sqlmodel import select
 
+from app.chat_tools import ExpenseQuery, run_expense_query
 from app.crypto import decrypt_text
 from app.database import tenant_session
 from app.models import Account, Transaction
@@ -48,6 +49,9 @@ def test_import_is_idempotent_without_collapsing_equal_purchases(
         assert expense_total(session, owner, date(2026, 9, 1), date(2026, 10, 1)) == 8400
         assert expense_total(session, owner, date(2026, 9, 2), date(2026, 10, 1)) == 0
         assert expense_total(session, other, date(2026, 9, 1), date(2026, 10, 1)) == 0
+        query = ExpenseQuery(tool="expense_total", start=date(2026, 9, 1), end=date(2026, 10, 1))
+        assert run_expense_query(session, owner, query).amount_cents == 8400
+        assert run_expense_query(session, other, query).amount_cents == 0
         with pytest.raises(ValueError):
             expense_total(session, owner, date(2026, 9, 1), date(2026, 9, 1))
         for row in session.exec(select(Transaction)):
