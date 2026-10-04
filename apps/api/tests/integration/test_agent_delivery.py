@@ -52,3 +52,40 @@ def test_delivery_retries_are_persisted_and_isolated(
     with account_session(runtime_engine, owner) as session:
         row = session.exec(select(Insight)).one()
         assert row.email_status == "sent" and row.email_sent_at is not None
+
+
+def test_expired_backlog_does_not_block_new_notices(
+    runtime_engine, owners, agent_accounts, monkeypatch
+):
+    monkeypatch.setenv("AGENT_EMAIL_ENABLED", "true")
+    monkeypatch.setenv("RESEND_FREE_TIER_CONFIRMED", "true")
+    owner = owners[0]
+    with account_session(runtime_engine, owner) as session:
+        session.add(
+            Agent(user_id=owner, account_id=agent_accounts[0], kind="runway", email_enabled=True)
+        )
+        for index in range(101):
+            session.add(
+                Insight(
+                    user_id=owner,
+                    agent_kind="runway",
+                    content_ciphertext=b"test",
+                    event_key=f"old-{index}",
+                    email_status="pending",
+                    email_attempts=1,
+                    created_at=datetime.now(UTC) - timedelta(days=2),
+                )
+            )
+        fresh = Insight(
+            user_id=owner,
+            agent_kind="runway",
+            content_ciphertext=b"test",
+            event_key="fresh",
+            email_status="pending",
+        )
+        session.add(fresh)
+        fresh_id = fresh.id
+    calls = []
+    monkeypatch.setattr("app.agent_mail.send_notice", lambda _, item: calls.append(item) or True)
+    assert deliver_pending(runtime_engine, owner) == 1
+    assert calls == [fresh_id]

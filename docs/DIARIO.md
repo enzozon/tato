@@ -377,9 +377,14 @@ Aprendizado: retenção de idempotência do provedor limita retries seguros apó
 timeout; estado pendente não significa que o e-mail certamente não foi entregue.
 O teste detectou nomes de módulos pytest duplicados; o teste de entrega foi
 renomeado. A suíte final local passou: 225 unitários/HTTP, cobertura 81,56%,
-47 integrações Postgres/Redis. CI remoto será conferido no PR desta etapa.
+48 integrações Postgres/Redis. CI remoto será conferido no PR desta etapa.
 
 Chat: primeira avaliação ampliada 18/20; a persona foi ajustada para evitar
 quantidades em sugestões de hábitos. Nova rodada 20/20, com 13 chamadas Groq,
 7.803 tokens de entrada e 2.596 de saída. Evidência sintética, não garantia universal.
 Nenhum extrato enviado ao LLM, envio real de e-mail ou deploy nesta retomada.
+
+A revisão final encontrou que pendências expiradas poderiam ocupar a janela de
+seleção da entrega. O filtro passou para a consulta SQL; teste com 101 avisos
+expirados comprova que uma mensagem nova ainda é entregue. CI do primeiro HEAD
+05837a8 passou; a correção será revalidada no HEAD atualizado.

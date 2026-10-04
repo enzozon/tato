@@ -5,7 +5,7 @@ from uuid import UUID
 import httpx
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import Engine
+from sqlalchemy import Engine, or_
 from sqlmodel import col, select
 
 from app.account_service import account_session
@@ -91,6 +91,14 @@ def deliver_pending(engine: Engine, owner: UUID) -> int:
                 Insight.user_id == owner,
                 Insight.email_status == "pending",
                 Insight.email_attempts < 3,
+                or_(
+                    col(Insight.email_attempts) == 0,
+                    col(Insight.created_at) > now - timedelta(hours=23),
+                ),
+                or_(
+                    col(Insight.email_last_attempt_at).is_(None),
+                    col(Insight.email_last_attempt_at) <= now - timedelta(minutes=2),
+                ),
             )
             .order_by(col(Insight.created_at), col(Insight.id))
             .limit(100)

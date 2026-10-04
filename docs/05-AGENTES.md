@@ -107,7 +107,7 @@ dos usuários já processados. E-mail desabilitado não impede avisos internos.
 
 Migration 0007 aplicada nos bancos locais; ida e volta testada no `tato_test`,
 sem divergência detectada pelo Alembic. Suíte combinada: 225 testes unitários/HTTP,
-47 integrações Postgres/Redis e cobertura de 81,56%. A integração verifica quota
+48 integrações Postgres/Redis e cobertura de 81,56%. A integração verifica quota
 concorrente Free, downgrade Pro, acesso cruzado, exclusão pendente, execução
 idempotente e tentativas de entrega persistidas. Não houve envio real de e-mail.
 Cron remoto aguarda deploy e configuração; interface de agentes entra na etapa 9.
