@@ -55,3 +55,6 @@ rag-judge:
 
 rag-measure:
 	uv run --locked python scripts/measure_rag.py
+
+chat-eval:
+	uv run --locked --env-file .env python scripts/eval_chat.py

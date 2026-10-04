@@ -122,3 +122,16 @@ conta. Não houve medição de saldo diário de quota ou confirmação de fatura
 Aprendizado operacional: respeitar tokens/minuto exige espaçamento mesmo quando
 requisições/dia parecem abundantes. Checkpoint evita repetir casos concluídos;
 falhas de quota não ativam modelo pago nem tornam a avaliação aprovada.
+
+## Chat e agentes — 04/10/2026
+
+A segunda rodada de 20 casos sintéticos do chat aprovou 20/20, com 13 tentativas
+remotas: 7.803 tokens de entrada e 2.596 de saída. Os demais casos foram resolvidos
+localmente. Esses totais excluem a primeira rodada de 18/20 e não medem a conta
+inteira. Fingerprint e primeira falha preservados em `evals/chat-measurement.json`.
+
+Resend permanece desligado. O [plano gratuito anunciado](https://resend.com/pricing)
+permite 100 e-mails/dia e 3.000/mês; consumo remoto do Tato não foi medido.
+O código limita tentativas, respeita falhas de quota e mantém o aviso interno.
+Não habilitar faturamento ou plano pago para contornar limites. Cron e e-mail
+não foram provisionados; nenhum serviço novo contratado nesta etapa.

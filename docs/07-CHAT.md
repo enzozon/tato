@@ -54,13 +54,12 @@ turnos completos e 12 mil caracteres, preservando pares inteiros.
 
 ## Limites atuais
 
-Os adapters de LLM recusam dados pessoais. A avaliação da etapa 6 autorizou
-somente corpus público e perguntas sintéticas; não muda essa política.
-Os caminhos que precisam interpretar texto pessoal serão testados com provedor
-simulado enquanto a política não for revisada. Nunca reclassificar uma pergunta
-pessoal como pública para contornar o bloqueio.
+Dados pessoais exigem autorização e confirmação de ZDR para Groq, aprovadas
+pelo proprietário em 03/10/2026. Gemini/OpenRouter continuam bloqueados para
+esse conteúdo. A avaliação da etapa 6 é pública; não autoriza outros destinos.
+Nunca reclassificar uma pergunta pessoal como pública para contornar a política.
 
-SSE só poderá transmitir conteúdo após validação: transmitir tokens brutos e
+SSE transmite conteúdo após validação: transmitir tokens brutos e
 descobrir um número inventado depois seria tarde demais. A primeira ferramenta
 é `expense_total`, com intervalo `[start, end)` e centavos vindos do SQL existente.
 Sua citação identifica a ferramenta e os parâmetros, sem expor SQL interno.
@@ -69,7 +68,7 @@ O classificador local reconhece despesas do mês atual/anterior, conceitos com
 "o que é" e lançamentos como "gastei 42,05 no mercado ontem". Valores ambíguos
 ou múltiplos lançamentos pedem esclarecimento. Datas relativas usam a data de
 referência do servidor. A interface de classificação LLM usa structured output
-e mantém classificação pessoal, portanto continua bloqueada pela política atual.
+e mantém classificação pessoal, com Groq opt-in e fallback conservador local.
 
 Os contratos separam resposta, fonte SQL, prévia de lançamento e trechos citados.
 Filtro por categoria continua no SQL. As frases da persona ficam exclusivamente
@@ -78,7 +77,8 @@ em `packages/mascot/identity.json`, inclusive orientação para confirmar a pré
 `chat_service.respond` reserva o turno antes de processar, armazena a resposta
 validada e recupera a mesma resposta em retries. Datas relativas usam São Paulo;
 quota continua UTC. Conceitos retornam fontes locais com até cinco trechos,
-sem geração livre de afirmações. Falhas encerram o turno sem gravar a exceção.
+com seleção de citações literais públicas pelo LLM, quando habilitado.
+Falhas encerram o turno sem gravar a exceção.
 
 A confirmação recebe somente `confirm: true`, nunca valores financeiros do
 cliente. Reabre a prévia cifrada e revalida a conta sob lock. A identidade
@@ -155,3 +155,26 @@ PDF de conta não pode passar pelo parser genérico de fatura: sinais diferentes
 inverteriam receitas/despesas. Layout não suportado é recusado explicitamente.
 Os exemplos locais ficam ignorados no Git, sem cópias em fixtures ou envio ao LLM.
 Free permanece com uma fonte; múltiplas contas usam Pro sintético em testes locais.
+
+## Avaliação ampliada e fechamento
+
+`make chat-eval` executa 20 casos sintéticos de `evals/chat.jsonl`, usando o mesmo
+classificador e gerador da aplicação. Compara intenção, datas e valores esperados;
+conversa precisa passar o guardrail sem cair silenciosamente em fallback. Falta de
+provedor/quota não conta como aprovação. O relatório em `test-results/chat-eval.json`
+registra tentativas, tokens e respostas sintéticas; `--resume` exige fingerprint
+compatível de dataset, código e modelo. Chamadas remotas são opt-in, fora do CI.
+Não é prova universal de segurança nem avaliação humana independente.
+
+Em 04/10/2026 Enzo autorizou avançar à etapa 8 mantendo pendentes os layouts de
+faturas PicPay/Banestes e conta/cartão Sicoob. Não há novos exemplos nem acesso
+bancário utilizável no Windows. Essa pendência não é contada como implementada.
+
+Primeira medição ampliada: 18/20. Em s02, sugestão numérica de duração foi
+rejeitada; s03 encontrou o circuito aberto resultante. O guardrail impediu a
+entrega, mas fallback não contou como sucesso. Instrução da persona foi ajustada
+para hábitos sem quantidades e sem repetir alegações do usuário. A medição inicial
+está preservada em `evals/chat-measurement.json`. A rodada completa após o ajuste
+aprovou 20/20 casos; o relatório versionado registra fingerprint e consumo.
+Parte dos casos usa o classificador local; o resultado não representa 20 chamadas
+remotas nem cobre todos os bancos ou situações de conversa.

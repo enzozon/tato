@@ -173,3 +173,10 @@ FK `user_id` com cascade e FORCE RLS protege perguntas/respostas cifradas.
 A unicidade `(user_id, request_id)` torna retries idempotentes; o índice
 `(user_id, created_at, id)` atende histórico e contagem mensal da quota.
 Estados e confirmação atômica estão em [07-CHAT.md](07-CHAT.md).
+# Etapa 8: configuração de agentes
+
+Schema aprovado em 04/10/2026 e implementado na revision `0007`: `agents` com
+unicidade por usuário/tipo, FKs compostas de conta/meta, RLS forçada e cascade
+do usuário. `goals(user_id, id)` ganha unicidade para esse vínculo. Insights
+mantêm conteúdo cifrado e recebem estado/tentativas/datas de entrega de e-mail.
+A execução continua sob identidade do usuário, sem conexão administrativa.
