@@ -352,3 +352,8 @@ iPhone com Windows não oferece o controle oficial de apps disponível no Mac.
 MCP não fornece acesso bancário sozinho. Próximo caminho é validar disponibilidade
 do histórico do cartão no Internet Banking com login manual; nenhuma conexão
 bancária automática implementada, nenhuma credencial solicitada ou pagamento feito.
+
+Consolidação: PRs 12–16 integrados após checks verdes (14 corrigido). PR 11
+recebeu a base atualizada sem conflito. SQLModel 0.0.47, Uvicorn 0.54.0, Ruff
+0.16.9 e Redis 8.10: make check com 205 testes/84,58% e 41 integrações locais
+aprovados; PostgreSQL e Redis saudáveis. CI final do PR 11 antecede seu merge.

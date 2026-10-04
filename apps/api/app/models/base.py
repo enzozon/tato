@@ -17,8 +17,7 @@ SQLModel.metadata = MetaData(
 
 class Record(SQLModel):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    # SQLModel aceita a instância do tipo em runtime; seu overload só declara classes.
-    created_at: datetime = Field(  # type: ignore[call-overload]
+    created_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC), sa_type=DateTime(timezone=True)
     )
 
