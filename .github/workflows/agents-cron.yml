@@ -1,0 +1,27 @@
+name: Agentes (opt-in)
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agents-cron
+  cancel-in-progress: false
+
+jobs:
+  agents:
+    if: vars.AGENTS_CRON_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # versão 7.0.1
+      - name: Executar lote autorizado
+        env:
+          TATO_API_URL: ${{ secrets.TATO_API_URL }}
+          AGENTS_RUN_TOKEN: ${{ secrets.AGENTS_RUN_TOKEN }}
+          AGENT_USER_IDS: ${{ secrets.AGENT_USER_IDS }}
+        run: python scripts/run_agents.py

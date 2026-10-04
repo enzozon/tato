@@ -67,10 +67,11 @@ def test_internal_route_requires_separate_secret_and_deduplicates_batch(client, 
     payload = {"user_ids": [owner, owner]}
     assert client.post("/internal/agents/run", json=payload).status_code == 401
     monkeypatch.setattr(routes, "run_agents", lambda *args: 1)
+    monkeypatch.setattr(routes, "deliver_pending", lambda *args: 0)
     response = client.post(
         "/internal/agents/run", json=payload, headers={"Authorization": "Bearer " + "x" * 32}
     )
-    assert response.json() == {"processed": 1, "inserted": 1}
+    assert response.json() == {"processed": 1, "inserted": 1, "sent": 0}
     monkeypatch.delenv("AGENTS_RUN_TOKEN")
     assert client.post("/internal/agents/run", json=payload).status_code == 503
 

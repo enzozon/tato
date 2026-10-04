@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.account_routes import CredentialsDep, EngineDep, IdentityDep
 from app.agent_config import AgentInput, AgentView, GoalInput, configure, create_goal, list_agents
+from app.agent_mail import deliver_pending
 from app.agent_rules import AgentKind
 from app.agent_runtime import run_agents
 from app.import_setup import CreatedRecord
@@ -93,6 +94,7 @@ class RunInput(BaseModel):
 class RunResult(BaseModel):
     processed: int
     inserted: int
+    sent: int
 
 
 @router.post("/internal/agents/run", dependencies=[Depends(internal_auth)])
@@ -100,4 +102,5 @@ def run(data: RunInput, engine: EngineDep) -> RunResult:
     today = datetime.now(ZoneInfo("America/Sao_Paulo")).date()
     with handled():
         counts = [run_agents(engine, owner, today) for owner in dict.fromkeys(data.user_ids)]
-    return RunResult(processed=len(counts), inserted=sum(counts))
+        sent = sum(deliver_pending(engine, owner) for owner in dict.fromkeys(data.user_ids))
+    return RunResult(processed=len(counts), inserted=sum(counts), sent=sent)

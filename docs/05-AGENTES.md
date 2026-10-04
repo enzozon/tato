@@ -90,3 +90,13 @@ anterior impede novo envio automático. Isso evita duplicação depois da
 [retenção de 24 horas da chave Resend](https://resend.com/docs/dashboard/emails/idempotency-keys).
 Uma entrega incerta permanece pendente para revisão, sem promessa de exactly-once.
 Testes usam transporte simulado e Postgres real; envio remoto ainda não validado.
+
+O workflow `agents-cron.yml` só executa com a variável de repositório
+`AGENTS_CRON_ENABLED=true`. Após o deploy autorizado, configurar os secrets
+`TATO_API_URL` (HTTPS), `AGENTS_RUN_TOKEN` e `AGENT_USER_IDS` (lista JSON de
+até 25 UUIDs autorizados). A agenda é horária, sem garantia de pontualidade.
+O cliente recusa redirects e imprime apenas totais; nenhuma credencial passa
+por interpolação de shell. Não há descoberta automática de usuários nesta fase.
+O lote retorna `processed`, `inserted` e `sent`; falha de execução interrompe
+o lote e resulta em erro HTTP. A próxima tentativa reaproveita a idempotência
+dos usuários já processados. E-mail desabilitado não impede avisos internos.
