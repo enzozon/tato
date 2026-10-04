@@ -17,8 +17,8 @@ fatos obtidos pelo chamador do SQL. Respostas monetárias livres não são aceit
 por esse contrato; o código deve renderizar os valores verificados.
 
 Groq → Gemini → OpenRouter continua sendo a ordem aprovada no ADR 0005.
-Gemini gratuito nunca recebe dados pessoais. Inicialmente nenhuma chamada pessoal
-é habilitada, pois a revisão operacional de privacidade dos provedores está pendente.
+Gemini gratuito nunca recebe dados pessoais. Groq aceita perguntas/histórico mínimo após opt-in e confirmação de ZDR pelo
+proprietário; envio de extratos continua fora dessa autorização.
 
 Referências consultadas em 27/09/2026: [Groq structured outputs](https://console.groq.com/docs/structured-outputs),
 [Gemini structured output](https://ai.google.dev/gemini-api/docs/structured-output),
@@ -112,7 +112,7 @@ Não há conversão automática para modalidade paga. A confirmação no ambient
 conferidos antes do primeiro ensaio. Após configurar Groq, o smoke sintético real
 passou: 287 tokens de entrada, 120 de saída, 483 ms reportados pela chamada.
 A etapa 6 mediu também geração/judge públicos; consumo e falhas em `04-RAG.md`.
-Gemini/OpenRouter continuam sem ensaio remoto. Dados pessoais seguem bloqueados.
+Gemini/OpenRouter continuam sem ensaio remoto. O ensaio público não autoriza dados pessoais; a autorização posterior está abaixo.
 # Política pessoal aprovada em 03/10/2026
 
 Enzo autorizou somente Groq e confirmou ZDR ativo na organização da chave.
