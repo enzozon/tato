@@ -2,7 +2,9 @@
 
 Um agente é um alarme com três partes: gatilho, condição verificável e aviso.
 O cron dispara a avaliação; SQL fornece fatos; regras determinísticas decidem
-se existe um sinal. O LLM pode escolher uma redação aprovada, nunca recalcular.
+se existe um sinal. Nesta entrega, a redação também usa templates determinísticos.
+Personalização por LLM permanece uma extensão opcional: não há ganho demonstrado
+que justifique enviar contexto financeiro ou consumir quota para esses avisos.
 
 ## Plano e fronteiras
 
@@ -100,3 +102,14 @@ por interpolação de shell. Não há descoberta automática de usuários nesta 
 O lote retorna `processed`, `inserted` e `sent`; falha de execução interrompe
 o lote e resulta em erro HTTP. A próxima tentativa reaproveita a idempotência
 dos usuários já processados. E-mail desabilitado não impede avisos internos.
+
+## Evidência e limites da entrega
+
+Migration 0007 aplicada nos bancos locais; ida e volta testada no `tato_test`,
+sem divergência detectada pelo Alembic. Suíte combinada: 225 testes unitários/HTTP,
+47 integrações Postgres/Redis e cobertura de 81,56%. A integração verifica quota
+concorrente Free, downgrade Pro, acesso cruzado, exclusão pendente, execução
+idempotente e tentativas de entrega persistidas. Não houve envio real de e-mail.
+Cron remoto aguarda deploy e configuração; interface de agentes entra na etapa 9.
+Não há detecção de serviços efetivamente esquecidos, reserva segregada para metas
+nem previsão financeira probabilística. Os avisos descrevem limites e hipóteses.

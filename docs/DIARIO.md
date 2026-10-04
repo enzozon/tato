@@ -357,3 +357,29 @@ Consolidação: PRs 12–16 integrados após checks verdes (14 corrigido). PR 11
 recebeu a base atualizada sem conflito. SQLModel 0.0.47, Uvicorn 0.54.0, Ruff
 0.16.9 e Redis 8.10: make check com 205 testes/84,58% e 41 integrações locais
 aprovados; PostgreSQL e Redis saudáveis. CI final do PR 11 antecede seu merge.
+
+## 04/10/2026 — agentes com sinais verificáveis
+
+PRs 11–16 foram integrados com CI verde; main chegou a 1c5cd4c. Enzo aprovou
+o schema da etapa 8 e avançar com faturas/Sicoob explicitamente pendentes.
+Migration 0007 adiciona configuração e estado de entrega; aplicada localmente,
+com downgrade/upgrade no banco descartável e Alembic sem drift.
+
+Quatro regras usam dinheiro inteiro e fatos do ledger. Configuração respeita
+quota sob lock; execução revalida plano e exclusão, persiste avisos cifrados e
+não duplica condições. A API permite criar metas, configurar agentes e ler avisos.
+E-mail consulta identidade confirmada, manda texto genérico e persiste tentativas;
+testes simulam o provedor. Cron requer ativação explícita e lote de até 25 usuários.
+Redação por LLM não foi ativada: templates suficientes preservam quota e origem
+dos números. Interface visual, deploy e validação externa permanecem posteriores.
+
+Aprendizado: retenção de idempotência do provedor limita retries seguros após
+timeout; estado pendente não significa que o e-mail certamente não foi entregue.
+O teste detectou nomes de módulos pytest duplicados; o teste de entrega foi
+renomeado. A suíte final local passou: 225 unitários/HTTP, cobertura 81,56%,
+47 integrações Postgres/Redis. CI remoto será conferido no PR desta etapa.
+
+Chat: primeira avaliação ampliada 18/20; a persona foi ajustada para evitar
+quantidades em sugestões de hábitos. Nova rodada 20/20, com 13 chamadas Groq,
+7.803 tokens de entrada e 2.596 de saída. Evidência sintética, não garantia universal.
+Nenhum extrato enviado ao LLM, envio real de e-mail ou deploy nesta retomada.

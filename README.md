@@ -121,5 +121,9 @@ O CI possui dois jobs: qualidade Python (via pre-commit) e infraestrutura local
 (Compose, migrations, pgvector, RLS, seeds, Redis e avaliação RAG real).
 Testes de integração são separados dos unitários, mas obrigatórios no CI.
 Dependabot roda mensalmente.
+
+O backend da [etapa 8](docs/05-AGENTES.md) oferece quatro regras de agentes,
+configuração por plano, metas e caixa de avisos cifrada. E-mail e cron são opt-in;
+entrega externa e deploy ainda não validados. A interface pertence à etapa 9.
 Build do frontend/API Docker e auditorias adicionais entram com as etapas
 correspondentes; não há jobs vazios que simulem essas verificações.

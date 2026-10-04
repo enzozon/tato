@@ -174,4 +174,7 @@ Primeira medição ampliada: 18/20. Em s02, sugestão numérica de duração foi
 rejeitada; s03 encontrou o circuito aberto resultante. O guardrail impediu a
 entrega, mas fallback não contou como sucesso. Instrução da persona foi ajustada
 para hábitos sem quantidades e sem repetir alegações do usuário. A medição inicial
-está preservada em evals/chat-measurement.json; nova rodada será registrada.
+está preservada em `evals/chat-measurement.json`. A rodada completa após o ajuste
+aprovou 20/20 casos; o relatório versionado registra fingerprint e consumo.
+Parte dos casos usa o classificador local; o resultado não representa 20 chamadas
+remotas nem cobre todos os bancos ou situações de conversa.

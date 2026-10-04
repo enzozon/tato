@@ -31,5 +31,13 @@
       }
     ]
   },
-  "limitation": "Casos sintéticos autorais; filtro lexical não prova segurança semântica universal."
+  "limitation": "Casos sintÃ©ticos autorais; filtro lexical nÃ£o prova seguranÃ§a semÃ¢ntica universal.",
+  "final": {
+    "fingerprint": "eeb5695fd0591de5bb1b29b28e0839e4ad8ad016e9be6773bdf170b650136c68",
+    "passed": 20,
+    "total": 20,
+    "provider_attempts": 13,
+    "input_tokens": 7803,
+    "output_tokens": 2596
+  }
 }
