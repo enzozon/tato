@@ -14,3 +14,8 @@ primeira entrega evita gerar uma biblioteca de componentes sem usos definidos.
 Build por exportação estática, conforme a [documentação Next](https://nextjs.org/docs/app/getting-started/deploying).
 Credenciais administrativas nunca entram no bundle. Configuração pública usa
 somente URL da API, URL Supabase e chave explicitamente publicável.
+
+`GET /dashboard` retorna contas e agregados SQL do mês até a data local atual.
+Centavos nessa API são strings decimais para preservar inteiros além de 2^53 no
+JavaScript. Saldo consolidado exclui cartões; despesas incluem cartões. CORS
+usa origens explícitas de `WEB_ORIGINS`, sem cookies ou wildcard.
