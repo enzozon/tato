@@ -327,3 +327,28 @@ não está habilitada. Classificador estruturado possui fallback local limitado;
 conceitos mostram fontes em vez de gerar afirmações não verificadas. Detalhes
 no ADR 0010. Frontend continua etapa 9. PR #11 permanece sem merge; CI remoto
 será revalidado após envio final. Não avançar à etapa 8 automaticamente.
+
+## 03/10/2026 — conversa Groq e prévia bancária
+
+Groq pessoal aprovado, ZDR confirmado por Enzo; navegador indisponível impede
+verificação independente. Flags locais habilitadas, sem alterar segredos. Ensaio
+real sintético de conversa e classificação passou; foi necessário adaptar schema
+Pydantic ao `required` estrito do Groq. Histórico enviado exclui fontes e IDs.
+
+Prévia assinada sem gravação, confirmação vinculada ao mesmo arquivo, conta e
+usuário, expiração e deduplicação foram verificadas. Free segue com uma fonte;
+Pro sintético local valida duas contas. Sem alteração de cobrança ou schema.
+Layouts locais PicPay (36 movimentos) e Banestes (8) lidos sem LLM; originais
+ignorados no Git. Banestes sem movimentos é recusado. Fixtures inteiramente
+sintéticas, sem copiar contrapartes/valores dos PDFs fornecidos.
+
+Validação: 205 testes unitários/HTTP, cobertura 84,58%; 40 integrações passaram
+antes do cenário bancário novo, e as 10 integrações de importação passaram após
+adicioná-lo. CI final e combinação com dependências serão conferidos antes do merge.
+Enzo autorizou integrar PRs pendentes incluindo 11. PR 14 exige remover ignore
+mypy obsoleto após atualização SQLModel, detectado no CI; não ignorar esse check.
+
+iPhone com Windows não oferece o controle oficial de apps disponível no Mac.
+MCP não fornece acesso bancário sozinho. Próximo caminho é validar disponibilidade
+do histórico do cartão no Internet Banking com login manual; nenhuma conexão
+bancária automática implementada, nenhuma credencial solicitada ou pagamento feito.

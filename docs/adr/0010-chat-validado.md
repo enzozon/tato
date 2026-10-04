@@ -27,3 +27,16 @@ A API local funciona sem chaves LLM. Em troca, entende um conjunto limitado de
 frases e não oferece conversa livre por IA. Habilitar esse caminho exige revisão
 de política/provedor e guardrails de saída; não será feito por reclassificação
 de texto privado como público. Não há novo schema além do checkpoint aprovado.
+
+## Evolução aprovada em 03/10/2026
+
+Enzo autorizou Groq pessoal e confirmou ZDR na organização da chave. Habilitado
+opt-in em serviço/router/adapter; Gemini/OpenRouter continuam bloqueados. Histórico
+minimizado remove anexos/IDs. A conversa usa prosa filtrada sem cálculo e fallback
+local; conceitos selecionam citações literais públicas com IDs verificados.
+A limitação lexical do guardrail permanece explícita em docs/07-CHAT.md.
+
+Importação no chat usa prévia sem persistência e comprovante HMAC de 15 minutos,
+vinculado ao usuário, conta, arquivo, mapeamento e resultado do parser. Não cria
+schema ou estado extra; reenviar o arquivo custa mais processamento, mas elimina
+armazenamento temporário de documentos pessoais antes da revisão.

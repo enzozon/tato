@@ -69,8 +69,11 @@ Etapa 7: chat autenticado com `POST /chat`, `POST /chat/stream`, `GET /chat` e
 e confirmação, fontes conceituais vêm da busca isolada. Histórico cifrado,
 quota mensal e retries idempotentes estão implementados. SSE entrega eventos
 de progresso e resposta validada inteira. Veja [contratos e exemplos](docs/07-CHAT.md).
-O reconhecimento local é limitado aos formatos documentados; LLM pessoal segue
-bloqueado. Ainda não há conversa livre por IA, frontend ou deploy de produção.
+Conversa livre disponível por Groq com autorização e confirmação de ZDR; fallback
+local em falhas. Perguntas e histórico mínimo são pessoais, sem envio de extratos.
+Importação com prévia assinada em `/import/preview` e confirmação em `/import/confirm`.
+PDFs de conta PicPay/Banestes validados nos layouts locais; cartões/Sicoob pendentes.
+Ainda não há frontend ou deploy de produção.
 
 Etapa 6: indexação local E5-small (384 dimensões), busca híbrida Postgres/FTS/RRF,
 citações e reranking opcional. Base pública com 200 documentos e 40 perguntas:
@@ -83,15 +86,15 @@ enquanto o CI exige recuperação real. A etapa 7 integra as fontes ao chat loca
 
 Etapa 5: camada LLM com adapters Groq/Gemini/OpenRouter, fallback limitado,
 circuit breaker, validação Pydantic/semântica e cache Redis cifrado por usuário.
-Desativada por padrão; dados pessoais bloqueados. `make llm-smoke` permite ensaio
+Desativada por padrão; dados pessoais exigem opt-in Groq/ZDR. `make llm-smoke` permite ensaio
 sintético após configuração de contas gratuitas. Veja [operação e limites](docs/03-LLM.md).
-O chat da etapa 7 respeita esse bloqueio e usa fallback local.
+O chat respeita a política pessoal; Gemini/OpenRouter não recebem esse conteúdo.
 
 Etapa 4: ingestão local CSV/OFX/PDF com centavos exatos, deduplicação, regras
 determinísticas e documento cifrado. Após `GET /me`, crie a origem com
 `POST /accounts`, regras opcionais com `POST /rules` e envie `POST /import`.
 Veja [formatos, contrato e limitações](docs/04-INGESTAO.md). Fallback LLM em uploads
-pessoais permanece bloqueado; fixtures sintéticas ainda exigem exports bancários reais.
+pessoais permanece bloqueado. Exemplos privados não entram no Git nem no LLM.
 
 Backend de sessão, perfil, onboarding, planos e exclusão recuperável da etapa 3:
 `GET /me`, `POST /me/onboarding` e `DELETE /me` exigem bearer Supabase; saúde

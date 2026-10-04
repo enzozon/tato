@@ -22,6 +22,8 @@ e `make integration` com as URLs do banco descartável `tato_test` configuradas.
 
 Não há garantia de fidelidade para prosa financeira gerada livremente: a etapa 6
 mediu falhas reais. Por isso a resposta conceitual atual entrega trechos citados,
-e a conversa usa frases locais. Isso não substitui revisão de política/provedores
-antes de habilitar LLM com dados pessoais. A interface futura precisa escapar
+e o gerador conceitual aceita apenas citações literais de fontes públicas.
+Conversa livre passa por filtro lexical conservador e fallback; esse filtro não
+prova segurança semântica de toda frase. Groq pessoal exige duas flags e ZDR
+confirmado pelo proprietário; Gemini/OpenRouter continuam bloqueados. A interface futura precisa escapar
 fontes como texto e não as inserir como HTML.
