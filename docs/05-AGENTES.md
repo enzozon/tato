@@ -61,3 +61,8 @@ As regras em `agent_rules.py` usam centavos inteiros. Desvio compara quadrados
 com variância escalada, sem arredondar raiz quadrada. Fôlego arredonda projeção
 para cima e exige conta aberta desde o início do mês. Histórico insuficiente
 não gera alarme; padrão de cobrança é hipótese, nunca prova de serviço esquecido.
+
+Configuração usa lock por usuário e quota do plano atual. Concorrência na última
+vaga Free é testada no Postgres; alterar configuração e desativar não cria outro
+agente. Metas são cifradas, limitadas tecnicamente a 100 por usuário; conta de
+cartão não pode sustentar agente de fôlego ou meta. Schemas de saída omitem user_id.
