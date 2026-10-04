@@ -73,3 +73,9 @@ recusa mais de 5.000 linhas no recorte antes de gerar resultados parciais. Saldo
 condição sem revelar descrição. Avisos são limitados a uma ocorrência por condição
 e mês; meta usa alvo como identidade para não repetir a comemoração todo mês.
 Downgrade de plano e exclusão pendente são revalidados a cada execução.
+
+API autenticada: `PUT /agents/{kind}`, `GET /agents`, `POST /goals`, `GET /goals`,
+`GET /insights?limit=50` (máximo 100 recentes) e `POST /insights/{id}/read`.
+Respostas usam no-store. `POST /internal/agents/run` exige token operacional de
+pelo menos 32 caracteres e lista de até 25 UUIDs; data vem do servidor São Paulo.
+Não aceita data, valor financeiro ou destinatário de e-mail do chamador.
