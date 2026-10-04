@@ -19,3 +19,8 @@ somente URL da API, URL Supabase e chave explicitamente publicável.
 Centavos nessa API são strings decimais para preservar inteiros além de 2^53 no
 JavaScript. Saldo consolidado exclui cartões; despesas incluem cartões. CORS
 usa origens explícitas de `WEB_ORIGINS`, sem cookies ou wildcard.
+
+Sessão Supabase permanece em memória; atualizar a página exige novo login.
+Isso evita persistir tokens no armazenamento local. A criação de `/me` antecede
+o resumo, para que a primeira visita não concorra com a inicialização da conta.
+Respostas de uma sessão anterior são descartadas após troca de identidade.
