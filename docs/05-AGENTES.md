@@ -79,3 +79,14 @@ API autenticada: `PUT /agents/{kind}`, `GET /agents`, `POST /goals`, `GET /goals
 Respostas usam no-store. `POST /internal/agents/run` exige token operacional de
 pelo menos 32 caracteres e lista de até 25 UUIDs; data vem do servidor São Paulo.
 Não aceita data, valor financeiro ou destinatário de e-mail do chamador.
+
+E-mail exige as flags `AGENT_EMAIL_ENABLED` e `RESEND_FREE_TIER_CONFIRMED`, além
+da opção individual do agente. O destinatário vem do usuário confirmado no
+Supabase; assunto e corpo são genéricos, sem valores ou descrições financeiras.
+Cada tentativa é persistida antes da rede, com intervalo mínimo de dois minutos,
+até três tentativas e cinco mensagens por usuário/lote. O plano é revalidado.
+Retries usam o mesmo ID de insight; após 23 horas da criação, uma tentativa
+anterior impede novo envio automático. Isso evita duplicação depois da
+[retenção de 24 horas da chave Resend](https://resend.com/docs/dashboard/emails/idempotency-keys).
+Uma entrega incerta permanece pendente para revisão, sem promessa de exactly-once.
+Testes usam transporte simulado e Postgres real; envio remoto ainda não validado.
