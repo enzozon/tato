@@ -66,3 +66,10 @@ Configuração usa lock por usuário e quota do plano atual. Concorrência na ú
 vaga Free é testada no Postgres; alterar configuração e desativar não cria outro
 agente. Metas são cifradas, limitadas tecnicamente a 100 por usuário; conta de
 cartão não pode sustentar agente de fôlego ou meta. Schemas de saída omitem user_id.
+
+Runtime lê somente o ledger da conta autorizada, ignora movimentos futuros e
+recusa mais de 5.000 linhas no recorte antes de gerar resultados parciais. Saldo
+é calculado por SUM desde a abertura. Insights são cifrados; HMAC identifica a
+condição sem revelar descrição. Avisos são limitados a uma ocorrência por condição
+e mês; meta usa alvo como identidade para não repetir a comemoração todo mês.
+Downgrade de plano e exclusão pendente são revalidados a cada execução.
