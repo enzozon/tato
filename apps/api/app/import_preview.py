@@ -12,7 +12,13 @@ from sqlalchemy import Engine
 from app.account_service import account_session
 from app.crypto import dedup_key, load_key
 from app.import_parsers import CsvMapping, ParsedEntry
-from app.import_service import ImportKind, active_account, authorize_import, parse_upload
+from app.import_service import (
+    ImportKind,
+    active_account,
+    authorize_import,
+    parse_upload,
+    validate_pdf_account,
+)
 
 
 class PreviewEntry(BaseModel):
@@ -73,7 +79,7 @@ def preview_import(
     receipt: str | None = None,
 ) -> ImportPreview:
     authorize_import(engine, owner, account, kind)
-    _, entries = parse_upload(content, kind, mapping)
+    text, entries = parse_upload(content, kind, mapping)
     expires = int(time.time()) + 900
     if receipt is not None:
         try:
@@ -89,6 +95,7 @@ def preview_import(
     token = f"{expires}.{signature(owner, account, content, kind, mapping, entries, expires)}"
     with account_session(engine, owner) as session:
         active_account(session, owner, account)
+        validate_pdf_account(session, account, kind, text)
     return ImportPreview(
         account_id=account,
         kind=kind,
