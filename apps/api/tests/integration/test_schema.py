@@ -106,5 +106,5 @@ def test_rls_is_forced_on_all_domain_tables(admin_engine: Engine) -> None:
                 "AND relname NOT IN ('alembic_version', 'knowledge_chunks')"
             )
         ).all()
-    assert len(rows) == 11
+    assert len(rows) == 12
     assert all(enabled and forced for enabled, forced in rows)

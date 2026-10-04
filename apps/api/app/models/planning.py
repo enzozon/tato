@@ -33,6 +33,7 @@ class Goal(TenantRecord, table=True):
     __tablename__: ClassVar[str] = "goals"
     __table_args__ = (
         Index("ix_goals_user", "user_id"),
+        UniqueConstraint("user_id", "id"),
         CheckConstraint("target_cents > 0", name="target"),
     )
     description_ciphertext: bytes
@@ -44,6 +45,8 @@ class Insight(TenantRecord, table=True):
     __tablename__: ClassVar[str] = "insights"
     __table_args__ = (
         UniqueConstraint("user_id", "event_key"),
+        CheckConstraint("email_status IN ('off', 'pending', 'sent')", name="email_status"),
+        CheckConstraint("email_attempts >= 0", name="email_attempts"),
         CheckConstraint(
             "agent_kind IN ('subscription_watch', 'anomaly', 'runway', 'goal')", name="agent_kind"
         ),
@@ -52,6 +55,12 @@ class Insight(TenantRecord, table=True):
     content_ciphertext: bytes
     event_key: str = Field(min_length=1, max_length=128)
     read_at: datetime | None = Field(default=None, sa_column=Column(DateTime(timezone=True)))
+    email_status: str = Field(default="off", max_length=10)
+    email_attempts: int = Field(default=0)
+    email_last_attempt_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True))
+    )
+    email_sent_at: datetime | None = Field(default=None, sa_column=Column(DateTime(timezone=True)))
 
 
 class Subscription(TenantRecord, table=True):
