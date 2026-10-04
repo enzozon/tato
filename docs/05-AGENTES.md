@@ -56,3 +56,8 @@ novas ativações acima da quota sob o mesmo lock de usuário usado pelo chat.
   restantes. Projeção linear explicitamente identificada, sem promessa de precisão.
 - Meta: saldo da conta versus alvo registrado, com aviso ao atingir o alvo.
   Saldo pertence à conta, não comprova que o usuário reservou todo esse dinheiro.
+
+As regras em `agent_rules.py` usam centavos inteiros. Desvio compara quadrados
+com variância escalada, sem arredondar raiz quadrada. Fôlego arredonda projeção
+para cima e exige conta aberta desde o início do mês. Histórico insuficiente
+não gera alarme; padrão de cobrança é hipótese, nunca prova de serviço esquecido.
