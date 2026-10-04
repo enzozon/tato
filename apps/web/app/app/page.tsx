@@ -3,12 +3,15 @@ import { useEffect, useRef, useState } from 'react';
 import identity from '../../../../packages/mascot/identity.json';
 import { Login } from '../../components/Login';
 import { Overview } from '../../components/Overview';
+import { Chat } from '../../components/Chat';
+import { Import } from '../../components/Import';
 import { auth, request, type Profile, type Summary } from '../../lib/client';
 
 export default function AppPage() {
   const [token, setToken] = useState(''), [profile, setProfile] = useState<Profile>();
   const [data, setData] = useState<Summary>(), [error, setError] = useState('');
   const generation = useRef(0);
+  const [tab, setTab] = useState('Resumo');
   async function refresh(current = token) {
     const version = generation.current;
     const p = await request<Profile>('/me', current);
@@ -33,5 +36,9 @@ export default function AppPage() {
       {error && <p role="alert" className="error">{error} <button onClick={()=>refresh().then(()=>setError('')).catch(e=>setError(e.message))}>Tentar novamente</button></p>}
       {!profile && !error && <p role="status">Preparando seu espaço…</p>}
       {profile && !profile.onboarding_completed && <section className="panel"><h2>Você escolhe por onde começar.</h2><p>Cadastre uma conta, importe um extrato e revise a prévia. Não precisamos do seu CPF.</p><button onClick={onboarding}>Entendi, vamos lá</button></section>}
-      {data && <Overview data={data} token={token} refresh={refresh}/>}</>}</main></>;
+      {data && <div key={token}><nav className="tabs" aria-label="Seu espaço">{['Resumo','Conversa','Importar'].map(name=><button className={tab===name?'':'secondary'} key={name} onClick={()=>setTab(name)} aria-current={tab===name?'page':undefined}>{name}</button>)}</nav>
+        {tab==='Resumo' && <Overview data={data} token={token} refresh={refresh}/>}
+        {tab==='Conversa' && <Chat token={token} accounts={data.accounts} refresh={refresh}/>}
+        {tab==='Importar' && <Import token={token} accounts={data.accounts} refresh={refresh}/>}
+      </div>}</>}</main></>;
 }
