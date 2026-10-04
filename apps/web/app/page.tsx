@@ -1,0 +1,16 @@
+import identity from '../../../packages/mascot/identity.json';
+import { Mascot } from '../../../packages/mascot/Mascot';
+
+export default function Home() {
+  return <><header><a className="brand" href="/">{identity.name.toLowerCase()}.</a>
+    <nav aria-label="Principal"><a href="#how">Como funciona</a><a href="#plans">Planos</a><a className="button secondary" href="/app/">Entrar</a></nav></header>
+    <main id="content"><section className="hero"><div><span className="eyebrow">Menos planilha. Mais clareza.</span>
+      <h1>Seu dinheiro,<br/>em uma conversa.</h1><p className="muted">Um espaço tranquilo para entender seus gastos. Importe seu extrato, faça uma pergunta e cuide do próximo passo.</p>
+      <a className="button" href="/app/">Começar gratuitamente →</a><p className="muted"><small>Sem CPF no cadastro. Você decide o que compartilhar.</small></p></div>
+      <div className="hero-art"><Mascot size={230}/><div className="bubble">Quanto gastei com mercado este mês?</div><div className="bubble answer">Vamos consultar seus lançamentos. Cada valor tem uma origem.</div><small className="muted">Conversa ilustrativa · sem dados pessoais</small></div></section>
+      <section className="section" id="how"><span className="eyebrow">No seu ritmo</span><h2>Organizar pode ser simples.</h2><div className="grid">
+        {[['01','Traga seu extrato','Importe CSV, OFX ou PDFs compatíveis. Confira a prévia antes de salvar.'],['02','Converse com clareza','Pergunte sobre despesas, registre um gasto ou entenda um conceito.'],['03','Receba um toque','Agentes observam recorrências, metas e mudanças nos gastos registrados.']].map(([n,title,body])=><article key={n}><span className="eyebrow">{n}</span><h3>{title}</h3><p className="muted">{body}</p></article>)}</div></section>
+      <section className="section" id="plans"><h2>Comece com o essencial.</h2><div className="grid"><article className="panel"><h3>Free</h3><h2>R$ 0</h2><p>Uma fonte de importação<br/>Um agente ativo<br/>200 mensagens por mês</p><a className="button" href="/app/">Criar minha conta</a></article><article className="panel"><h3>Pro · em preparação</h3><p>Três agentes, mais fontes e relatórios. Cobrança ainda não disponível.</p></article><article><h3>Você no controle</h3><p className="muted">O acesso aos bancos não é automático. Você importa arquivos e pode solicitar a exclusão da conta.</p></article></div></section>
+      <section className="section"><h2>Antes de começar</h2><details><summary>Quais bancos são compatíveis?</summary><p>CSV e OFX, além dos layouts observados de conta PicPay e Banestes. Faturas desses bancos e Sicoob ainda precisam de validação.</p></details><details><summary>O aplicativo recomenda investimentos?</summary><p>Não. Ele explica conceitos e consulta seus registros, sem indicar ativos ou prometer resultados.</p></details><details><summary>Posso usar no celular?</summary><p>A interface se adapta ao celular. A instalação e o modo offline estão em desenvolvimento nesta etapa.</p></details></section>
+    </main><footer><a className="brand" href="/">{identity.name.toLowerCase()}.</a><span className="muted">{identity.tagline} · projeto em desenvolvimento</span></footer></>;
+}

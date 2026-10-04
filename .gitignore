@@ -12,6 +12,7 @@ htmlcov/
 !.env.example
 node_modules/
 .next/
+*.tsbuildinfo
 out/
 test-results/
 playwright-report/
