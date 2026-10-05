@@ -3,7 +3,7 @@
 Plano: base Next.js estática; identidade em packages/mascot; sessão Supabase;
 onboarding, contas e resumo; prévia de importação; chat e fontes; agentes;
 PWA sem cache financeiro; testes de navegador e CI. Sem novo schema previsto.
-A branch parte da etapa 8 e mantém seu PR separado enquanto o PR 17 está aberto.
+A branch parte da etapa 8. PR 17 já integrado; o PR desta etapa aponta para main.
 
 Direção visual: papel claro, verde profundo e terracota, tipografia de leitura,
 mascote geométrico autoral. Formulários usam HTML semântico e foco visível.
@@ -68,3 +68,9 @@ um modo de execução da aplicação nem deve ser usado com dados pessoais.
 
 Histórico carregado com atraso é combinado por request_id; respostas recebidas
 na sessão atual prevalecem, inclusive após confirmar um lançamento.
+
+Configuração local usa TATO_ENV=development e RATE_LIMIT_BACKEND=memory
+explicitamente. Esse fallback não substitui Upstash compartilhado em produção.
+Chaves publicável/administrativa Supabase, URL/token Upstash e Resend ainda
+pendentes. Tentativas de login nos consoles não estabeleceram sessão; não
+comprovam credenciais inválidas e não validam os serviços.

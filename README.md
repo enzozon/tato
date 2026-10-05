@@ -32,7 +32,7 @@ execute as receitas do Makefile diretamente no PowerShell, uma por vez.
 
 Instale Docker com Compose v2. Copie `.env.example` para `.env` (no PowerShell:
 `Copy-Item .env.example .env`) e ajuste a senha apenas localmente. Execute
-`make infra-up` para PostgreSQL 17 com pgvector disponível e Redis 8.0.
+`make infra-up` para PostgreSQL 17 com pgvector disponível e Redis 8.10.
 As portas 5432 e 6379 ficam vinculadas somente a `127.0.0.1`.
 
 `make infra-down` encerra os serviços preservando o volume do Postgres.
@@ -41,7 +41,7 @@ esse comando apagaria o banco. Alterar a senha no `.env` não muda a senha de
 um banco já inicializado no volume.
 
 A API de saúde e `make check` independem desses serviços. A camada de dados
-tem dez tabelas e três migrations revisadas, incluindo pgvector e RLS.
+inclui sete migrations revisadas, pgvector e RLS.
 
 ## Preparar o banco de desenvolvimento
 
@@ -57,7 +57,7 @@ make migrate
 make seed
 ```
 
-`db-init` provisiona apenas o papel local; `migrate` aplica as revisions até `0003`;
+`db-init` provisiona apenas o papel local; `migrate` aplica as revisions até `0007`;
 `seed` insere exemplos sintéticos sem sobrescrever registros. Não existe migração
 automática no startup da API. Guarde as chaves: sem elas, os textos não são recuperáveis.
 
@@ -107,7 +107,7 @@ pessoais permanece bloqueado. Exemplos privados não entram no Git nem no LLM.
 Backend de sessão, perfil, onboarding, planos e exclusão recuperável da etapa 3:
 `GET /me`, `POST /me/onboarding` e `DELETE /me` exigem bearer Supabase; saúde
 continua pública. Supabase e Upstash são simulados nos testes locais; PostgreSQL
-e Redis são reais. Não há login visual, contas externas provisionadas nem deploy.
+e Redis são reais. A interface de login existe; autenticação externa e deploy ainda não foram validados.
 Veja [configuração e limites da etapa](docs/03-AUTH-PLANOS.md).
 
 Veja [a arquitetura e o mapa do monorepo](docs/01-ARQUITETURA.md).
@@ -125,13 +125,16 @@ O pre-commit substitui a manutenção de um hook Git manual específico de cada 
 Commits seguem [AGENTS.md](AGENTS.md): uma ideia, corpo explicando o porquê e
 até 400 linhas de adições + remoções, exceto lockfiles e migrations autogeradas.
 
-O CI possui dois jobs: qualidade Python (via pre-commit) e infraestrutura local
-(Compose, migrations, pgvector, RLS, seeds, Redis e avaliação RAG real).
+O CI possui três jobs: qualidade Python (via pre-commit), interface/PWA
+(build, TypeScript, auditoria npm e navegador) e infraestrutura local
+(Compose, migrations, pgvector, RLS, seeds, Redis, avaliação RAG real e fluxo
+completo da interface até o PostgreSQL).
 Testes de integração são separados dos unitários, mas obrigatórios no CI.
 Dependabot roda mensalmente.
 
 O backend da [etapa 8](docs/05-AGENTES.md) oferece quatro regras de agentes,
 configuração por plano, metas e caixa de avisos cifrada. E-mail e cron são opt-in;
-entrega externa e deploy ainda não validados. A interface pertence à etapa 9.
-Build do frontend/API Docker e auditorias adicionais entram com as etapas
+entrega externa e deploy ainda não validados. A [etapa 9](docs/07-FRONT-PWA.md)
+implementa landing, app responsivo, mascote e PWA com página offline genérica.
+Build Docker da API e auditorias adicionais continuam pendentes nas etapas
 correspondentes; não há jobs vazios que simulem essas verificações.

@@ -388,3 +388,31 @@ A revisão final encontrou que pendências expiradas poderiam ocupar a janela de
 seleção da entrega. O filtro passou para a consulta SQL; teste com 101 avisos
 expirados comprova que uma mensagem nova ainda é entregue. CI do primeiro HEAD
 05837a8 passou; a correção será revalidada no HEAD atualizado.
+
+## 05/10/2026 — interface, PWA e validação do fluxo completo
+
+Etapa 9 implementada em branch própria: landing, tatu autoral centralizado,
+login/cadastro, onboarding, contas, dashboard SQL com projeção explícita,
+importação com revisão, chat, agentes/metas/avisos e exclusão confirmada.
+Google preparado sob flag; provedor real ainda não configurado. Sessão fica
+em memória. PWA guarda só página offline genérica e ícones, nunca finanças.
+
+Verificação local: 228 testes Python, 81,10% de cobertura, lint/mypy;
+49 integrações Postgres/Redis passaram na etapa, com cenário de projeção
+revalidado após sua inclusão. Doze fluxos de navegador desktop/mobile
+passaram. Um teste completo com FastAPI/Postgres reais criou conta sintética,
+importou CSV e conferiu a mesma despesa no chat e o saldo no resumo.
+Lighthouse mobile: acessibilidade, boas práticas e SEO com 100 pontos.
+Esses resultados não validam autenticação externa nem instalação física.
+
+Aprendizados: valores grandes exigem centavos em string e BigInt na interface;
+histórico atrasado não pode sobrescrever mensagens novas. Ambos têm testes.
+O teste completo detectou ausência de TATO_ENV local; fallback de rate limit
+em memória foi explicitado para desenvolvimento. URL Supabase normalizada
+a partir da variável antiga com erro de nome; token interno gerado localmente.
+
+Chaves Supabase/Upstash e configuração Resend seguem pendentes. Logins de
+console tentados não estabeleceram sessão; não houve envio real de e-mail,
+ativação de cron, deploy ou gasto. Faturas específicas/Sicoob permanecem
+indisponíveis conforme limites já aceitos. PR 17 foi confirmado como integrado;
+o PR desta etapa será aberto para main, com validações externas identificadas.
