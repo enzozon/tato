@@ -1,3 +1,4 @@
+import calendar
 from datetime import date, datetime
 from uuid import UUID
 from zoneinfo import ZoneInfo
@@ -40,6 +41,7 @@ class Dashboard(BaseModel):
     balance_cents: str
     expense_cents: str
     categories: list[CategoryTotal]
+    projected_balance_cents: str | None = None
     source: str = "ledger_summary_v1"
 
 
@@ -53,6 +55,8 @@ def summary(engine: Engine, owner: UUID, today: date) -> Dashboard:
         ).all()
         views = []
         balance = 0
+        cash_expenses = 0
+        complete_history = bool(accounts)
         for account in accounts:
             total = session.exec(
                 select(func.coalesce(func.sum(Transaction.amount_cents), 0)).where(
@@ -65,6 +69,19 @@ def summary(engine: Engine, owner: UUID, today: date) -> Dashboard:
             amount = account.opening_balance_cents + int(total)
             if account.kind != "credit_card" and account.opening_date <= today:
                 balance += amount
+                spent = session.exec(
+                    select(func.coalesce(func.sum(Transaction.amount_cents), 0)).where(
+                        Transaction.user_id == owner,
+                        Transaction.account_id == account.id,
+                        Transaction.kind == "expense",
+                        Transaction.booked_on >= month_start(today),
+                        Transaction.booked_on <= today,
+                    )
+                ).one()
+                cash_expenses -= int(spent)
+                complete_history &= account.opening_date <= month_start(today)
+            elif account.kind != "credit_card":
+                complete_history = False
             views.append(
                 AccountView(
                     id=account.id,
@@ -102,6 +119,20 @@ def summary(engine: Engine, owner: UUID, today: date) -> Dashboard:
             balance_cents=str(balance),
             expense_cents=str(sum(int(row.amount_cents) for row in categories)),
             categories=categories[:5],
+            projected_balance_cents=(
+                str(
+                    balance
+                    - (
+                        cash_expenses
+                        * (calendar.monthrange(today.year, today.month)[1] - today.day)
+                        + today.day
+                        - 1
+                    )
+                    // today.day
+                )
+                if complete_history and any(a.kind != "credit_card" for a in accounts)
+                else None
+            ),
         )
 
 

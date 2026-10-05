@@ -29,6 +29,7 @@ test('landing responsiva e login com valores exatos',async({page})=>{
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await signIn(page);
   await expect(page.getByText('R$ 11.529.215.046.068.469,76',{exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.getByRole('button',{name:'Sair',exact:true}).click();
   await expect(page.getByRole('heading',{name:'Que bom te ver.'})).toBeVisible();
   await expect(page.getByText('Conta sintética',{exact:true})).toHaveCount(0);

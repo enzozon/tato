@@ -20,6 +20,12 @@ Centavos nessa API são strings decimais para preservar inteiros além de 2^53 n
 JavaScript. Saldo consolidado exclui cartões; despesas incluem cartões. CORS
 usa origens explícitas de `WEB_ORIGINS`, sem cookies ou wildcard.
 
+Projeção do dashboard: saldo das contas menos despesas diárias médias projetadas
+até o fim do mês, sem cartões ou receitas futuras. Exige contas abertas desde o
+início do mês; a hipótese de histórico completo depende dos imports do usuário.
+Centavos arredondados para cima nas despesas futuras; cálculo inteiro no backend.
+O pet se enrola quando esse saldo projetado fica negativo; sem contas, dorme.
+
 Sessão Supabase permanece em memória; atualizar a página exige novo login.
 Isso evita persistir tokens no armazenamento local. A criação de `/me` antecede
 o resumo, para que a primeira visita não concorra com a inicialização da conta.

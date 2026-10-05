@@ -34,6 +34,7 @@ def test_summary_preserves_money_and_owner(runtime_engine, owners, agent_account
             )
     result = summary(runtime_engine, owners[0], date(2026, 10, 4))
     assert result.balance_cents == str(2**60 - 101)
+    assert result.projected_balance_cents == str(2**60 - 783)
     assert result.expense_cents == "101" and result.categories[0].name == "Sem categoria"
     other = summary(runtime_engine, owners[1], date(2026, 10, 4))
     assert other.expense_cents == "0" and len(other.accounts) == 1
