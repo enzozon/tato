@@ -41,3 +41,10 @@ guarda somente a página genérica offline e ícones. Nenhuma resposta de API, H
 autenticado ou transação entra em CacheStorage. Não é possível consultar finanças
 sem rede. HTTPS é necessário fora do localhost, conforme [MDN](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable).
 Instalação física em Android/iPhone ainda exige dispositivo e ambiente HTTPS.
+
+`make config-check` mostra apenas presença/formato das configurações. `make
+web-config` exporta uma lista fechada de três configurações públicas para
+`apps/web/.env.local`, ignorado no Git. Chave JWT service_role ou sb_secret é
+recusada. Login de console não substitui chave de API; presença não prova acesso.
+Nesta retomada a URL local estava em SUPARABASE_PROJECT_URL; foi normalizada
+para SUPABASE_URL. Token interno local gerado, sem ativar cron ou envio remoto.

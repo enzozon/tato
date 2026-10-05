@@ -58,3 +58,9 @@ rag-measure:
 
 chat-eval:
 	uv run --locked --env-file .env python scripts/eval_chat.py
+
+config-check:
+	uv run --locked --env-file .env python scripts/check_config.py
+
+web-config:
+	uv run --locked --env-file .env python scripts/check_config.py --write-web
