@@ -17,6 +17,14 @@ make dev
 A API responde em `http://127.0.0.1:8000/health` e documenta seu contrato em
 `http://127.0.0.1:8000/docs`. O health verifica somente o processo HTTP.
 
+Para a interface, instale Node 24 e execute `npm ci` na raiz. Use
+`make config-check` para identificar configurações ausentes e `make web-config`
+para preparar somente URLs e chave publicável do frontend. Inicie a API com
+`make dev` e a interface com `npm run dev --workspace=tato-web` (porta 3000).
+No PowerShell com scripts desabilitados, use `npm.cmd`. `npm run build` exporta
+o site em `apps/web/out`; não publica. Testes: `npm test --workspace=tato-web`.
+Sem Supabase configurado, a landing funciona e o login informa a pendência.
+
 No Windows, GNU Make também é necessário para os comandos acima. Como alternativa,
 execute as receitas do Makefile diretamente no PowerShell, uma por vez.
 

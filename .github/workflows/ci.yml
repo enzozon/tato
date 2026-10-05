@@ -12,6 +12,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  web:
+    name: Interface e PWA
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # versão 6
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run build
+      - run: npm run check:web
+      - run: npm exec --workspace=tato-web -- playwright install --with-deps chromium
+      - run: npm exec --workspace=tato-web -- playwright test --config=playwright.pwa.config.ts
+      - run: npm test --workspace=tato-web
+
   quality:
     name: Qualidade Python
     runs-on: ubuntu-latest
