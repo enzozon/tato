@@ -110,3 +110,24 @@ test('cadastro aguarda confirmação e Google usa o retorno permitido',async({pa
   await page.getByRole('button',{name:'Continuar com Google'}).click();
   await expect(page.getByRole('heading',{name:'Continuação OAuth simulada'})).toBeVisible();
 });
+
+test('histórico atrasado preserva a resposta recém-recebida',async({page})=>{
+  await signIn(page);
+  let release!:()=>void;
+  const gate=new Promise<void>(resolve=>{release=resolve;});
+  await page.route('**/chat',async route=>{
+    if(route.request().method()!=='GET')return route.fallback();
+    await gate;
+    return route.fulfill({json:[{request:{request_id:owner,question:'Pergunta anterior',account_id:null},
+      response:{turn_id:owner,message:'Resposta anterior',mood:'calmo',sources:[]}}]});
+  });
+  await page.route('**/chat/stream',route=>route.fulfill({contentType:'text/event-stream',
+    body:'event: reply\ndata: '+JSON.stringify({turn_id:account,message:'Resposta nova',mood:'calmo',sources:[]})+'\n\n'}));
+  await page.getByRole('button',{name:'Conversa',exact:true}).click();
+  await page.getByLabel('Sua mensagem').fill('Olá');
+  await page.getByRole('button',{name:'Enviar mensagem'}).click();
+  await expect(page.getByText('Resposta nova',{exact:true})).toBeVisible();
+  release();
+  await expect(page.getByText('Resposta anterior',{exact:true})).toBeVisible();
+  await expect(page.getByText('Resposta nova',{exact:true})).toBeVisible();
+});

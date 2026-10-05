@@ -65,3 +65,6 @@ interface em :3001. Só Supabase é simulado: conta, prévia, importação, chat
 resumo usam SQL real em tato_test. O servidor exclusivo recusa Postgres remoto,
 força LLM/e-mail desligados e restringe autenticação ao token sintético. Não é
 um modo de execução da aplicação nem deve ser usado com dados pessoais.
+
+Histórico carregado com atraso é combinado por request_id; respostas recebidas
+na sessão atual prevalecem, inclusive após confirmar um lançamento.

@@ -34,7 +34,7 @@ export function Chat({token, accounts, refresh}: {token:string; accounts:Account
   const [turns,setTurns]=useState<Turn[]>([]), [busy,setBusy]=useState(false), [error,setError]=useState('');
   const [attachment,setAttachment]=useState(false), [pending,setPending]=useState<Question>();
   const bottom=useRef<HTMLDivElement>(null);
-  useEffect(()=>{let active=true; request<Turn[]>('/chat',token).then(t=>{if(active)setTurns(t);}).catch(()=>{if(active)setError('Histórico indisponível.');});return()=>{active=false;};},[token]);
+  useEffect(()=>{let active=true; request<Turn[]>('/chat',token).then(t=>{if(active)setTurns(current=>[...t.filter(old=>!current.some(item=>item.request.request_id===old.request.request_id)),...current]);}).catch(()=>{if(active)setError('Histórico indisponível.');});return()=>{active=false;};},[token]);
   useEffect(()=>{bottom.current?.scrollIntoView({block:'nearest'});},[turns]);
   async function send(question:Question) {
     setBusy(true);setError('');setPending(question);
