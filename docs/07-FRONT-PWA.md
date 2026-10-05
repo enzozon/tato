@@ -54,3 +54,8 @@ web-config` exporta uma lista fechada de três configurações públicas para
 recusada. Login de console não substitui chave de API; presença não prova acesso.
 Nesta retomada a URL local estava em SUPARABASE_PROJECT_URL; foi normalizada
 para SUPABASE_URL. Token interno local gerado, sem ativar cron ou envio remoto.
+
+Login Google só aparece com `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true`, após ativar
+o provedor e autorizar o redirect `/app/` no Supabase/Google. Cadastro envia esse
+mesmo destino de confirmação. A operação real de ambos ainda depende das chaves
+do projeto e da configuração externa; testes sintéticos não validam o provedor.

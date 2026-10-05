@@ -89,3 +89,24 @@ test('agentes respeitam contrato e exclusão exige confirmação',async({page})=
   await page.getByRole('button',{name:'Excluir permanentemente'}).click();
   await expect(page.getByRole('heading',{name:'Que bom te ver.'})).toBeVisible();expect(deleted).toBe(1);
 });
+
+test('cadastro aguarda confirmação e Google usa o retorno permitido',async({page})=>{
+  await page.route('https://auth.example.test/auth/v1/signup**',route=>{
+    expect(new URL(route.request().url()).searchParams.get('redirect_to')).toBe('http://127.0.0.1:3000/app/');
+    return route.fulfill({json:{id:owner,email:'teste@example.test',identities:[]}});
+  });
+  await page.route('https://auth.example.test/auth/v1/authorize**',route=>{
+    const url=new URL(route.request().url());
+    expect(url.searchParams.get('provider')).toBe('google');
+    expect(url.searchParams.get('redirect_to')).toBe('http://127.0.0.1:3000/app/');
+    return route.fulfill({contentType:'text/html; charset=utf-8',body:'<h1>Continuação OAuth simulada</h1>'});
+  });
+  await page.goto('/app/');
+  await page.getByRole('button',{name:'Criar conta gratuitamente'}).click();
+  await page.getByLabel('E-mail',{exact:true}).fill('teste@example.test');
+  await page.getByLabel('Senha',{exact:true}).fill('synthetic-password');
+  await page.getByRole('button',{name:'Criar conta',exact:true}).click();
+  await expect(page.getByRole('status')).toContainText('Confira seu e-mail');
+  await page.getByRole('button',{name:'Continuar com Google'}).click();
+  await expect(page.getByRole('heading',{name:'Continuação OAuth simulada'})).toBeVisible();
+});
