@@ -63,3 +63,28 @@ test('chat confirma lançamento validado e mostra fontes como texto',async({page
   await expect(page.getByText('<img src=x onerror=alert(1)>',{exact:true})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
+
+test('agentes respeitam contrato e exclusão exige confirmação',async({page})=>{
+  await signIn(page);let enabled=true,deleted=0;
+  await page.route('**/agents',route=>route.fulfill({json:[{id:owner,kind:'runway',account_id:account,goal_id:null,enabled,email_enabled:false}]}));
+  await page.route('**/goals',route=>route.fulfill({json:[]}));
+  await page.route('**/insights',route=>route.fulfill({json:[]}));
+  await page.route('**/agents/runway',route=>{
+    const body=route.request().postDataJSON();
+    expect(Object.keys(body).sort()).toEqual(['account_id','email_enabled','enabled','goal_id']);
+    enabled=body.enabled;return route.fulfill({json:{...body,id:owner,kind:'runway'}});
+  });
+  await page.getByRole('button',{name:'Agentes',exact:true}).click();
+  await page.getByRole('button',{name:'Pausar',exact:true}).click();
+  await expect(page.getByText('Pausado',{exact:true})).toBeVisible();
+  await page.route('**/me',route=>{
+    if(route.request().method()==='DELETE'){deleted++;expect(route.request().postDataJSON()).toEqual({confirm:true});return route.fulfill({status:204});}
+    return route.fallback();
+  });
+  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  await page.getByText('Excluir minha conta',{exact:true}).click();
+  await expect(page.getByRole('button',{name:'Excluir permanentemente'})).toBeDisabled();expect(deleted).toBe(0);
+  await page.getByLabel('Digite EXCLUIR para confirmar').fill('EXCLUIR');
+  await page.getByRole('button',{name:'Excluir permanentemente'}).click();
+  await expect(page.getByRole('heading',{name:'Que bom te ver.'})).toBeVisible();expect(deleted).toBe(1);
+});

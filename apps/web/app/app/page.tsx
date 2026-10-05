@@ -5,6 +5,8 @@ import { Login } from '../../components/Login';
 import { Overview } from '../../components/Overview';
 import { Chat } from '../../components/Chat';
 import { Import } from '../../components/Import';
+import { Agents } from '../../components/Agents';
+import { Settings } from '../../components/Settings';
 import { auth, request, type Profile, type Summary } from '../../lib/client';
 
 export default function AppPage() {
@@ -36,9 +38,11 @@ export default function AppPage() {
       {error && <p role="alert" className="error">{error} <button onClick={()=>refresh().then(()=>setError('')).catch(e=>setError(e.message))}>Tentar novamente</button></p>}
       {!profile && !error && <p role="status">Preparando seu espaço…</p>}
       {profile && !profile.onboarding_completed && <section className="panel"><h2>Você escolhe por onde começar.</h2><p>Cadastre uma conta, importe um extrato e revise a prévia. Não precisamos do seu CPF.</p><button onClick={onboarding}>Entendi, vamos lá</button></section>}
-      {data && <div key={token}><nav className="tabs" aria-label="Seu espaço">{['Resumo','Conversa','Importar'].map(name=><button className={tab===name?'':'secondary'} key={name} onClick={()=>setTab(name)} aria-current={tab===name?'page':undefined}>{name}</button>)}</nav>
+      {data && <div key={token}><nav className="tabs" aria-label="Seu espaço">{['Resumo','Conversa','Importar','Agentes','Conta'].map(name=><button className={tab===name?'':'secondary'} key={name} onClick={()=>setTab(name)} aria-current={tab===name?'page':undefined}>{name}</button>)}</nav>
         {tab==='Resumo' && <Overview data={data} token={token} refresh={refresh}/>}
         {tab==='Conversa' && <Chat token={token} accounts={data.accounts} refresh={refresh}/>}
         {tab==='Importar' && <Import token={token} accounts={data.accounts} refresh={refresh}/>}
+        {tab==='Agentes' && profile && <Agents token={token} accounts={data.accounts} limit={profile.plan.agents}/>}
+        {tab==='Conta' && profile && <Settings token={token} profile={profile}/>}
       </div>}</>}</main></>;
 }

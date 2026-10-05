@@ -29,3 +29,8 @@ Importação mantém arquivo e recibo apenas em memória; qualquer edição inva
 a prévia. O chat usa SSE e só apresenta a resposta validada pela API; repetir
 uma tentativa reutiliza request_id. React trata descrições e fontes como texto,
 sem HTML/Markdown executável. Confirmação de lançamento chama a rota própria.
+
+Agentes permitem configurar, pausar, criar metas e marcar avisos como lidos.
+Quota permanece no backend. E-mail não é oferecido como ativo sem configuração
+externa validada. Exclusão exige digitar EXCLUIR; o backend conserva a proteção
+de exclusão pendente se a remoção no provedor falhar.
