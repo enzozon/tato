@@ -416,3 +416,12 @@ console tentados não estabeleceram sessão; não houve envio real de e-mail,
 ativação de cron, deploy ou gasto. Faturas específicas/Sicoob permanecem
 indisponíveis conforme limites já aceitos. PR 17 foi confirmado como integrado;
 o PR desta etapa será aberto para main, com validações externas identificadas.
+
+Retomada: CI do PR 18 no HEAD 7cd7606 aprovado nos três jobs (execuções
+37303154812 e 37303189773). Mapeamento CSV da interface ampliado com
+identificador estável, separador decimal e sinal das despesas. Formulário
+parcial é recusado e editar opções invalida a prévia. Quatorze testes de
+interface passaram; fluxo completo com PostgreSQL confirmou despesa positiva
+com ponto decimal, cálculo do saldo e consulta no chat. Make check permanece
+com 228 testes e 81,10% de cobertura. Configurações externas rechecadas:
+chaves Supabase/Upstash e Resend continuam ausentes; PR permanece rascunho.

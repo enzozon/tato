@@ -16,11 +16,14 @@ test('interface importa no Postgres e consulta o valor pelo chat',async({page})=
   await page.getByRole('button',{name:'Salvar conta',exact:true}).click();
   await expect(page.getByText('Conta de teste completo',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Importar',exact:true}).click();
-  await page.getByLabel('Extrato ou fatura').setInputFiles({name:'synthetic.csv',mimeType:'text/csv',buffer:Buffer.from(`data;descricao;valor\n${bankDate};Mercado sintético;-12,34`)});
+  await page.getByLabel('Extrato ou fatura').setInputFiles({name:'synthetic.csv',mimeType:'text/csv',buffer:Buffer.from(`data;descricao;valor;id\n${bankDate};Mercado sintético;12.34;synthetic-001`)});
   await page.getByText('Mapear colunas de CSV personalizado').click();
   await page.getByLabel('Coluna da data').fill('data');
   await page.getByLabel('Coluna da descrição').fill('descricao');
   await page.getByLabel('Coluna do valor').fill('valor');
+  await page.getByLabel('Coluna do identificador (opcional)').fill('id');
+  await page.getByLabel('Separador decimal').selectOption('.');
+  await page.getByLabel('Sinal das despesas').selectOption('true');
   await page.getByRole('button',{name:'Revisar prévia'}).click();
   await expect(page.getByText('Mercado sintético',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Confirmar importação'}).click();

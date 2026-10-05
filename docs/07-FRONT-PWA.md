@@ -74,3 +74,7 @@ explicitamente. Esse fallback não substitui Upstash compartilhado em produção
 Chaves publicável/administrativa Supabase, URL/token Upstash e Resend ainda
 pendentes. Tentativas de login nos consoles não estabeleceram sessão; não
 comprovam credenciais inválidas e não validam os serviços.
+
+CSV personalizado permite identificador estável, separador decimal e sinal das
+despesas. Mapeamento parcial é recusado antes do upload; qualquer edição exige
+nova prévia. O teste completo usa despesas positivas com ponto decimal e ID.

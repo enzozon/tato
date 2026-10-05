@@ -131,3 +131,26 @@ test('histórico atrasado preserva a resposta recém-recebida',async({page})=>{
   await expect(page.getByText('Resposta anterior',{exact:true})).toBeVisible();
   await expect(page.getByText('Resposta nova',{exact:true})).toBeVisible();
 });
+
+test('mapeamento parcial bloqueia envio e editar sinais invalida a prévia',async({page})=>{
+  await signIn(page);let previews=0;
+  await page.route('**/import/preview',route=>{
+    previews++;
+    return route.fulfill({json:{count:1,start:'2026-10-01',end:'2026-10-01',
+      credits_cents:0,debits_cents:1234,receipt:'signed',warning:'Revise.',truncated:false,entries:[]}});
+  });
+  await page.getByRole('button',{name:'Importar',exact:true}).click();
+  await page.getByLabel('Extrato ou fatura').setInputFiles({name:'synthetic.csv',mimeType:'text/csv',buffer:Buffer.from('data,descricao,valor')});
+  await page.getByText('Mapear colunas de CSV personalizado').click();
+  await page.getByLabel('Coluna da data').fill('data');
+  await page.getByRole('button',{name:'Revisar prévia'}).click();
+  await expect(page.getByRole('status')).toContainText('Preencha as colunas');
+  expect(previews).toBe(0);
+  await page.getByLabel('Coluna da descrição').fill('descricao');
+  await page.getByLabel('Coluna do valor').fill('valor');
+  await page.getByRole('button',{name:'Revisar prévia'}).click();
+  await expect(page.getByRole('button',{name:'Confirmar importação'})).toBeVisible();
+  await page.getByLabel('Sinal das despesas').selectOption('true');
+  await expect(page.getByRole('button',{name:'Confirmar importação'})).toHaveCount(0);
+  expect(previews).toBe(1);
+});
