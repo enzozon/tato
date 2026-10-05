@@ -34,3 +34,10 @@ Agentes permitem configurar, pausar, criar metas e marcar avisos como lidos.
 Quota permanece no backend. E-mail não é oferecido como ativo sem configuração
 externa validada. Exclusão exige digitar EXCLUIR; o backend conserva a proteção
 de exclusão pendente se a remoção no provedor falhar.
+
+O manifesto e PNGs 192/512 tornam a instalação possível em navegadores compatíveis;
+sharp rasteriza apenas o SVG autoral do pacote, sem API de imagem. O service worker
+guarda somente a página genérica offline e ícones. Nenhuma resposta de API, HTML
+autenticado ou transação entra em CacheStorage. Não é possível consultar finanças
+sem rede. HTTPS é necessário fora do localhost, conforme [MDN](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable).
+Instalação física em Android/iPhone ainda exige dispositivo e ambiente HTTPS.

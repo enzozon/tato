@@ -1,0 +1,2 @@
+:root{--ink:#173e35;--paper:#faf8f1;--muted:#52655e;--accent:#a8492a;--line:#d6dfd5;--wash:#edf2e9;font-family:Arial,sans-serif;color:var(--ink);background:var(--paper)}
+.breath{transform-origin:center;animation:breathe 4s ease-in-out infinite}.eye{animation:blink 6s infinite}@keyframes breathe{50%{transform:translateY(-3px)}}@keyframes blink{0%,46%,50%,100%{opacity:1}48%{opacity:0}}@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}

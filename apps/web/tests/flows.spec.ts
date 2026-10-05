@@ -25,7 +25,7 @@ async function signIn(page:Page) {
 
 test('landing responsiva e login com valores exatos',async({page})=>{
   await page.goto('/');
-  await expect(page.getByRole('heading',{name:'Seu dinheiro, em uma conversa.'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:/seu dinheiro, em uma conversa./i})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await signIn(page);
   await expect(page.getByText('R$ 11.529.215.046.068.469,76',{exact:true})).toBeVisible();
