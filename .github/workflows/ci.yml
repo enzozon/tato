@@ -91,6 +91,14 @@ jobs:
           uv run --locked alembic check
       - name: Verificar resposta do Redis
         run: test "$(docker compose exec -T redis redis-cli ping)" = "PONG"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm exec --workspace=tato-web -- playwright install --with-deps chromium
+      - name: Validar interface com Postgres real
+        run: npm exec --workspace=tato-web -- playwright test --config=playwright.integration.config.ts
       - name: Encerrar ambiente descartável do CI
         if: always()
         run: docker compose down -v

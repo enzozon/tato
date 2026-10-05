@@ -59,3 +59,9 @@ Login Google só aparece com `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true`, após ativa
 o provedor e autorizar o redirect `/app/` no Supabase/Google. Cadastro envia esse
 mesmo destino de confirmação. A operação real de ambos ainda depende das chaves
 do projeto e da configuração externa; testes sintéticos não validam o provedor.
+
+O teste `playwright.integration.config.ts` sobe FastAPI em localhost:8009 e a
+interface em :3001. Só Supabase é simulado: conta, prévia, importação, chat e
+resumo usam SQL real em tato_test. O servidor exclusivo recusa Postgres remoto,
+força LLM/e-mail desligados e restringe autenticação ao token sintético. Não é
+um modo de execução da aplicação nem deve ser usado com dados pessoais.
