@@ -61,6 +61,8 @@ Neon, Upstash ou Vercel. Quotas globais dependem do experimento da etapa 11.
 significa sem limite contratual; exceder um limite após downgrade mostra zero
 restante, sem ocultar o consumo existente. A rota não descriptografa documentos
 ou conversas e retorna Cache-Control: no-store.
+A tela Conta mostra usados/restantes, reinício UTC das mensagens e o significado
+de limite nulo. Falha de consulta fica explícita e não esconde a exclusão da conta.
 
 Sentry/PostHog/Logfire ficam opt-in. Não enviar identidade, e-mail, URL com IDs,
 headers, corpos, variáveis locais, captura automática ou gravação de sessão.

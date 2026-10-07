@@ -37,9 +37,13 @@ test('interface importa no Postgres e consulta o valor pelo chat',async({page})=
   await expect(page.locator('.answer strong')).toHaveText('R$ 12,34');
   await page.getByRole('button',{name:'Resumo',exact:true}).click();
   await expect(page.locator('.metrics article').filter({hasText:'Saldo das contas'}).getByRole('heading')).toHaveText('R$ 87,66');
+  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  const usage=page.getByRole('region',{name:'Consumo do plano'});
+  await expect(usage.getByText('1 usados · 199 restantes de 200')).toBeVisible();
+  await expect(usage.getByText('1 usados · 0 restantes de 1')).toBeVisible();
+  await expect(usage.getByText('0 usados · 1 restantes de 1')).toBeVisible();
   if(live) {
     console.log('LIVE_STAGE=chat_dashboard');
-    await page.getByRole('button',{name:'Conta',exact:true}).click();
     await page.getByText('Excluir minha conta',{exact:true}).click();
     await page.getByLabel('Digite EXCLUIR para confirmar').fill('EXCLUIR');
     await page.getByRole('button',{name:'Excluir permanentemente'}).click();

@@ -482,3 +482,8 @@ UTC, fontes distintas e agentes ativos. Não mede quotas globais de provedores.
 Endpoint aprovado em 231 testes Python/HTTP (81,13%) e 50 integrações
 PostgreSQL/Redis, incluindo isolamento, falhas aceitas, prazo mensal, Pro e
 exclusão pendente. Nenhuma migration gerada nesta parte.
+A tela Conta passa a mostrar consumo e saldo de quotas, inclusive plano sem
+limite e falha de consulta. Dados não ficam no armazenamento do navegador.
+TypeScript/build e 22 testes desktop/mobile aprovados. O fluxo completo com
+PostgreSQL confere uma fonte usada e um pedido contado após CSV/chat, sem mocks
+para o consumo. Schema e cobrança continuam aguardando aprovação.
