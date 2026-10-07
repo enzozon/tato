@@ -508,3 +508,6 @@ unicidade, valores inválidos e exclusão em cascata. Alembic sem drift e ciclo
 down/up aprovado no banco descartável; banco histórico tato preservado.
 Assinaturas continuam somente leitura para o papel comum da API; nenhuma
 cobrança ou concessão de Pro foi ativada nesta parte.
+Plano pago agora exige prazo futuro UTC em cada consulta; ausência, igualdade,
+expiração ou data sem fuso não concedem Pro. Assinaturas sintéticas locais
+continuam compatíveis. Testes cobrem os dois provedores e o limite exato.

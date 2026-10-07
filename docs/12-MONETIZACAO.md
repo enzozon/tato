@@ -26,6 +26,8 @@ enviar notificações como parte desta etapa. Dados de teste são sintéticos.
 `valid_until` (UTC). Referências externas são únicas por provedor; campos internos
 não entram no schema público. Pro de teste concedido por pagamento exige prazo
 vigente; assinaturas sintéticas locais existentes continuam compatíveis.
+`user_plan` exige `valid_until` futuro e com fuso para assinaturas de pagamento.
+Na igualdade do prazo, o plano já é Free; não depende de cron para expirar.
 
 `billing_checkouts`: usuário, provedor, request_id, referência externa, valor
 inteiro em centavos, estado pending/paid/canceled e datas. Request_id único por
