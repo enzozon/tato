@@ -1,0 +1,7 @@
+{
+  "name": "@tato/mascot",
+  "version": "0.1.0",
+  "private": true,
+  "peerDependencies": {"react": "19.3.0"},
+  "devDependencies": {"@types/react": "^19.0.0"}
+}

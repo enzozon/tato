@@ -18,6 +18,8 @@
 - `make rag-judge`: avaliação LLM pública opt-in; indisponibilidade não é aprovação.
 - `make rag-measure`: memória/latência local de inferência CPU, sem serviço pago.
 - Windows: uv e GNU Make no PATH; Docker com Compose v2 para infraestrutura.
+- Web: Node 24; `npm ci`, `npm run build`, `npm run check:web`, `npm test --workspace=tato-web`.
+- `make config-check` audita presença; `make web-config` exporta só configuração pública.
 
 ## Mapa
 
@@ -25,8 +27,8 @@
 - `apps/api/app/llm*.py`: contratos, adapters, fallback, cache cifrado e ciclo de vida da geração.
 - `apps/api/migrations/`: schema congelado e RLS; não importar modelos vivos em revisions.
 - `apps/api/tests/`: testes da API e contratos.
-- `apps/web/`: Next.js 16 estático/PWA; implementação na etapa 9.
-- `packages/mascot/`: identidade e futura arte/persona; nenhuma duplicação no app.
+- `apps/web/`: Next.js 16 estático/PWA, componentes e testes Playwright.
+- `packages/mascot/`: identidade, SVG, ícone, tema e persona; nenhuma duplicação no app.
 - `apps/api/app/rag/`, `knowledge/`, `evals/`: recuperação isolada, corpus público e avaliações.
 - `docs/`: arquitetura, ADRs, diário e experimento de quotas.
 - `.codex/skills/`: instruções específicas de commits e futuras rotinas do projeto.

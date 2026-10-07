@@ -388,3 +388,85 @@ A revisão final encontrou que pendências expiradas poderiam ocupar a janela de
 seleção da entrega. O filtro passou para a consulta SQL; teste com 101 avisos
 expirados comprova que uma mensagem nova ainda é entregue. CI do primeiro HEAD
 05837a8 passou; a correção será revalidada no HEAD atualizado.
+
+## 05/10/2026 — interface, PWA e validação do fluxo completo
+
+Etapa 9 implementada em branch própria: landing, tatu autoral centralizado,
+login/cadastro, onboarding, contas, dashboard SQL com projeção explícita,
+importação com revisão, chat, agentes/metas/avisos e exclusão confirmada.
+Google preparado sob flag; provedor real ainda não configurado. Sessão fica
+em memória. PWA guarda só página offline genérica e ícones, nunca finanças.
+
+Verificação local: 228 testes Python, 81,10% de cobertura, lint/mypy;
+49 integrações Postgres/Redis passaram na etapa, com cenário de projeção
+revalidado após sua inclusão. Doze fluxos de navegador desktop/mobile
+passaram. Um teste completo com FastAPI/Postgres reais criou conta sintética,
+importou CSV e conferiu a mesma despesa no chat e o saldo no resumo.
+Lighthouse mobile: acessibilidade, boas práticas e SEO com 100 pontos.
+Esses resultados não validam autenticação externa nem instalação física.
+
+Aprendizados: valores grandes exigem centavos em string e BigInt na interface;
+histórico atrasado não pode sobrescrever mensagens novas. Ambos têm testes.
+O teste completo detectou ausência de TATO_ENV local; fallback de rate limit
+em memória foi explicitado para desenvolvimento. URL Supabase normalizada
+a partir da variável antiga com erro de nome; token interno gerado localmente.
+
+Chaves Supabase/Upstash e configuração Resend seguem pendentes. Logins de
+console tentados não estabeleceram sessão; não houve envio real de e-mail,
+ativação de cron, deploy ou gasto. Faturas específicas/Sicoob permanecem
+indisponíveis conforme limites já aceitos. PR 17 foi confirmado como integrado;
+o PR desta etapa será aberto para main, com validações externas identificadas.
+
+Retomada: CI do PR 18 no HEAD 7cd7606 aprovado nos três jobs (execuções
+37303154812 e 37303189773). Mapeamento CSV da interface ampliado com
+identificador estável, separador decimal e sinal das despesas. Formulário
+parcial é recusado e editar opções invalida a prévia. Quatorze testes de
+interface passaram; fluxo completo com PostgreSQL confirmou despesa positiva
+com ponto decimal, cálculo do saldo e consulta no chat. Make check permanece
+com 228 testes e 81,10% de cobertura. Configurações externas rechecadas:
+chaves Supabase/Upstash e Resend continuam ausentes; PR permanece rascunho.
+
+## 07/10/2026 — autenticação e exclusão com provedores reais
+
+Enzo recuperou acesso administrativo local e autorizou banco novo após perder
+as chaves internas. `tato` preservado; `tato_dev_20261005` recebeu schema 0007,
+novas chaves e 200 documentos públicos. Dados pessoais não foram restaurados.
+
+O ensaio inicial encontrou containers parados, apesar do Docker Desktop aberto.
+A conexão foi limitada a cinco segundos e o runner passou a testar o banco antes
+de criar a identidade remota. Infraestrutura iniciada preservando volumes.
+A identidade da tentativa interrompida foi removida, sem resíduos locais.
+
+Novo ensaio passou com autenticação real Supabase e rate limit Upstash:
+onboarding, conta, CSV com sinais/decimais personalizados, chat SQL, saldo e
+exclusão pela interface. Remoção conferida no Supabase e no PostgreSQL.
+Fluxo sintético usado no CI também passou após compartilhar o mesmo teste.
+Senha temporária ficou só em memória; nenhum extrato pessoal, LLM, e-mail ou
+deploy usado. Confirmação de cadastro por e-mail, Google, Resend e instalação
+física permanecem sem validação. O ensaio opt-in não entra no CI automático.
+
+## 07/10/2026 — revisão do PR 18
+
+A revisão encontrou perda de rascunhos/prévias ao renovar o token ou alternar
+abas. O espaço agora usa a identidade do usuário como chave; renovação mantém
+estado, enquanto sair/trocar identidade remove os componentes. Formulários de
+conversa, importação e resumo permanecem em memória durante a navegação.
+Erros de requisições da sessão anterior não reaparecem após a troca.
+Teste de navegador força a renovação automática Supabase com relógio simulado,
+alterna abas e confirma a limpeza ao sair, em desktop e viewport de iPhone.
+Outro teste segura a resposta do onboarding, troca o usuário e comprova que
+o callback antigo não consulta dados com o token anterior. Validação local:
+20 testes de interface, fluxo API/PostgreSQL, offline, build e TypeScript
+aprovados; make check permanece com 228 testes e cobertura de 81,10%.
+Voltar à janela emite SIGNED_IN novamente com o mesmo token; esse evento não
+invalida uma atualização em andamento. Teste segura o dashboard durante o
+retorno à janela e comprova a chegada do novo saldo.
+
+O cache PWA usava hash do manifesto/orientação, ignorando mudanças isoladas na
+arte. Agora os ícones 192/512 participam da versão. Teste Node sem dependências
+verifica build estável e atualização quando só um ícone muda; faz parte do
+check web/CI. A lista de recursos offline continua sem dados financeiros.
+Build, TypeScript, teste Node e offline aprovados. Ensaio com Supabase/Upstash
+reais repetido após a revisão: login, onboarding, import, chat SQL, dashboard
+e exclusão passaram; identidade temporária removida. Sem envio de e-mail,
+dados pessoais ou deploy. Config-check ainda identifica RESEND_FROM ausente.

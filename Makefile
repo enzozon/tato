@@ -58,3 +58,13 @@ rag-measure:
 
 chat-eval:
 	uv run --locked --env-file .env python scripts/eval_chat.py
+
+config-check:
+	uv run --locked --env-file .env python scripts/check_config.py
+
+web-config:
+	uv run --locked --env-file .env python scripts/check_config.py --write-web
+
+.PHONY: web-live-smoke
+web-live-smoke:
+	uv run --locked --env-file .env python scripts/smoke_web_live.py --confirm-free-tier

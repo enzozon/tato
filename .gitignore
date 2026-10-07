@@ -12,6 +12,9 @@ htmlcov/
 !.env.example
 node_modules/
 .next/
+*.tsbuildinfo
+apps/web/next-env.d.ts
+apps/web/public/icons/
 out/
 test-results/
 playwright-report/

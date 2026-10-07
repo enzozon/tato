@@ -1,0 +1,6 @@
+{
+  "name": "tato",
+  "private": true,
+  "workspaces": ["apps/web", "packages/mascot"],
+  "scripts": {"build": "npm run build --workspace=tato-web", "check:web": "npm run check --workspace=tato-web"}
+}
