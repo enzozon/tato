@@ -45,6 +45,9 @@ Novas tabelas têm RLS e exclusão em cascata com o usuário. Índices de usuár
 servem às consultas mensais; referências externas e eventos têm unicidade.
 Exclusão pendente bloqueia checkout e atualização do plano. Eventos antigos
 não recriam usuário removido. Testes PostgreSQL devem provar esses limites.
+O fluxo de exclusão também deverá cancelar a assinatura de teste e limpar
+referências pessoais no provedor antes de remover os vínculos locais. Falha
+remota conserva deletion_requested_at e os dados necessários para repetir.
 
 Regra proposta: Pro demonstrativo R$ 39/mês no Stripe teste; Pix sandbox libera
 30 dias, sem renovação automática. Um provedor de cobrança por vez; Free segue
@@ -80,3 +83,14 @@ antes de adicionar qualquer serviço/SDK.
 
 Documentação do provedor muda; confirmar contratos usados antes de implementar
 os adapters. Teste com servidor simulado não comprova integração remota.
+
+## Verificação antecipada de webhooks
+
+`billing_signatures.py` verifica Stripe sobre bytes originais, com HMAC-SHA256,
+janela de 300 segundos e múltiplas assinaturas para rotação. AbacatePay usa chave
+HMAC pública: isso não basta para autenticar. Também exige secret privado forte
+com comparação constante. A chave pública deve vir da documentação oficial.
+Não há rota de pagamento ativa nesta parte, nem processamento do evento.
+Idempotência persistente e consulta do estado atual ainda dependem do schema.
+Secret na query string exige suprimir acesso bruto nos logs do futuro endpoint;
+não ativar webhook antes dessa proteção. Testes cobrem adulteração e replay.

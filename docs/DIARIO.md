@@ -487,3 +487,10 @@ limite e falha de consulta. Dados não ficam no armazenamento do navegador.
 TypeScript/build e 22 testes desktop/mobile aprovados. O fluxo completo com
 PostgreSQL confere uma fonte usada e um pedido contado após CSV/chat, sem mocks
 para o consumo. Schema e cobrança continuam aguardando aprovação.
+Verificadores Stripe/AbacatePay acrescentados sem SDK, usando stdlib. Testes
+apresentam corpo adulterado, assinatura expirada/futura, rotação e secret errado.
+A chave HMAC pública AbacatePay não substitui o secret privado. Nenhuma rota de
+cobrança ativada; replay persistente depende do ledger aprovado.
+Make check aprovado com 244 testes e 81,38% de cobertura. Verificação é somente
+criptográfica; idempotência, consulta remota e mudança de plano não foram
+declaradas prontas sem a aprovação do schema.
