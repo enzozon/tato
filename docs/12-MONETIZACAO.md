@@ -98,6 +98,15 @@ não interrompe geração. Integração externa permanece pendente.
 Documentação do provedor muda; confirmar contratos usados antes de implementar
 os adapters. Teste com servidor simulado não comprova integração remota.
 
+`billing_stripe.py` inicia o adapter com HTTPX já instalado. Ele recusa chave
+de produção, preço fora de BRL 3.900 centavos/mês e objetos fora do modo teste.
+Checkout usa idempotency key derivada de usuário/request_id, metadata em sessão
+e assinatura e URL hospedada validada. Retorno fixo não concede Pro; não há
+rota de cobrança ativa nesta parte. API fixada em `2026-09-30.endive`.
+Contratos: [checkout](https://docs.stripe.com/api/checkout/sessions/create),
+[preço](https://docs.stripe.com/api/prices/object) e
+[versionamento](https://docs.stripe.com/api/versioning), conferidos em 07/10.
+
 ## Verificação antecipada de webhooks
 
 `billing_signatures.py` verifica Stripe sobre bytes originais, com HMAC-SHA256,

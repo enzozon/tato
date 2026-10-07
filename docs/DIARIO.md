@@ -514,3 +514,8 @@ continuam compatíveis. Testes cobrem os dois provedores e o limite exato.
 Tentativas LLM passam a ser persistidas sem conteúdo, inclusive erros que levam
 ao fallback. Tokens ausentes permanecem nulos e cache não simula uso remoto.
 Testes verificam falha do armazenamento e bloqueio de exclusão pendente.
+Adapter Stripe inicial usa HTTPX existente, chave teste, preço mensal exato e
+metadata do dono/request_id. Testes simulados comprovam idempotency key estável,
+recusa de produção/preço alterado/destino indevido e erros sanitizados.
+Checkout ainda não está exposto por rota nem concede plano; integração remota
+aguarda configuração, e processamento de webhook/portal/Pix continua pendente.
