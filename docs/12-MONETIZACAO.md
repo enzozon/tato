@@ -72,6 +72,12 @@ headers, corpos, variáveis locais, captura automática ou gravação de sessão
 Somente eventos técnicos previamente permitidos; indisponibilidade remota não
 impede operações financeiras. Limites gratuitos ainda precisam de registro
 antes de adicionar qualquer serviço/SDK.
+O fallback local já existe no router: `LLM_LOG_USAGE=true` permite registros
+JSON no logger `tato.llm_usage`, quando o nível INFO estiver configurado.
+A lista fixa contém apenas evento, provedor, resultado, contagens e latência.
+Não inclui modelo, dono, instrução, erro bruto ou resposta. Logging falho não
+impede geração; desligado por padrão. Não cria armazenamento nem chama serviço
+remoto; persistência e integração externa permanecem pendentes.
 
 ## Referências oficiais verificadas em 07/10/2026
 

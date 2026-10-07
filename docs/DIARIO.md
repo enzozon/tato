@@ -494,3 +494,9 @@ cobrança ativada; replay persistente depende do ledger aprovado.
 Make check aprovado com 244 testes e 81,38% de cobertura. Verificação é somente
 criptográfica; idempotência, consulta remota e mudança de plano não foram
 declaradas prontas sem a aprovação do schema.
+Observabilidade começa pelo fallback de logging padrão opt-in: lista fixa de
+métricas técnicas, sem dados/identidade/erro bruto, e falha de logging isolada.
+Testes comprovam exclusão desses dados, configuração desligada e tolerância à
+indisponibilidade. Não foi conectado serviço externo de telemetria.
+Make check final desta parte: 246 testes Python/HTTP e 81,45% de cobertura,
+com ruff/mypy aprovados. Checkout/migration ainda aguardam o checkpoint enviado.
