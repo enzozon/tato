@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import Literal
 from uuid import UUID
 
@@ -36,10 +37,18 @@ PRO = Plan(
 )
 
 
-def user_plan(session: Session, owner: UUID) -> Plan:
+def user_plan(session: Session, owner: UUID, now: datetime | None = None) -> Plan:
     subscription = session.exec(select(Subscription).where(Subscription.user_id == owner)).first()
     if subscription and subscription.plan == "pro" and subscription.status == "active":
-        return PRO
+        if subscription.billing_provider is None:
+            return PRO
+        deadline = subscription.valid_until
+        if (
+            deadline is not None
+            and deadline.tzinfo is not None
+            and deadline > (now or datetime.now(UTC))
+        ):
+            return PRO
     return FREE
 
 

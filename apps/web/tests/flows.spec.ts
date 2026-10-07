@@ -153,6 +153,23 @@ test('agentes respeitam contrato e exclusão exige confirmação',async({page})=
   await expect(page.getByRole('heading',{name:'Que bom te ver.'})).toBeVisible();expect(deleted).toBe(1);
 });
 
+test('conta mostra consumo e admite falha sem ocultar exclusão',async({page})=>{
+  await signIn(page);
+  await page.route('**/me/usage',route=>route.fulfill({json:{period_end:'2026-11-01T00:00:00Z',
+    messages:{used:200,limit:200,remaining:0},import_sources:{used:7,limit:null,remaining:null},agents:{used:1,limit:3,remaining:2}}}));
+  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  const panel=page.getByRole('region',{name:'Consumo do plano'});
+  await expect(panel.getByText('200 usados · 0 restantes de 200')).toBeVisible();
+  await expect(panel.getByText('7 usados · sem limite contratual')).toBeVisible();
+  await expect(panel).toContainText('01/11/2026 (UTC)');
+  await page.getByRole('button',{name:'Resumo',exact:true}).click();
+  await page.route('**/me/usage',route=>route.fulfill({status:503,json:{detail:'private'}}));
+  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  await expect(panel.getByRole('status')).toHaveText('Não foi possível consultar o consumo agora.');
+  await expect(page.getByText('Excluir minha conta',{exact:true})).toBeVisible();
+  await expect(panel.getByText('200 usados · 0 restantes de 200')).toHaveCount(0);
+});
+
 test('cadastro aguarda confirmação e Google usa o retorno permitido',async({page})=>{
   await page.route('https://auth.example.test/auth/v1/signup**',route=>{
     expect(new URL(route.request().url()).searchParams.get('redirect_to')).toBe('http://127.0.0.1:3000/app/');

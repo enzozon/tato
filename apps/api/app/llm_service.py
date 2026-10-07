@@ -8,15 +8,16 @@ import httpx
 from fastapi import HTTPException
 from pydantic import BaseModel, ValidationError
 from sqlalchemy import Engine
+from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session
 
 from app import llm_cache
 from app.account_service import account_session
-from app.llm import Generation, LLMProvider, LLMUnavailable, ProviderName
+from app.llm import Attempt, Generation, LLMProvider, LLMUnavailable, ProviderName
 from app.llm_http import HTTPProvider
 from app.llm_policy import personal_allowed
 from app.llm_router import Routed, Router
-from app.models import User
+from app.models import LLMUsage, User
 
 
 @lru_cache(maxsize=1)
@@ -47,6 +48,27 @@ def require_active(session: Session, owner: UUID) -> None:
         raise LLMUnavailable("Conta ausente ou com exclusão pendente.")
 
 
+def record_usage(engine: Engine, owner: UUID, attempts: tuple[Attempt, ...]) -> None:
+    if not attempts:
+        return
+    # Métricas falhas não impedem respostas; exclusão nunca recria o usuário.
+    with suppress(SQLAlchemyError, LLMUnavailable), account_session(engine, owner) as session:
+        require_active(session, owner)
+        session.add_all(
+            [
+                LLMUsage(
+                    user_id=owner,
+                    provider=attempt.provider,
+                    outcome=attempt.outcome,
+                    input_tokens=attempt.input_tokens,
+                    output_tokens=attempt.output_tokens,
+                    elapsed_ms=attempt.elapsed_ms,
+                )
+                for attempt in attempts
+            ]
+        )
+
+
 def generate[T: BaseModel](
     engine: Engine, owner: UUID, request: Generation, output: type[T], guard: Callable[[T], bool]
 ) -> Routed[T]:
@@ -68,11 +90,16 @@ def generate[T: BaseModel](
                         return Routed(value, (), cached=True)
             except (HTTPException, ValueError, ValidationError):
                 pass  # Cache indisponível não transforma falha de Redis em quota ilimitada.
-    result = router.generate(request, output, guard)
+    try:
+        result = router.generate(request, output, guard)
+    except LLMUnavailable as error:
+        record_usage(engine, owner, error.attempts)
+        raise
     with account_session(engine, owner) as session:
         # A exclusão pode ter começado enquanto o provedor respondia.
         require_active(session, owner)
         if mode == "redis":
             with suppress(HTTPException, ValueError):
                 llm_cache.put_cached(owner, field, result.value.model_dump_json())
+    record_usage(engine, owner, result.attempts)
     return result

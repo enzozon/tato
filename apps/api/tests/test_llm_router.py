@@ -1,3 +1,5 @@
+import json
+import logging
 from unittest.mock import Mock
 
 import pytest
@@ -67,3 +69,37 @@ def test_expired_circuit_can_probe_again():
         router.generate(REQUEST, MoneyAnswer, lambda _: True)
     router.blocked_until["groq"] = 0
     assert router.generate(REQUEST, MoneyAnswer, lambda _: True).value.amount_cents == 4200
+
+
+def test_opt_in_usage_logs_only_technical_fields(monkeypatch, caplog):
+    monkeypatch.setenv("LLM_LOG_USAGE", "true")
+    caplog.set_level(logging.INFO, logger="tato.llm_usage")
+    request = Generation(
+        instruction="private-instruction", data="private-data", classification="synthetic"
+    )
+    router = Router(
+        [provider("groq", ProviderError("private-token")), provider("gemini", completion())]
+    )
+    router.generate(request, MoneyAnswer, lambda _: True)
+    events = [json.loads(record.message) for record in caplog.records]
+    assert [event["outcome"] for event in events] == ["error", "ok"]
+    assert events[0]["input_tokens"] is None and events[1]["input_tokens"] == 10
+    assert all(
+        set(event)
+        == {"event", "provider", "outcome", "input_tokens", "output_tokens", "elapsed_ms"}
+        for event in events
+    )
+    assert "private" not in caplog.text and "synthetic-model" not in caplog.text
+
+
+def test_usage_logging_defaults_off_and_failure_does_not_block(monkeypatch, caplog):
+    monkeypatch.delenv("LLM_LOG_USAGE", raising=False)
+    caplog.set_level(logging.INFO, logger="tato.llm_usage")
+    Router([provider("groq", completion())]).generate(REQUEST, MoneyAnswer, lambda _: True)
+    assert not caplog.records
+    monkeypatch.setenv("LLM_LOG_USAGE", "true")
+    monkeypatch.setattr(
+        "app.llm_router.usage_logger.info", Mock(side_effect=RuntimeError("offline"))
+    )
+    result = Router([provider("groq", completion())]).generate(REQUEST, MoneyAnswer, lambda _: True)
+    assert result.value.amount_cents == 4200
