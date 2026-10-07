@@ -78,3 +78,6 @@ comprovam credenciais inválidas e não validam os serviços.
 CSV personalizado permite identificador estável, separador decimal e sinal das
 despesas. Mapeamento parcial é recusado antes do upload; qualquer edição exige
 nova prévia. O teste completo usa despesas positivas com ponto decimal e ID.
+
+A conexão PostgreSQL tem timeout de cinco segundos. Um serviço local parado
+gera falha limitada, permitindo diagnosticar e retomar o fluxo sem espera indefinida.

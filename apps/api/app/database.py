@@ -10,7 +10,9 @@ from sqlmodel import Session
 def app_engine(url: str) -> Engine:
     if make_url(url).drivername != "postgresql+psycopg":
         raise ValueError("Use PostgreSQL com psycopg; SQLite não valida RLS nem vetores.")
-    return create_engine(url, pool_pre_ping=True, hide_parameters=True)
+    return create_engine(
+        url, pool_pre_ping=True, hide_parameters=True, connect_args={"connect_timeout": 5}
+    )
 
 
 @contextmanager
