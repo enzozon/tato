@@ -461,3 +461,12 @@ aprovados; make check permanece com 228 testes e cobertura de 81,10%.
 Voltar à janela emite SIGNED_IN novamente com o mesmo token; esse evento não
 invalida uma atualização em andamento. Teste segura o dashboard durante o
 retorno à janela e comprova a chegada do novo saldo.
+
+O cache PWA usava hash do manifesto/orientação, ignorando mudanças isoladas na
+arte. Agora os ícones 192/512 participam da versão. Teste Node sem dependências
+verifica build estável e atualização quando só um ícone muda; faz parte do
+check web/CI. A lista de recursos offline continua sem dados financeiros.
+Build, TypeScript, teste Node e offline aprovados. Ensaio com Supabase/Upstash
+reais repetido após a revisão: login, onboarding, import, chat SQL, dashboard
+e exclusão passaram; identidade temporária removida. Sem envio de e-mail,
+dados pessoais ou deploy. Config-check ainda identifica RESEND_FROM ausente.

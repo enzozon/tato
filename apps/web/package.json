@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
     "build": "node scripts/icons.mjs && next build && node scripts/service-worker.mjs",
-    "check": "next typegen && tsc --noEmit",
+    "check": "node --test scripts/service-worker.test.mjs && next typegen && tsc --noEmit",
     "test": "playwright test"
   },
   "dependencies": {

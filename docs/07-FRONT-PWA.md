@@ -49,6 +49,8 @@ sharp rasteriza apenas o SVG autoral do pacote, sem API de imagem. O service wor
 guarda somente a página genérica offline e ícones. Nenhuma resposta de API, HTML
 autenticado ou transação entra em CacheStorage. Não é possível consultar finanças
 sem rede. HTTPS é necessário fora do localhost, conforme [MDN](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable).
+O nome do cache incorpora também os bytes dos ícones: trocar a arte atualiza
+o worker mesmo quando o manifesto e a orientação offline não mudam.
 Instalação física em Android/iPhone ainda exige dispositivo e ambiente HTTPS.
 
 `make config-check` mostra apenas presença/formato das configurações. `make

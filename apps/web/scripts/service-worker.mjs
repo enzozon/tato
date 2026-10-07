@@ -1,7 +1,9 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 const shell = await readFile('public/offline.html');
-const hash = createHash('sha256').update(shell).update(await readFile('out/manifest.webmanifest')).digest('hex').slice(0,12);
+const digest = createHash('sha256').update(shell).update(await readFile('out/manifest.webmanifest'));
+for (const size of [192,512]) digest.update(await readFile(`out/icons/${size}.png`));
+const hash = digest.digest('hex').slice(0,12);
 await writeFile('out/sw.js', `
 const CACHE = 'app-shell-${hash}';
 const ASSETS = ['/offline.html','/icons/192.png','/icons/512.png'];
