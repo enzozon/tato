@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 import pytest
@@ -6,6 +7,8 @@ from sqlalchemy.exc import IntegrityError, ProgrammingError
 from sqlmodel import Session
 
 from app.account_service import account_session
+from app.llm import Attempt
+from app.llm_service import record_usage
 from app.models import BillingCheckout, BillingEvent, LLMUsage, Subscription, User
 
 pytestmark = pytest.mark.integration
@@ -78,3 +81,22 @@ def test_external_references_are_unique_per_provider(
             .where(Subscription.user_id == owners[1])
             .values(external_id="sem_provedor")
         )
+
+
+def test_usage_writer_preserves_unknown_tokens_and_blocks_pending_deletion(
+    runtime_engine: Engine, owners: tuple[UUID, UUID]
+) -> None:
+    owner = owners[0]
+    record_usage(runtime_engine, owner, (Attempt("groq", "error"), Attempt("groq", "ok", 0, 5, 11)))
+    with account_session(runtime_engine, owner) as session:
+        rows = session.scalars(select(LLMUsage).order_by(LLMUsage.created_at)).all()
+        assert len(rows) == 2
+        assert rows[0].input_tokens is None
+        assert rows[1].input_tokens == 0
+        assert rows[1].output_tokens == 5
+        user = session.get(User, owner)
+        user.deletion_requested_at = datetime.now(UTC)
+        session.add(user)
+    record_usage(runtime_engine, owner, (Attempt("groq", "ok", 9, 9, 9),))
+    with account_session(runtime_engine, owner) as session:
+        assert len(session.scalars(select(LLMUsage)).all()) == 2

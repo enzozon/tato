@@ -511,3 +511,6 @@ cobrança ou concessão de Pro foi ativada nesta parte.
 Plano pago agora exige prazo futuro UTC em cada consulta; ausência, igualdade,
 expiração ou data sem fuso não concedem Pro. Assinaturas sintéticas locais
 continuam compatíveis. Testes cobrem os dois provedores e o limite exato.
+Tentativas LLM passam a ser persistidas sem conteúdo, inclusive erros que levam
+ao fallback. Tokens ausentes permanecem nulos e cache não simula uso remoto.
+Testes verificam falha do armazenamento e bloqueio de exclusão pendente.

@@ -82,7 +82,10 @@ JSON no logger `tato.llm_usage`, quando o nível INFO estiver configurado.
 A lista fixa contém apenas evento, provedor, resultado, contagens e latência.
 Não inclui modelo, dono, instrução, erro bruto ou resposta. Logging falho não
 impede geração; desligado por padrão. Não cria armazenamento nem chama serviço
-remoto; persistência e integração externa permanecem pendentes.
+remoto. `llm_service.generate` agora persiste tentativas técnicas em `llm_usage`,
+inclusive fallback por indisponibilidade, sob o usuário autenticado. Cache hit
+não inventa consumo. A gravação revalida exclusão pendente; falha de métricas
+não interrompe geração. Integração externa permanece pendente.
 
 ## Referências oficiais verificadas em 07/10/2026
 
