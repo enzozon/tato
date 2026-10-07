@@ -15,6 +15,7 @@ from app.import_routes import router as import_router
 from app.import_setup import router as setup_router
 from app.rag.routes import router as rag_router
 from app.upload_limit import UploadLimit
+from app.usage import router as usage_router
 
 app = FastAPI(title="API financeira", version="0.1.0")
 app.include_router(router)
@@ -24,6 +25,7 @@ app.include_router(setup_router)
 app.include_router(rag_router)
 app.include_router(chat_router)
 app.include_router(dashboard_router)
+app.include_router(usage_router)
 app.add_middleware(UploadLimit)
 app.add_middleware(
     CORSMiddleware,

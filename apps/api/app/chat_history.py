@@ -21,6 +21,11 @@ class Reservation:
     response: str | None = field(default=None, repr=False)
 
 
+def month_window(now: datetime) -> tuple[datetime, datetime]:
+    start = now.astimezone(UTC).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    return start, (start.replace(day=28) + timedelta(days=4)).replace(day=1)
+
+
 def reserve_turn(
     engine: Engine, owner: UUID, request_id: UUID, request: str, key: bytes
 ) -> Reservation:
@@ -44,8 +49,7 @@ def reserve_turn(
                 else None
             )
             return Reservation(turn.id, turn.status, False, response)
-        start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        end = (start.replace(day=28) + timedelta(days=4)).replace(day=1)
+        start, end = month_window(now)
         used = session.exec(
             select(func.count())
             .select_from(ChatTurn)

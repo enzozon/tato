@@ -470,3 +470,15 @@ Build, TypeScript, teste Node e offline aprovados. Ensaio com Supabase/Upstash
 reais repetido após a revisão: login, onboarding, import, chat SQL, dashboard
 e exclusão passaram; identidade temporária removida. Sem envio de e-mail,
 dados pessoais ou deploy. Config-check ainda identifica RESEND_FROM ausente.
+
+## 07/10/2026 — início da etapa 10
+
+PR 18 integrado após revalidar os seis checks do commit 5e0d363 e ausência de
+conflitos; merge 8423cb1. Só havia esse PR aberto. A sequência de etapas permanece
+linear, com nova branch codex/etapa-10-monetizacao-observabilidade em main.
+Schema/cobrança de teste propostos em docs/12-MONETIZACAO.md aguardam checkpoint.
+Enquanto isso, consumo pessoal usa SQL/RLS existentes: pedidos aceitos no mês
+UTC, fontes distintas e agentes ativos. Não mede quotas globais de provedores.
+Endpoint aprovado em 231 testes Python/HTTP (81,13%) e 50 integrações
+PostgreSQL/Redis, incluindo isolamento, falhas aceitas, prazo mensal, Pro e
+exclusão pendente. Nenhuma migration gerada nesta parte.
