@@ -2,16 +2,19 @@ import { test, expect, type Page } from '@playwright/test';
 
 const owner='00000000-0000-4000-8000-000000000001';
 const account='00000000-0000-4000-8000-000000000002';
-async function signIn(page:Page) {
+async function signIn(page:Page, expiresIn=3600, onboardingCompleted=true) {
   const user={id:owner,email:'teste@example.test',aud:'authenticated',role:'authenticated',app_metadata:{},user_metadata:{},created_at:'2026-10-04T00:00:00Z'};
-  await page.route('https://auth.example.test/**',route=>route.fulfill({json:{
-    access_token:'synthetic-token',refresh_token:'synthetic-refresh',token_type:'bearer',expires_in:3600,user,
-  }}));
+  let issued=0;
+  await page.route('https://auth.example.test/**',route=>{
+    const other=route.request().url().includes('grant_type=password')&&route.request().postDataJSON().email==='outro@example.test';
+    return route.fulfill({json:{access_token:`synthetic-token-${++issued}`,refresh_token:'synthetic-refresh',token_type:'bearer',expires_in:expiresIn,
+      user:other?{...user,id:account,email:'outro@example.test'}:user}});
+  });
   await page.route('http://127.0.0.1:8000/**',async route=>{
     const path=new URL(route.request().url()).pathname;
     const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,content-type','Access-Control-Allow-Methods':'GET,POST,PUT,DELETE'};
     if(route.request().method()==='OPTIONS')return route.fulfill({headers,status:200});
-    if(path==='/me') return route.fulfill({headers,json:{onboarding_completed:true,plan:{name:'free',agents:1,messages_per_month:200}}});
+    if(path==='/me') return route.fulfill({headers,json:{onboarding_completed:onboardingCompleted,plan:{name:'free',agents:1,messages_per_month:200}}});
     if(path==='/dashboard')return route.fulfill({headers,json:{as_of:'2026-10-04',balance_cents:'1152921504606846976',expense_cents:'1234',categories:[],accounts:[{id:account,name:'Conta sintética',kind:'checking',opening_date:'2026-01-01',balance_cents:'10000'}]}});
     if(path==='/chat') return route.fulfill({headers,json:[]});
     return route.fulfill({headers,status:503,json:{detail:'indisponível'}});
@@ -33,6 +36,66 @@ test('landing responsiva e login com valores exatos',async({page})=>{
   await page.getByRole('button',{name:'Sair',exact:true}).click();
   await expect(page.getByRole('heading',{name:'Que bom te ver.'})).toBeVisible();
   await expect(page.getByText('Conta sintética',{exact:true})).toHaveCount(0);
+});
+
+test('renovação e navegação preservam rascunhos, sair limpa o espaço',async({page})=>{
+  await page.clock.install();
+  await signIn(page,120);
+  await page.route('**/import/preview',route=>route.fulfill({json:{count:1,start:'2026-10-01',end:'2026-10-01',credits_cents:0,debits_cents:1234,receipt:'signed',warning:'Prévia preservada.',truncated:false,entries:[]}}));
+  await page.getByRole('button',{name:'Conversa',exact:true}).click();
+  await page.getByLabel('Sua mensagem').fill('Mensagem ainda em edição');
+  await page.getByRole('button',{name:'Importar',exact:true}).click();
+  await page.getByLabel('Extrato ou fatura').setInputFiles({name:'synthetic.csv',mimeType:'text/csv',buffer:Buffer.from('data,descricao,valor')});
+  await page.getByRole('button',{name:'Revisar prévia'}).click();
+  await expect(page.getByText('Prévia preservada.',{exact:true})).toBeVisible();
+  const refreshed=page.waitForRequest(r=>r.url().includes('grant_type=refresh_token'));
+  await page.clock.runFor(31000);
+  await refreshed;
+  await expect(page.getByText('Prévia preservada.',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Conversa',exact:true}).click();
+  await expect(page.getByLabel('Sua mensagem')).toHaveValue('Mensagem ainda em edição');
+  await page.getByRole('button',{name:'Importar',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Confirmar importação'})).toBeVisible();
+  await page.getByRole('button',{name:'Sair',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Que bom te ver.'})).toBeVisible();
+  await expect(page.getByText('Prévia preservada.',{exact:true})).toHaveCount(0);
+});
+
+test('retornar à janela não descarta atualização da mesma sessão',async({page})=>{
+  await signIn(page);
+  let release!:()=>void;
+  const gate=new Promise<void>(resolve=>{release=resolve;});
+  await page.route('**/accounts',route=>route.fulfill({json:{}}));
+  await page.route('**/dashboard',async route=>{await gate;await route.fulfill({json:{as_of:'2026-10-04',balance_cents:'4500',expense_cents:'0',categories:[],accounts:[]}});});
+  await page.getByText('Adicionar conta ou cartão',{exact:true}).click();
+  await page.getByLabel('Nome',{exact:true}).fill('Conta nova');
+  await page.getByLabel('Primeiro dia do período').fill('2026-10-01');
+  const started=page.waitForRequest('**/dashboard');
+  await page.getByRole('button',{name:'Salvar conta'}).click();await started;
+  await page.evaluate(()=>{document.dispatchEvent(new Event('visibilitychange'));return new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));});
+  release();
+  await expect(page.locator('.metrics article').filter({hasText:'Saldo das contas'}).getByRole('heading')).toHaveText('R$ 45,00');
+});
+
+test('operação antiga não recarrega dados depois de outro login',async({page})=>{
+  await signIn(page,3600,false);
+  let release!:()=>void, staleRequests=0;
+  const gate=new Promise<void>(resolve=>{release=resolve;});
+  await page.route('**/me/onboarding',async route=>{await gate;await route.fulfill({json:{}});});
+  const started=page.waitForRequest('**/me/onboarding');
+  await page.getByRole('button',{name:'Entendi, vamos lá'}).click();
+  await started;
+  await page.getByRole('button',{name:'Sair',exact:true}).click();
+  await page.getByLabel('E-mail',{exact:true}).fill('outro@example.test');
+  await page.getByLabel('Senha',{exact:true}).fill('synthetic-password');
+  await page.getByRole('button',{name:'Entrar',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Uma visão tranquila.'})).toBeVisible();
+  page.on('request',r=>{if(r.url().includes('127.0.0.1:8000')&&r.headers().authorization==='Bearer synthetic-token-1')staleRequests++;});
+  const finished=page.waitForResponse('**/me/onboarding');
+  release();await (await finished).finished();
+  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+  expect(staleRequests).toBe(0);
+  await expect(page.locator('main').getByRole('alert')).toHaveCount(0);
 });
 
 test('arquivo exige prévia e confirmação',async({page})=>{

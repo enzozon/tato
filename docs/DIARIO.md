@@ -444,3 +444,20 @@ Fluxo sintético usado no CI também passou após compartilhar o mesmo teste.
 Senha temporária ficou só em memória; nenhum extrato pessoal, LLM, e-mail ou
 deploy usado. Confirmação de cadastro por e-mail, Google, Resend e instalação
 física permanecem sem validação. O ensaio opt-in não entra no CI automático.
+
+## 07/10/2026 — revisão do PR 18
+
+A revisão encontrou perda de rascunhos/prévias ao renovar o token ou alternar
+abas. O espaço agora usa a identidade do usuário como chave; renovação mantém
+estado, enquanto sair/trocar identidade remove os componentes. Formulários de
+conversa, importação e resumo permanecem em memória durante a navegação.
+Erros de requisições da sessão anterior não reaparecem após a troca.
+Teste de navegador força a renovação automática Supabase com relógio simulado,
+alterna abas e confirma a limpeza ao sair, em desktop e viewport de iPhone.
+Outro teste segura a resposta do onboarding, troca o usuário e comprova que
+o callback antigo não consulta dados com o token anterior. Validação local:
+20 testes de interface, fluxo API/PostgreSQL, offline, build e TypeScript
+aprovados; make check permanece com 228 testes e cobertura de 81,10%.
+Voltar à janela emite SIGNED_IN novamente com o mesmo token; esse evento não
+invalida uma atualização em andamento. Teste segura o dashboard durante o
+retorno à janela e comprova a chegada do novo saldo.

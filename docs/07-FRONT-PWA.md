@@ -30,6 +30,9 @@ Sessão Supabase permanece em memória; atualizar a página exige novo login.
 Isso evita persistir tokens no armazenamento local. A criação de `/me` antecede
 o resumo, para que a primeira visita não concorra com a inicialização da conta.
 Respostas de uma sessão anterior são descartadas após troca de identidade.
+Renovar o token do mesmo usuário preserva rascunhos e prévias. Trocar entre
+Conversa, Importar e Resumo mantém esses formulários em memória; sair ou trocar
+de usuário desmonta todo o espaço. Falhas de requisições antigas são descartadas.
 
 Importação mantém arquivo e recibo apenas em memória; qualquer edição invalida
 a prévia. O chat usa SSE e só apresenta a resposta validada pela API; repetir
