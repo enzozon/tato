@@ -519,3 +519,8 @@ metadata do dono/request_id. Testes simulados comprovam idempotency key estável
 recusa de produção/preço alterado/destino indevido e erros sanitizados.
 Checkout ainda não está exposto por rota nem concede plano; integração remota
 aguarda configuração, e processamento de webhook/portal/Pix continua pendente.
+Retomada: rota de checkout sandbox reserva pedido antes da chamada remota,
+reutiliza UUID/vínculo, bloqueia pedidos paralelos e exclusão pendente. Nenhum
+retorno do navegador concede Pro. Configuração fica desligada até fechamento.
+Escrita de assinaturas pelo webhook exige papel restrito separado; proposta em
+docs/12-MONETIZACAO.md evita usar administrador ou liberar a API comum.

@@ -123,3 +123,36 @@ def test_configuration_and_remote_errors_are_sanitized():
         with pytest.raises(BillingUnavailable) as error:
             provider.checkout(uuid4(), uuid4())
         assert "privado" not in str(error.value)
+
+
+@pytest.mark.parametrize("status", ["open", "complete", "expired"])
+def test_retrieve_validates_reference_and_owner_without_creating_checkout(status):
+    owner, request_id = uuid4(), uuid4()
+    calls = []
+    payload = {
+        "id": "cs_test_demo",
+        "livemode": False,
+        "mode": "subscription",
+        "currency": "brl",
+        "amount_total": 3900,
+        "client_reference_id": str(owner),
+        "metadata": {"user_id": str(owner), "request_id": str(request_id)},
+        "status": status,
+        "payment_status": "unpaid",
+        "url": "https://checkout.stripe.com/c/pay/demo" if status == "open" else None,
+    }
+
+    def transport(request):
+        calls.append(request)
+        assert request.method == "GET" and request.url.path == "/v1/checkout/sessions/cs_test_demo"
+        return httpx.Response(200, json=payload)
+
+    with httpx.Client(transport=httpx.MockTransport(transport)) as client:
+        provider = StripeSandbox("sk_test_demo", "price_test", client, "https://tato.example/app/")
+        assert provider.retrieve_checkout("cs_test_demo", owner, request_id).status == status
+        with pytest.raises(BillingUnavailable):
+            provider.retrieve_checkout("cs_test_demo/../other", owner, request_id)
+        payload["id"] = "cs_test_other"
+        with pytest.raises(BillingUnavailable):
+            provider.retrieve_checkout("cs_test_demo", owner, request_id)
+    assert len(calls) == 2

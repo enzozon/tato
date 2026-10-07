@@ -101,8 +101,8 @@ os adapters. Teste com servidor simulado não comprova integração remota.
 `billing_stripe.py` inicia o adapter com HTTPX já instalado. Ele recusa chave
 de produção, preço fora de BRL 3.900 centavos/mês e objetos fora do modo teste.
 Checkout usa idempotency key derivada de usuário/request_id, metadata em sessão
-e assinatura e URL hospedada validada. Retorno fixo não concede Pro; não há
-rota de cobrança ativa nesta parte. API fixada em `2026-09-30.endive`.
+e assinatura e URL hospedada validada. Retorno fixo não concede Pro.
+API fixada em `2026-09-30.endive`.
 Contratos: [checkout](https://docs.stripe.com/api/checkout/sessions/create),
 [preço](https://docs.stripe.com/api/prices/object) e
 [versionamento](https://docs.stripe.com/api/versioning), conferidos em 07/10.
@@ -117,3 +117,29 @@ Não há rota de pagamento ativa nesta parte, nem processamento do evento.
 Idempotência persistente e consulta do estado atual ainda dependem do schema.
 Secret na query string exige suprimir acesso bruto nos logs do futuro endpoint;
 não ativar webhook antes dessa proteção. Testes cobrem adulteração e replay.
+
+## Reserva do checkout
+
+`POST /billing/stripe/checkout` recebe somente `request_id` UUID. A identidade
+vem da sessão; o preço vem do backend. Exige `BILLING_ENABLED=true`, chave/price
+de teste e `BILLING_RETURN_URL` fixa, sem credenciais ou parâmetros.
+A configuração permanece desligada até completar webhooks e limpeza remota.
+A reserva local confirma antes da chamada Stripe; falha remota permite repetir
+o UUID. Checkout conhecido é consultado, nunca recriado. Um pedido pendente ou
+assinatura existente impede novo checkout. URL não é persistida e resposta é
+`no-store`. Expiração remota cancela a reserva; pagamento aguarda webhook.
+Sem vínculo após 23 horas, exige reconciliação operacional: não arriscar uma
+segunda sessão depois da janela de idempotência do provedor. O lock por conta
+serializa chamadas; limite atual é timeout HTTP de 10 segundos por chamada.
+
+## Checkpoint adicional de privilégio do webhook
+
+Proposta: papel `tato_billing`, sem superuser/BYPASSRLS, conexão separada
+`BILLING_DATABASE_URL`, sem acesso a transações, documentos ou chats.
+Ele lê usuários e pode escrever somente assinaturas, checkouts e eventos, sob
+RLS pelo mesmo `app.user_id`. A API comum `tato_app` continua sem escrita em
+assinaturas. Rotas de usuário não recebem a conexão de cobrança; webhook
+valida assinatura e vínculo remoto/local antes de usá-la.
+Isso exige migration de permissões; aguarda checkpoint específico antes de
+aplicar. Usar o administrador de migrations no webhook foi descartado porque
+contornaria RLS. Nenhuma nova tabela ou coluna é proposta neste checkpoint.

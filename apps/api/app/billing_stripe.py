@@ -149,3 +149,15 @@ class StripeSandbox:
         ):
             raise BillingUnavailable("Vínculo do checkout inválido.")
         return result
+
+    def retrieve_checkout(self, external_id: str, owner: UUID, request_id: UUID) -> StripeCheckout:
+        if not fullmatch(r"cs_test_[A-Za-z0-9_]+", external_id):
+            raise BillingUnavailable("Referência de checkout inválida.")
+        result = self.validate_checkout(
+            self.request("GET", f"checkout/sessions/{external_id}"), owner, request_id
+        )
+        if result.id != external_id:
+            raise BillingUnavailable("Referência de checkout divergente.")
+        if result.status == "open":
+            hosted_url(result.url)
+        return result
