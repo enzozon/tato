@@ -135,3 +135,13 @@ permite 100 e-mails/dia e 3.000/mês; consumo remoto do Tato não foi medido.
 O código limita tentativas, respeita falhas de quota e mantém o aviso interno.
 Não habilitar faturamento ou plano pago para contornar limites. Cron e e-mail
 não foram provisionados; nenhum serviço novo contratado nesta etapa.
+
+## Interface e provedores — 07/10/2026
+
+Supabase aceitou criação administrativa de identidade sintética, autenticação
+por senha e exclusão via API. Upstash respondeu PONG e executou o rate limit
+e a limpeza de cache no fluxo real da interface. Uma tentativa foi interrompida
+com o banco local parado; sua identidade também foi removida antes do novo ensaio.
+LLM e envio de e-mail ficaram desligados. Não medimos o consumo total das contas
+nem o limite de usuários/requests desses serviços; conexão aprovada não é teste
+de capacidade. Google e envio Resend permanecem pendentes.

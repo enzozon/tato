@@ -106,8 +106,10 @@ pessoais permanece bloqueado. Exemplos privados não entram no Git nem no LLM.
 
 Backend de sessão, perfil, onboarding, planos e exclusão recuperável da etapa 3:
 `GET /me`, `POST /me/onboarding` e `DELETE /me` exigem bearer Supabase; saúde
-continua pública. Supabase e Upstash são simulados nos testes locais; PostgreSQL
-e Redis são reais. A interface de login existe; autenticação externa e deploy ainda não foram validados.
+continua pública. O CI simula Supabase; PostgreSQL e Redis são reais. O ensaio
+opt-in `make web-live-smoke` também validou login por senha, limites Upstash e
+exclusão com provedores reais usando identidade temporária. Confirmação por
+e-mail, Google e deploy continuam pendentes.
 Veja [configuração e limites da etapa](docs/03-AUTH-PLANOS.md).
 
 Veja [a arquitetura e o mapa do monorepo](docs/01-ARQUITETURA.md).
