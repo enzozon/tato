@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from re import fullmatch
 from typing import Any, Literal
 from urllib.parse import urlsplit
@@ -28,6 +29,13 @@ class StripeCheckout(BaseModel):
     customer: str | None = None
     subscription: str | None = None
     url: str | None = None
+
+
+class StripeSubscriptionState(BaseModel):
+    id: str
+    customer: str
+    status: Literal["active", "past_due", "canceled"]
+    valid_until: datetime
 
 
 def hosted_url(value: str | None) -> str:
@@ -161,3 +169,80 @@ class StripeSandbox:
         if result.status == "open":
             hosted_url(result.url)
         return result
+
+    def subscription_state(
+        self, external_id: str, owner: UUID, request_id: UUID, customer_id: str
+    ) -> StripeSubscriptionState:
+        if not fullmatch(r"sub_[A-Za-z0-9_]+", external_id):
+            raise BillingUnavailable("Referência de assinatura inválida.")
+        payload = self.request("GET", f"subscriptions/{external_id}")
+        try:
+            metadata = payload["metadata"]
+            items = payload["items"]
+            rows = items["data"]
+            if (
+                payload["id"] != external_id
+                or payload["customer"] != customer_id
+                or metadata["user_id"] != str(owner)
+                or metadata["request_id"] != str(request_id)
+                or len(rows) != 1
+                or items["has_more"] is not False
+                or type(rows[0]["quantity"]) is not int
+                or rows[0]["quantity"] != 1
+            ):
+                raise BillingUnavailable("Vínculo de assinatura inválido.")
+            price = rows[0]["price"]
+            if (
+                price["id"] != self.price_id
+                or price["livemode"] is not False
+                or price["currency"] != "brl"
+                or type(price["unit_amount"]) is not int
+                or price["unit_amount"] != 3900
+                or price["recurring"]["interval"] != "month"
+                or type(price["recurring"]["interval_count"]) is not int
+                or price["recurring"]["interval_count"] != 1
+                or type(rows[0]["current_period_end"]) is not int
+            ):
+                raise BillingUnavailable("Condições de assinatura inválidas.")
+            deadline = datetime.fromtimestamp(rows[0]["current_period_end"], UTC)
+            status = payload["status"]
+            if status not in {
+                "active",
+                "past_due",
+                "canceled",
+                "incomplete",
+                "incomplete_expired",
+                "unpaid",
+                "paused",
+                "trialing",
+            }:
+                raise BillingUnavailable("Estado de assinatura inválido.")
+            mapped: Literal["active", "past_due", "canceled"] = "past_due"
+            if status in {"canceled", "incomplete_expired"}:
+                mapped = "canceled"
+            elif status == "active":
+                invoice_id = payload["latest_invoice"]
+                if not isinstance(invoice_id, str) or not fullmatch(
+                    r"in_[A-Za-z0-9_]+", invoice_id
+                ):
+                    raise BillingUnavailable("Referência de fatura inválida.")
+                invoice = self.request("GET", f"invoices/{invoice_id}")
+                if (
+                    invoice["id"] != invoice_id
+                    or invoice["customer"] != customer_id
+                    or invoice["currency"] != "brl"
+                    or invoice["parent"]["type"] != "subscription_details"
+                    or invoice["parent"]["subscription_details"]["subscription"] != external_id
+                ):
+                    raise BillingUnavailable("Vínculo de fatura inválido.")
+                if (
+                    invoice["status"] == "paid"
+                    and type(invoice["amount_paid"]) is int
+                    and invoice["amount_paid"] == 3900
+                ):
+                    mapped = "active"
+            return StripeSubscriptionState(
+                id=external_id, customer=customer_id, status=mapped, valid_until=deadline
+            )
+        except (KeyError, TypeError, IndexError, ValueError, OverflowError):
+            raise BillingUnavailable("Contrato de assinatura inválido.") from None

@@ -132,6 +132,16 @@ Sem vínculo após 23 horas, exige reconciliação operacional: não arriscar um
 segunda sessão depois da janela de idempotência do provedor. O lock por conta
 serializa chamadas; limite atual é timeout HTTP de 10 segundos por chamada.
 
+O adapter consulta assinatura e última fatura novamente antes de produzir o
+estado para o futuro webhook. Confere dono/request_id, cliente, uma única
+unidade do preço mensal aprovado, fuso UTC e vínculo da fatura à assinatura.
+`active` remoto só produz estado ativo com fatura `paid` de 3.900 centavos;
+trial, dívida e cancelamento não concedem Pro. Nenhum payload bruto é persistido.
+Esse estado ainda não escreve em `subscriptions`. Contratos oficiais:
+[assinatura](https://docs.stripe.com/api/subscriptions/object) e
+[fatura](https://docs.stripe.com/api/invoices/object), conferidos em 07/10.
+Refunds/disputas e limpeza remota precisam de tratamento antes de ativar cobrança.
+
 ## Checkpoint adicional de privilégio do webhook
 
 Proposta: papel `tato_billing`, sem superuser/BYPASSRLS, conexão separada

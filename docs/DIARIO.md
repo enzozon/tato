@@ -524,3 +524,7 @@ reutiliza UUID/vínculo, bloqueia pedidos paralelos e exclusão pendente. Nenhum
 retorno do navegador concede Pro. Configuração fica desligada até fechamento.
 Escrita de assinaturas pelo webhook exige papel restrito separado; proposta em
 docs/12-MONETIZACAO.md evita usar administrador ou liberar a API comum.
+Adapter consulta assinatura/fatura atuais e confere vínculo, quantidade e
+pagamento; estados trial/past_due/canceled não concedem acesso. Make check
+passou com 282 testes e 81,42% de cobertura. Docker local falhou ao iniciar;
+integrações desta retomada serão comprovadas no CI, não contadas como locais.
