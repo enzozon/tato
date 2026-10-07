@@ -425,3 +425,22 @@ interface passaram; fluxo completo com PostgreSQL confirmou despesa positiva
 com ponto decimal, cálculo do saldo e consulta no chat. Make check permanece
 com 228 testes e 81,10% de cobertura. Configurações externas rechecadas:
 chaves Supabase/Upstash e Resend continuam ausentes; PR permanece rascunho.
+
+## 07/10/2026 — autenticação e exclusão com provedores reais
+
+Enzo recuperou acesso administrativo local e autorizou banco novo após perder
+as chaves internas. `tato` preservado; `tato_dev_20261005` recebeu schema 0007,
+novas chaves e 200 documentos públicos. Dados pessoais não foram restaurados.
+
+O ensaio inicial encontrou containers parados, apesar do Docker Desktop aberto.
+A conexão foi limitada a cinco segundos e o runner passou a testar o banco antes
+de criar a identidade remota. Infraestrutura iniciada preservando volumes.
+A identidade da tentativa interrompida foi removida, sem resíduos locais.
+
+Novo ensaio passou com autenticação real Supabase e rate limit Upstash:
+onboarding, conta, CSV com sinais/decimais personalizados, chat SQL, saldo e
+exclusão pela interface. Remoção conferida no Supabase e no PostgreSQL.
+Fluxo sintético usado no CI também passou após compartilhar o mesmo teste.
+Senha temporária ficou só em memória; nenhum extrato pessoal, LLM, e-mail ou
+deploy usado. Confirmação de cadastro por e-mail, Google, Resend e instalação
+física permanecem sem validação. O ensaio opt-in não entra no CI automático.

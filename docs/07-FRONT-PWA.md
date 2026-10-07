@@ -57,8 +57,8 @@ para SUPABASE_URL. Token interno local gerado, sem ativar cron ou envio remoto.
 
 Login Google só aparece com `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true`, após ativar
 o provedor e autorizar o redirect `/app/` no Supabase/Google. Cadastro envia esse
-mesmo destino de confirmação. A operação real de ambos ainda depende das chaves
-do projeto e da configuração externa; testes sintéticos não validam o provedor.
+mesmo destino de confirmação. Login por senha e exclusão foram validados com
+Supabase real; confirmação por e-mail e Google ainda precisam de validação própria.
 
 O teste `playwright.integration.config.ts` sobe FastAPI em localhost:8009 e a
 interface em :3001. Só Supabase é simulado: conta, prévia, importação, chat e
@@ -71,9 +71,9 @@ na sessão atual prevalecem, inclusive após confirmar um lançamento.
 
 Configuração local usa TATO_ENV=development e RATE_LIMIT_BACKEND=memory
 explicitamente. Esse fallback não substitui Upstash compartilhado em produção.
-Chaves publicável/administrativa Supabase, URL/token Upstash e Resend ainda
-pendentes. Tentativas de login nos consoles não estabeleceram sessão; não
-comprovam credenciais inválidas e não validam os serviços.
+Chaves Supabase e Upstash foram configuradas e validadas. O ensaio remoto usa
+Upstash para limite de requisições e limpeza do cache. A chave Resend foi preenchida;
+remetente/domínio e envio real continuam pendentes. Google permanece desativado.
 
 CSV personalizado permite identificador estável, separador decimal e sinal das
 despesas. Mapeamento parcial é recusado antes do upload; qualquer edição exige
@@ -81,3 +81,18 @@ nova prévia. O teste completo usa despesas positivas com ponto decimal e ID.
 
 A conexão PostgreSQL tem timeout de cinco segundos. Um serviço local parado
 gera falha limitada, permitindo diagnosticar e retomar o fluxo sem espera indefinida.
+
+`make web-live-smoke` é opt-in e não roda no CI. Requer conta gratuita confirmada,
+Postgres local `tato_dev_*`, Node/Chromium e as chaves reais no `.env`. Reutiliza
+o teste de importação com Supabase e Upstash reais; LLM/e-mail ficam desligados.
+Uma identidade sintética confirmada é criada administrativamente, sem e-mail.
+O navegador testa senha, onboarding, CSV, chat analítico, saldo e exclusão.
+O runner confirma a remoção remota e local; falhas mantêm apenas o UUID da
+identidade em `test-results/live-smoke-owner.json` até confirmar a limpeza.
+Senhas/tokens não são gravados em traces, relatórios ou saída do ensaio.
+
+Após perda das chaves antigas, o banco `tato` foi preservado e o ambiente passou
+para `tato_dev_20261005`, com chaves novas e corpus público indexado. Os dados
+cifrados antigos continuam inacessíveis sem a chave original. Em 07/10/2026,
+o fluxo remoto passou com R$ 12,34 de despesa e R$ 87,66 de saldo sintéticos;
+conta de teste removida. Isso não valida instalação física ou envio de e-mail.

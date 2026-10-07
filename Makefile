@@ -64,3 +64,7 @@ config-check:
 
 web-config:
 	uv run --locked --env-file .env python scripts/check_config.py --write-web
+
+.PHONY: web-live-smoke
+web-live-smoke:
+	uv run --locked --env-file .env python scripts/smoke_web_live.py --confirm-free-tier
