@@ -19,7 +19,7 @@ de configuração mantém cobrança desligada; nunca fazer fallback para produç
 Cada commit contém uma ideia e no máximo 400 linhas. Não provisionar deploy ou
 enviar notificações como parte desta etapa. Dados de teste são sintéticos.
 
-## Checkpoint proposto — ainda sem migration
+## Schema aprovado em 07/10/2026
 
 `subscriptions` conserva os campos atuais. Acrescentar campos opcionais
 `billing_provider` (stripe/abacatepay), `external_id`, `external_customer_id` e
@@ -43,13 +43,16 @@ Sem prompts, respostas, documentos ou histórico pessoal.
 
 Novas tabelas têm RLS e exclusão em cascata com o usuário. Índices de usuário/data
 servem às consultas mensais; referências externas e eventos têm unicidade.
+Migration `0008` aplicada no banco local novo e no descartável `tato_test`.
+Upgrade/downgrade e ausência de drift conferidos; o banco histórico foi preservado.
+O papel comum da API continua somente leitura em `subscriptions`.
 Exclusão pendente bloqueia checkout e atualização do plano. Eventos antigos
 não recriam usuário removido. Testes PostgreSQL devem provar esses limites.
 O fluxo de exclusão também deverá cancelar a assinatura de teste e limpar
 referências pessoais no provedor antes de remover os vínculos locais. Falha
 remota conserva deletion_requested_at e os dados necessários para repetir.
 
-Regra proposta: Pro demonstrativo R$ 39/mês no Stripe teste; Pix sandbox libera
+Regra aprovada: Pro demonstrativo R$ 39/mês no Stripe teste; Pix sandbox libera
 30 dias, sem renovação automática. Um provedor de cobrança por vez; Free segue
 com uma fonte, um agente e 200 pedidos de chat por mês. Cobrança real permanece
 indisponível. Valor de teste não é compromisso com preço comercial futuro.

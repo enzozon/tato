@@ -500,3 +500,11 @@ Testes comprovam exclusão desses dados, configuração desligada e tolerância 
 indisponibilidade. Não foi conectado serviço externo de telemetria.
 Make check final desta parte: 246 testes Python/HTTP e 81,45% de cobertura,
 com ruff/mypy aprovados. Checkout/migration ainda aguardam o checkpoint enviado.
+
+Enzo aprovou o schema e as regras sandbox em 07/10. Migration 0008 acrescenta
+vínculos de cobrança, ledger de eventos e métricas LLM sem conteúdo pessoal.
+52 integrações PostgreSQL/Redis aprovadas, incluindo RLS de leitura/escrita,
+unicidade, valores inválidos e exclusão em cascata. Alembic sem drift e ciclo
+down/up aprovado no banco descartável; banco histórico tato preservado.
+Assinaturas continuam somente leitura para o papel comum da API; nenhuma
+cobrança ou concessão de Pro foi ativada nesta parte.
