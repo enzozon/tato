@@ -69,6 +69,18 @@ class Subscription(TenantRecord, table=True):
         UniqueConstraint("user_id"),
         CheckConstraint("plan IN ('free', 'pro')", name="plan"),
         CheckConstraint("status IN ('active', 'past_due', 'canceled')", name="status"),
+        CheckConstraint("billing_provider IN ('stripe', 'abacatepay')", name="provider"),
+        CheckConstraint(
+            "billing_provider IS NOT NULL OR "
+            "(external_id IS NULL AND external_customer_id IS NULL AND valid_until IS NULL)",
+            name="billing_link",
+        ),
+        UniqueConstraint("billing_provider", "external_id"),
+        UniqueConstraint("billing_provider", "external_customer_id"),
     )
     plan: str = Field(default="free", max_length=10)
     status: str = Field(default="active", max_length=16)
+    billing_provider: str | None = Field(default=None, max_length=16)
+    external_id: str | None = Field(default=None, max_length=255)
+    external_customer_id: str | None = Field(default=None, max_length=255)
+    valid_until: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))

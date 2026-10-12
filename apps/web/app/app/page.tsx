@@ -59,6 +59,6 @@ export default function AppPage() {
         {visited.includes('Conversa') && <div hidden={tab!=='Conversa'}><Chat token={token} accounts={data.accounts} refresh={refresh}/></div>}
         {visited.includes('Importar') && <div hidden={tab!=='Importar'}><Import token={token} accounts={data.accounts} refresh={refresh}/></div>}
         {tab==='Agentes' && profile && <Agents token={token} accounts={data.accounts} limit={profile.plan.agents}/>}
-        {tab==='Conta' && profile && <Settings token={token} profile={profile}/>}
+        {tab==='Conta' && profile && <Settings token={token} profile={profile} owner={owner}/>}
       </div>}</>}</main></>;
 }

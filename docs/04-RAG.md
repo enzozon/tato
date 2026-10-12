@@ -257,3 +257,5 @@ Perguntas, documentos e respostas avaliadas ficam em dados JSON separados das
 instruções fixas. Essa separação reduz confusão, mas não garante imunidade a prompt
 injection. A validação estrutural também não autoriza números financeiros: totais
 pessoais continuarão sujeitos à conferência determinística da camada SQL.
+
+Revalidação em 12/10/2026, sem mudança de recuperação: corpus público 200 documentos/40 perguntas, RRF hit@5=0,975 e MRR=0,8354166667; reranking hit@5=0,925 e MRR=0,8041666667. Delta MRR zero contra baseline. Judge remoto de faithfulness não executado nesta retomada.

@@ -470,3 +470,96 @@ Build, TypeScript, teste Node e offline aprovados. Ensaio com Supabase/Upstash
 reais repetido após a revisão: login, onboarding, import, chat SQL, dashboard
 e exclusão passaram; identidade temporária removida. Sem envio de e-mail,
 dados pessoais ou deploy. Config-check ainda identifica RESEND_FROM ausente.
+
+## 07/10/2026 — início da etapa 10
+
+PR 18 integrado após revalidar os seis checks do commit 5e0d363 e ausência de
+conflitos; merge 8423cb1. Só havia esse PR aberto. A sequência de etapas permanece
+linear, com nova branch codex/etapa-10-monetizacao-observabilidade em main.
+Schema/cobrança de teste propostos em docs/12-MONETIZACAO.md aguardam checkpoint.
+Enquanto isso, consumo pessoal usa SQL/RLS existentes: pedidos aceitos no mês
+UTC, fontes distintas e agentes ativos. Não mede quotas globais de provedores.
+Endpoint aprovado em 231 testes Python/HTTP (81,13%) e 50 integrações
+PostgreSQL/Redis, incluindo isolamento, falhas aceitas, prazo mensal, Pro e
+exclusão pendente. Nenhuma migration gerada nesta parte.
+A tela Conta passa a mostrar consumo e saldo de quotas, inclusive plano sem
+limite e falha de consulta. Dados não ficam no armazenamento do navegador.
+TypeScript/build e 22 testes desktop/mobile aprovados. O fluxo completo com
+PostgreSQL confere uma fonte usada e um pedido contado após CSV/chat, sem mocks
+para o consumo. Schema e cobrança continuam aguardando aprovação.
+Verificadores Stripe/AbacatePay acrescentados sem SDK, usando stdlib. Testes
+apresentam corpo adulterado, assinatura expirada/futura, rotação e secret errado.
+A chave HMAC pública AbacatePay não substitui o secret privado. Nenhuma rota de
+cobrança ativada; replay persistente depende do ledger aprovado.
+Make check aprovado com 244 testes e 81,38% de cobertura. Verificação é somente
+criptográfica; idempotência, consulta remota e mudança de plano não foram
+declaradas prontas sem a aprovação do schema.
+Observabilidade começa pelo fallback de logging padrão opt-in: lista fixa de
+métricas técnicas, sem dados/identidade/erro bruto, e falha de logging isolada.
+Testes comprovam exclusão desses dados, configuração desligada e tolerância à
+indisponibilidade. Não foi conectado serviço externo de telemetria.
+Make check final desta parte: 246 testes Python/HTTP e 81,45% de cobertura,
+com ruff/mypy aprovados. Checkout/migration ainda aguardam o checkpoint enviado.
+
+Enzo aprovou o schema e as regras sandbox em 07/10. Migration 0008 acrescenta
+vínculos de cobrança, ledger de eventos e métricas LLM sem conteúdo pessoal.
+52 integrações PostgreSQL/Redis aprovadas, incluindo RLS de leitura/escrita,
+unicidade, valores inválidos e exclusão em cascata. Alembic sem drift e ciclo
+down/up aprovado no banco descartável; banco histórico tato preservado.
+Assinaturas continuam somente leitura para o papel comum da API; nenhuma
+cobrança ou concessão de Pro foi ativada nesta parte.
+Plano pago agora exige prazo futuro UTC em cada consulta; ausência, igualdade,
+expiração ou data sem fuso não concedem Pro. Assinaturas sintéticas locais
+continuam compatíveis. Testes cobrem os dois provedores e o limite exato.
+Tentativas LLM passam a ser persistidas sem conteúdo, inclusive erros que levam
+ao fallback. Tokens ausentes permanecem nulos e cache não simula uso remoto.
+Testes verificam falha do armazenamento e bloqueio de exclusão pendente.
+Adapter Stripe inicial usa HTTPX existente, chave teste, preço mensal exato e
+metadata do dono/request_id. Testes simulados comprovam idempotency key estável,
+recusa de produção/preço alterado/destino indevido e erros sanitizados.
+Checkout ainda não está exposto por rota nem concede plano; integração remota
+aguarda configuração, e processamento de webhook/portal/Pix continua pendente.
+Retomada: rota de checkout sandbox reserva pedido antes da chamada remota,
+reutiliza UUID/vínculo, bloqueia pedidos paralelos e exclusão pendente. Nenhum
+retorno do navegador concede Pro. Configuração fica desligada até fechamento.
+Escrita de assinaturas pelo webhook exige papel restrito separado; proposta em
+docs/12-MONETIZACAO.md evita usar administrador ou liberar a API comum.
+Adapter consulta assinatura/fatura atuais e confere vínculo, quantidade e
+pagamento; estados trial/past_due/canceled não concedem acesso. Make check
+passou com 282 testes e 81,42% de cobertura. Docker local falhou ao iniciar;
+integrações desta retomada serão comprovadas no CI, não contadas como locais.
+
+
+## 12/10/2026 — revisão paralela e conclusão em partes
+
+Três agentes revisaram backend, frontend e cobrança. O consumo LLM mensal
+agora vem de agregação SQL por usuário, sem transformar tokens ausentes em zero.
+57 integrações locais PostgreSQL/Redis passaram nesta retomada, incluindo a
+prova nova de isolamento/mês/ausência. Não houve chamada de cobrança real.
+
+Prontidão do banco separada de liveness: /ready recusa papel privilegiado e confere acesso à tabela sem linhas. Testes HTTP sanitizados e integração com os dois papéis aprovados.
+
+Confirmações de onboarding/exclusão rejeitam números e texto; somente true explícito chega à operação.
+
+Limite por minuto cobre leituras de agentes/metas/avisos e marcação de leitura. O bloqueio de exclusão continua anterior ao rate limit.
+
+Conversa livre ganhou regressões para centenas/bilhões e recomendações de aquisição. A limitação lexical está explícita na documentação.
+
+Exportação de configuração pública rejeita espaços/controles, credenciais vazias e portas inválidas; a lista de variáveis permitidas foi preservada.
+
+Stripe sandbox recebeu validação estrita de URL e identificadores completos. Nenhuma cobrança real ou concessão de Pro foi ativada.
+
+Regressões web corrigem respostas atrasadas de agentes e exclusão após troca de identidade. A remoção experimental da guarda fez a regressão falhar, confirmando que o teste detecta o problema.
+
+Opt-in de e-mail disponível na interface, com preservação e revogação testadas em desktop/mobile. Nenhuma mensagem real enviada.
+
+Painel de IA concluído com seis testes desktop/mobile para null/zero, falha isolada e resposta antiga após renovação. Não apresenta saldo dos provedores.
+
+Adapter Pix exclusivamente sandbox revisado por outro agente, com vinte testes simulados. Ainda não expõe checkout nem concede plano.
+
+Plano de conclusão documenta responsáveis, dependências e pendências das etapas 10–12. Avaliação real de recuperação manteve baseline; judge remoto não foi executado.
+
+CI detectou dependência oculta do .env no teste HTTP de agentes: leituras novas
+usavam o padrão Upstash sem credenciais no runner. O teste agora escolhe
+explicitamente limitador em memória de desenvolvimento; integração repetida
+com ambiente padrão do CI, sem depender da configuração privada local.

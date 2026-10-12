@@ -24,9 +24,12 @@ def safe_smalltalk(value: SmallTalk) -> bool:
         r"\d|[$%€£]|\b(zero|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|"
         r"onze|doze|treze|catorze|quatorze|quinze|dezesseis|dezessete|dezoito|dezenove|"
         r"vinte|trinta|quarenta|cinquenta|sessenta|setenta|oitenta|noventa|cem|cento|"
-        r"mil|milhao|milhoes|metade|dobro|reais|centavos|saldo|rentabilidade|rendimento|"
+        r"duzent[oa]s|trezent[oa]s|quatrocent[oa]s|quinhent[oa]s|seiscent[oa]s|"
+        r"setecent[oa]s|oitocent[oa]s|novecent[oa]s|mil|milhao|milhoes|bilhao|bilhoes|"
+        r"trilhao|trilhoes|metade|dobro|reais|centavos|saldo|patrimonio|rentabilidade|rendimento|"
         r"acoes|bitcoin|cripto\w*|cdb|tesouro|ouro|compre|comprar|venda|vender|"
-        r"invista|investir|aplique|aplicar|garantid\w*)\b"
+        r"invista|investir|aplique|aplicar|adquir\w*|recomend\w*|sugiro|aconselh\w*|"
+        r"garantid\w*)\b"
     )
     return re.search(forbidden, text) is None
 

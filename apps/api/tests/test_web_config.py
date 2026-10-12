@@ -37,3 +37,20 @@ def test_web_export_is_an_allowlist(monkeypatch, tmp_path):
     config.write_web()
     value = (tmp_path / "apps/web/.env.local").read_text()
     assert "never-copy-this" not in value and "NEXT_PUBLIC_SUPABASE_URL=" in value
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://@example.test",
+        "https://example.test:invalid",
+        "https://[invalid",
+        "https://example.test:0",
+        "https://example.test:99999",
+        "https://example.test\n",
+        " https://example.test",
+        "https://exam\tple.test",
+    ],
+)
+def test_public_url_rejects_malformed_or_normalized_values(url):
+    assert not config.safe_url(url, local=True)

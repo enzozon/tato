@@ -1,3 +1,4 @@
+from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock
 from uuid import uuid4
 
@@ -33,6 +34,29 @@ def test_plan_comes_from_subscription(name, status, expected):
 def test_no_subscription_means_free():
     session = Mock()
     session.exec.return_value.first.return_value = None
+    assert user_plan(session, uuid4()) == FREE
+
+
+@pytest.mark.parametrize("seconds", [None, -1, 0, 1])
+@pytest.mark.parametrize("provider", ["stripe", "abacatepay"])
+def test_paid_pro_requires_unexpired_deadline(seconds, provider):
+    now = datetime(2026, 10, 7, tzinfo=UTC)
+    session = Mock()
+    session.exec.return_value.first.return_value = Subscription(
+        user_id=uuid4(),
+        plan="pro",
+        status="active",
+        billing_provider=provider,
+        valid_until=None if seconds is None else now + timedelta(seconds=seconds),
+    )
+    assert user_plan(session, uuid4(), now) == (PRO if seconds == 1 else FREE)
+
+
+def test_naive_deadline_does_not_grant_pro():
+    session = Mock()
+    session.exec.return_value.first.return_value = Subscription(
+        user_id=uuid4(), plan="pro", billing_provider="stripe", valid_until=datetime(2099, 1, 1)
+    )
     assert user_plan(session, uuid4()) == FREE
 
 

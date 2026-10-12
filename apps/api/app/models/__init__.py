@@ -1,6 +1,7 @@
 """Importar este módulo registra os modelos para o Alembic."""
 
 from app.models.agents import Agent
+from app.models.billing import BillingCheckout, BillingEvent, LLMUsage
 from app.models.chat import ChatTurn
 from app.models.documents import Chunk, Document
 from app.models.knowledge import KnowledgeChunk
@@ -10,6 +11,8 @@ from app.models.planning import Goal, Insight, Rule, Subscription
 __all__ = [
     "Account",
     "Agent",
+    "BillingCheckout",
+    "BillingEvent",
     "Category",
     "ChatTurn",
     "Chunk",
@@ -17,6 +20,7 @@ __all__ = [
     "Goal",
     "Insight",
     "KnowledgeChunk",
+    "LLMUsage",
     "Rule",
     "Subscription",
     "Transaction",

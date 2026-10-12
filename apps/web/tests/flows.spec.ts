@@ -153,6 +153,70 @@ test('agentes respeitam contrato e exclusão exige confirmação',async({page})=
   await expect(page.getByRole('heading',{name:'Que bom te ver.'})).toBeVisible();expect(deleted).toBe(1);
 });
 
+test('conta mostra consumo e admite falha sem ocultar exclusão',async({page})=>{
+  await signIn(page);
+  await page.route('**/me/usage',route=>route.fulfill({json:{period_end:'2026-11-01T00:00:00Z',
+    messages:{used:200,limit:200,remaining:0},import_sources:{used:7,limit:null,remaining:null},agents:{used:1,limit:3,remaining:2}}}));
+  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  const panel=page.getByRole('region',{name:'Consumo do plano'});
+  await expect(panel.getByText('200 usados · 0 restantes de 200')).toBeVisible();
+  await expect(panel.getByText('7 usados · sem limite contratual')).toBeVisible();
+  await expect(panel).toContainText('01/11/2026 (UTC)');
+  await page.getByRole('button',{name:'Resumo',exact:true}).click();
+  await page.route('**/me/usage',route=>route.fulfill({status:503,json:{detail:'private'}}));
+  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  await expect(panel.getByRole('status')).toHaveText('Não foi possível consultar o consumo agora.');
+  await expect(page.getByText('Excluir minha conta',{exact:true})).toBeVisible();
+  await expect(panel.getByText('200 usados · 0 restantes de 200')).toHaveCount(0);
+});
+
+test('renovar sessão recarrega agentes sem sobrescrever uma alteração recente',async({page})=>{
+  await page.clock.install();await signIn(page,120);
+  let enabled=true,blocked=false,release!:()=>void;
+  const gate=new Promise<void>(resolve=>{release=resolve;});
+  await page.route('**/agents',route=>route.fulfill({json:[{kind:'runway',account_id:account,goal_id:null,enabled,email_enabled:false}]}));
+  await page.route('**/goals',async route=>{
+    if(route.request().headers().authorization==='Bearer synthetic-token-2'&&!blocked){blocked=true;await gate;}
+    await route.fulfill({json:[]});
+  });
+  await page.route('**/insights',route=>route.fulfill({json:[]}));
+  await page.route('**/agents/runway',route=>{enabled=route.request().postDataJSON().enabled;return route.fulfill({json:{}});});
+  await page.getByRole('button',{name:'Agentes',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Pausar',exact:true})).toBeVisible();
+  const renewed=page.waitForRequest(r=>r.url().endsWith('/goals')&&r.headers().authorization==='Bearer synthetic-token-2');
+  await page.clock.runFor(31000);await renewed;
+  await page.getByRole('button',{name:'Pausar',exact:true}).click();
+  await expect(page.getByText('Pausado',{exact:true})).toBeVisible();
+  const finished=page.waitForResponse('**/goals');release();await (await finished).finished();await page.clock.runFor(100);
+  await expect(page.getByText('Pausado',{exact:true})).toBeVisible();
+});
+
+test('exclusão atrasada não encerra a sessão de outra identidade',async({page})=>{
+  await signIn(page);let release!:()=>void,completed!:()=>void;
+  const gate=new Promise<void>(resolve=>{release=resolve;});
+  const completion=new Promise<void>(resolve=>{completed=resolve;});
+  await page.route('**/me',async route=>{
+    if(route.request().method()!=='DELETE')return route.fallback();
+    await gate;await route.fulfill({status:204});completed();
+  });
+  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  await page.getByText('Excluir minha conta',{exact:true}).click();
+  await page.getByLabel('Digite EXCLUIR para confirmar').fill('EXCLUIR');
+  const started=page.waitForRequest(r=>r.url().endsWith('/me')&&r.method()==='DELETE');
+  await page.getByRole('button',{name:'Excluir permanentemente'}).click();await started;
+  await page.getByRole('button',{name:'Sair',exact:true}).click();
+  await page.getByLabel('E-mail',{exact:true}).fill('outro@example.test');
+  await page.getByLabel('Senha',{exact:true}).fill('synthetic-password');
+  await page.getByRole('button',{name:'Entrar',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Uma visão tranquila.'})).toBeVisible();
+  let signedOut=false;
+  page.on('request',request=>{if(request.url().includes('/auth/v1/logout'))signedOut=true;});
+  release();await completion;
+  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+  expect(signedOut).toBe(false);
+  await expect(page.getByRole('heading',{name:'Uma visão tranquila.'})).toBeVisible();
+});
+
 test('cadastro aguarda confirmação e Google usa o retorno permitido',async({page})=>{
   await page.route('https://auth.example.test/auth/v1/signup**',route=>{
     expect(new URL(route.request().url()).searchParams.get('redirect_to')).toBe('http://127.0.0.1:3000/app/');

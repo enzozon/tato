@@ -1,4 +1,8 @@
+import json
+import logging
+import os
 from collections.abc import Callable
+from contextlib import suppress
 from dataclasses import dataclass
 from threading import Lock
 from time import monotonic, sleep
@@ -7,6 +11,8 @@ from pydantic import BaseModel, ValidationError
 
 from app.llm import Attempt, Generation, LLMProvider, LLMUnavailable, ProviderError
 from app.llm_policy import personal_allowed
+
+usage_logger = logging.getLogger("tato.llm_usage")
 
 
 @dataclass(frozen=True)
@@ -31,21 +37,40 @@ class Router:
         if request.classification == "personal" and not personal_allowed("groq"):
             raise LLMUnavailable("Dados pessoais ainda não habilitados para provedores.")
         attempts: list[Attempt] = []
+
+        def record(attempt: Attempt) -> None:
+            attempts.append(attempt)
+            if os.environ.get("LLM_LOG_USAGE") == "true":
+                # Falha de telemetria não pode interromper a operação financeira.
+                with suppress(Exception):
+                    usage_logger.info(
+                        json.dumps(
+                            {
+                                "event": "llm_attempt",
+                                "provider": attempt.provider,
+                                "outcome": attempt.outcome,
+                                "input_tokens": attempt.input_tokens,
+                                "output_tokens": attempt.output_tokens,
+                                "elapsed_ms": attempt.elapsed_ms,
+                            }
+                        )
+                    )
+
         # ponytail: serializa por processo; limites compartilhados antes de escalar.
         with self.lock:
             for provider in self.providers:
                 if request.classification == "personal" and not personal_allowed(provider.name):
-                    attempts.append(Attempt(provider.name, "policy"))
+                    record(Attempt(provider.name, "policy"))
                     continue
                 if self.blocked_until.get(provider.name, 0) > monotonic():
-                    attempts.append(Attempt(provider.name, "circuit_open"))
+                    record(Attempt(provider.name, "circuit_open"))
                     continue
                 for retry in range(2):
                     started = monotonic()
                     try:
                         result = provider.generate(request, output.model_json_schema())
                     except ProviderError as error:
-                        attempts.append(
+                        record(
                             Attempt(
                                 provider.name,
                                 "error",
@@ -63,7 +88,7 @@ class Router:
                         valid = guard(value)
                     except (ValidationError, ValueError):
                         pass
-                    attempts.append(
+                    record(
                         Attempt(
                             provider.name,
                             "ok" if valid else "invalid",

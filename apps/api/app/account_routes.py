@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.security import HTTPAuthorizationCredentials
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 from sqlalchemy import Engine
 
 from app.account_service import Profile, profile, request_deletion
@@ -25,6 +25,13 @@ def runtime_engine() -> Engine:
 class OnboardingInput(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     completed: Literal[True]
+
+    @field_validator("completed", mode="before")
+    @classmethod
+    def explicit_true(cls, value: object) -> object:
+        if value is not True:
+            raise ValueError("Conclusão exige o booleano true.")
+        return value
 
 
 IdentityDep = Annotated[Identity, Depends(current_identity)]
@@ -55,6 +62,13 @@ def complete_onboarding(
 class DeletionInput(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     confirm: Literal[True]
+
+    @field_validator("confirm", mode="before")
+    @classmethod
+    def explicit_true(cls, value: object) -> object:
+        if value is not True:
+            raise ValueError("Confirmação exige o booleano true.")
+        return value
 
 
 @router.delete("", status_code=204)
