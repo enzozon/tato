@@ -1,0 +1,6 @@
+# Contexto permitido: dependências travadas, API Python e identidade pública.
+**
+!pyproject.toml
+!uv.lock
+!apps/api/app/**/*.py
+!packages/mascot/identity.json

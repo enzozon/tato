@@ -563,3 +563,7 @@ CI detectou dependência oculta do .env no teste HTTP de agentes: leituras novas
 usavam o padrão Upstash sem credenciais no runner. O teste agora escolhe
 explicitamente limitador em memória de desenvolvimento; integração repetida
 com ambiente padrão do CI, sem depender da configuração privada local.
+
+Etapa 11 iniciada em worktree separado: imagem da API sem ferramentas de build, UID1000, raiz somente leitura e contexto restrito. Build/smoke locais passaram; /ready retorna503 sem banco. Sem deploy ou escolha de provider.
+
+CI acrescenta pip-audit2.10.1 e Gitleaks8.30.1 com checksum. Auditorias locais Windows53/Linux50 dependências e histórico Git sem achados conhecidos; jobs remotos serão verificados antes de afirmar aprovação.
