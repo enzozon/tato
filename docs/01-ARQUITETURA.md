@@ -82,9 +82,18 @@ de compatibilidade de OpenAPI será ampliada com endpoints de negócio.
 O schema foi revisado antes das migrations `0001` e `0002` na etapa 2.
 A camada de dados usa transações com contexto de usuário, RLS forçada, textos
 cifrados e repositórios com filtros explícitos. A etapa 3 expõe perfil/onboarding
-e exclusão; ledger/imports continuam sem endpoints. `0003` acrescenta os dois
+e exclusão. Contas, importação com prévia, chat e agentes já têm endpoints. `0003` acrescenta os dois
 marcadores de ciclo de conta aprovados pelo Enzo.
 Leia `02-DADOS.md` para relações, índices, reversão e verificações de isolamento.
 
 Produção gratuita permanece uma hipótese: embedding e reranker precisam caber
 no orçamento de memória do provedor. Render é candidato; não há serviço publicado.
+
+
+## Prontidão do armazenamento
+
+`GET /health` continua disponível sem banco como sinal de processo vivo.
+`GET /ready` usa a conexão restrita da API, recusa superuser/BYPASSRLS e verifica
+permissão de leitura da tabela `users` com `LIMIT 0`, sem recuperar registros.
+Falha de conexão, schema ou privilégio retorna 503 com mensagem sanitizada.
+Isso não valida serviços externos nem substitui os testes de isolamento RLS.

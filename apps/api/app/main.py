@@ -5,9 +5,10 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.account_routes import router
+from app.account_routes import EngineDep, router
 from app.agent_routes import router as agent_router
 from app.billing_routes import router as billing_router
 from app.chat_routes import router as chat_router
@@ -56,4 +57,17 @@ class HealthResponse(BaseModel):
 @app.get("/health", response_model=HealthResponse, tags=["saúde"])
 def health() -> HealthResponse:
     """Confirma que a API responde; não verifica banco nem provedores."""
+    return HealthResponse(status="ok")
+
+
+@app.get("/ready", response_model=HealthResponse, tags=["saúde"])
+def readiness(engine: EngineDep) -> HealthResponse:
+    """Confere armazenamento e papel restrito sem ler registros financeiros."""
+    with engine.connect() as connection:
+        privileged = connection.execute(
+            text("SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE rolname = current_user")
+        ).scalar_one()
+        if privileged:
+            raise PermissionError("Prontidão exige papel sem privilégios administrativos.")
+        connection.execute(text("SELECT id FROM users LIMIT 0"))
     return HealthResponse(status="ok")

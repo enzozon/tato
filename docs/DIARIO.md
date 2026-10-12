@@ -536,3 +536,5 @@ Três agentes revisaram backend, frontend e cobrança. O consumo LLM mensal
 agora vem de agregação SQL por usuário, sem transformar tokens ausentes em zero.
 57 integrações locais PostgreSQL/Redis passaram nesta retomada, incluindo a
 prova nova de isolamento/mês/ausência. Não houve chamada de cobrança real.
+
+Prontidão do banco separada de liveness: /ready recusa papel privilegiado e confere acesso à tabela sem linhas. Testes HTTP sanitizados e integração com os dois papéis aprovados.
