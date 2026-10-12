@@ -14,6 +14,12 @@ from app.rag.retrieval import Hit
     [
         "Você tem 42 reais",
         "Invista em bitcoin",
+        "Você gastou duzentos ontem.",
+        "Seu patrimônio é um bilhão.",
+        "Recomendo adquirir Petrobras.",
+        "Você recebeu quinhentas ontem.",
+        "Seu total foi novecentos.",
+        "Aconselho esse investimento.",
         "Seu saldo está bom",
         "Guarde metade",
         "Rentabilidade garantida",

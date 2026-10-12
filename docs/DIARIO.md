@@ -542,3 +542,5 @@ Prontidão do banco separada de liveness: /ready recusa papel privilegiado e con
 Confirmações de onboarding/exclusão rejeitam números e texto; somente true explícito chega à operação.
 
 Limite por minuto cobre leituras de agentes/metas/avisos e marcação de leitura. O bloqueio de exclusão continua anterior ao rate limit.
+
+Conversa livre ganhou regressões para centenas/bilhões e recomendações de aquisição. A limitação lexical está explícita na documentação.
