@@ -538,3 +538,5 @@ agora vem de agregação SQL por usuário, sem transformar tokens ausentes em ze
 prova nova de isolamento/mês/ausência. Não houve chamada de cobrança real.
 
 Prontidão do banco separada de liveness: /ready recusa papel privilegiado e confere acesso à tabela sem linhas. Testes HTTP sanitizados e integração com os dois papéis aprovados.
+
+Confirmações de onboarding/exclusão rejeitam números e texto; somente true explícito chega à operação.

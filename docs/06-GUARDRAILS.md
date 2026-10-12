@@ -27,3 +27,10 @@ Conversa livre passa por filtro lexical conservador e fallback; esse filtro não
 prova segurança semântica de toda frase. Groq pessoal exige duas flags e ZDR
 confirmado pelo proprietário; Gemini/OpenRouter continuam bloqueados. A interface futura precisa escapar
 fontes como texto e não as inserir como HTML.
+
+
+## Revisão de 12/10/2026
+
+Confirmações de onboarding e exclusão exigem o booleano JSON `true`: o número
+`1` não é consentimento, mesmo quando `Literal[True]` o aceita. Testes rejeitam
+números, texto, falso e nulo antes de qualquer operação.

@@ -1,11 +1,24 @@
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 from app import account_routes as routes
 from app.auth import Identity, current_identity
 from app.main import app
 from app.plans import FREE
+
+
+@pytest.mark.parametrize(
+    ("model", "field"),
+    [(routes.DeletionInput, "confirm"), (routes.OnboardingInput, "completed")],
+)
+def test_confirmation_requires_explicit_boolean_true(model, field):
+    assert getattr(model.model_validate({field: True}), field) is True
+    for value in [1, 0, "true", False, None]:
+        with pytest.raises(ValidationError):
+            model.model_validate({field: value})
 
 
 def test_storage_error_does_not_expose_query_or_parameters(monkeypatch):
