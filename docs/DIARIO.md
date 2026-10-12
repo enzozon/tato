@@ -544,3 +544,5 @@ Confirmações de onboarding/exclusão rejeitam números e texto; somente true e
 Limite por minuto cobre leituras de agentes/metas/avisos e marcação de leitura. O bloqueio de exclusão continua anterior ao rate limit.
 
 Conversa livre ganhou regressões para centenas/bilhões e recomendações de aquisição. A limitação lexical está explícita na documentação.
+
+Exportação de configuração pública rejeita espaços/controles, credenciais vazias e portas inválidas; a lista de variáveis permitidas foi preservada.

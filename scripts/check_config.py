@@ -22,18 +22,28 @@ def public_key(value: str) -> bool:
 
 
 def safe_url(value: str, *, local: bool = False) -> bool:
-    parsed = urlsplit(value)
-    return bool(
-        parsed.hostname
-        and not parsed.username
-        and not parsed.password
-        and not parsed.query
-        and not parsed.fragment
-        and (
-            parsed.scheme == "https"
-            or (local and parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1"})
+    if not value or any(ord(char) <= 32 or ord(char) == 127 for char in value):
+        return False
+    try:
+        parsed = urlsplit(value)
+        return bool(
+            parsed.hostname
+            and parsed.username is None
+            and parsed.password is None
+            and parsed.port != 0
+            and not parsed.query
+            and not parsed.fragment
+            and (
+                parsed.scheme == "https"
+                or (
+                    local
+                    and parsed.scheme == "http"
+                    and parsed.hostname in {"localhost", "127.0.0.1"}
+                )
+            )
         )
-    )
+    except ValueError:
+        return False
 
 
 def audit() -> dict[str, bool]:
