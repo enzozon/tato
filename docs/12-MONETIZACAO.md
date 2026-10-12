@@ -163,3 +163,5 @@ indicam medições parciais. Zero é uma medição válida. Tempo total inclui e
 Não retorna conteúdo pessoal nem estima saldo/limite das contas dos provedores.
 Testes cobrem identidade, `no-store`, exclusão pendente, fronteiras do mês,
 usuários distintos e valores ausentes no PostgreSQL.
+
+O adapter Stripe também recusa controles, userinfo vazio e portas inválidas no retorno. IDs de checkout, cliente e assinatura precisam ter formato completo antes de qualquer uso remoto; regressões cobrem respostas adulteradas.

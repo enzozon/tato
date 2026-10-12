@@ -156,3 +156,53 @@ def test_retrieve_validates_reference_and_owner_without_creating_checkout(status
         with pytest.raises(BillingUnavailable):
             provider.retrieve_checkout("cs_test_demo", owner, request_id)
     assert len(calls) == 2
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://[invalid/app/",
+        "https://tato.example:bad/app/",
+        "https://tato.example:65536/app/",
+        "https://tato.example:0/app/",
+        "https://@tato.example/app/",
+        "\nhttps://tato.example/app/",
+        "https://tato.example/ap\tp/",
+    ],
+)
+def test_return_url_rejects_normalized_or_malformed_addresses(url):
+    with httpx.Client() as client, pytest.raises(BillingUnavailable) as error:
+        StripeSandbox("sk_test_demo", "price_test", client, url)
+    assert str(error.value) == "Retorno do checkout inválido."
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        {"id": "cs_test_"},
+        {"id": "cs_test_demo/../other"},
+        {"customer": ""},
+        {"customer": "cus_demo/other"},
+        {"subscription": ""},
+        {"subscription": "sub_demo?expand[]=customer"},
+    ],
+)
+def test_checkout_rejects_malformed_provider_references(mutation):
+    owner, request_id = uuid4(), uuid4()
+    payload = {
+        "id": "cs_test_demo",
+        "livemode": False,
+        "mode": "subscription",
+        "currency": "brl",
+        "amount_total": 3900,
+        "client_reference_id": str(owner),
+        "metadata": {"user_id": str(owner), "request_id": str(request_id)},
+        "status": "complete",
+        "payment_status": "paid",
+        "customer": "cus_demo",
+        "subscription": "sub_demo",
+        **mutation,
+    }
+    with httpx.Client() as client, pytest.raises(BillingUnavailable):
+        provider = StripeSandbox("sk_test_demo", "price_test", client, "https://tato.example/app/")
+        provider.validate_checkout(payload, owner, request_id)

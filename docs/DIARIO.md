@@ -546,3 +546,5 @@ Limite por minuto cobre leituras de agentes/metas/avisos e marcação de leitura
 Conversa livre ganhou regressões para centenas/bilhões e recomendações de aquisição. A limitação lexical está explícita na documentação.
 
 Exportação de configuração pública rejeita espaços/controles, credenciais vazias e portas inválidas; a lista de variáveis permitidas foi preservada.
+
+Stripe sandbox recebeu validação estrita de URL e identificadores completos. Nenhuma cobrança real ou concessão de Pro foi ativada.

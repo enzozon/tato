@@ -68,16 +68,23 @@ class StripeSandbox:
             r"price_[A-Za-z0-9_]+", self.price_id
         ):
             raise BillingUnavailable("Stripe de teste não configurado.")
-        url = urlsplit(self.return_url)
-        if (
-            url.username
-            or url.password
-            or url.query
-            or url.fragment
-            or not url.hostname
-            or not (url.scheme == "https" or (url.scheme == "http" and url.hostname == "127.0.0.1"))
-        ):
-            raise BillingUnavailable("Retorno do checkout inválido.")
+        try:
+            url = urlsplit(self.return_url)
+            if (
+                url.username is not None
+                or url.password is not None
+                or url.query
+                or url.fragment
+                or not url.hostname
+                or url.port == 0
+                or any(ord(char) < 33 for char in self.return_url)
+                or not (
+                    url.scheme == "https" or (url.scheme == "http" and url.hostname == "127.0.0.1")
+                )
+            ):
+                raise ValueError
+        except ValueError:
+            raise BillingUnavailable("Retorno do checkout inválido.") from None
 
     def request(
         self, method: str, path: str, *, data: dict[str, str] | None = None, key: str | None = None
@@ -150,10 +157,17 @@ class StripeSandbox:
         except ValidationError:
             raise BillingUnavailable("Checkout de demonstração inválido.") from None
         if (
-            not result.id.startswith("cs_test_")
+            not fullmatch(r"cs_test_[A-Za-z0-9_]+", result.id)
             or result.client_reference_id != str(owner)
             or result.metadata.get("user_id") != str(owner)
             or result.metadata.get("request_id") != str(request_id)
+            or (
+                result.customer is not None and not fullmatch(r"cus_[A-Za-z0-9_]+", result.customer)
+            )
+            or (
+                result.subscription is not None
+                and not fullmatch(r"sub_[A-Za-z0-9_]+", result.subscription)
+            )
         ):
             raise BillingUnavailable("Vínculo do checkout inválido.")
         return result
@@ -173,7 +187,9 @@ class StripeSandbox:
     def subscription_state(
         self, external_id: str, owner: UUID, request_id: UUID, customer_id: str
     ) -> StripeSubscriptionState:
-        if not fullmatch(r"sub_[A-Za-z0-9_]+", external_id):
+        if not fullmatch(r"sub_[A-Za-z0-9_]+", external_id) or not fullmatch(
+            r"cus_[A-Za-z0-9_]+", customer_id
+        ):
             raise BillingUnavailable("Referência de assinatura inválida.")
         payload = self.request("GET", f"subscriptions/{external_id}")
         try:
