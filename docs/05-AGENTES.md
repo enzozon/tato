@@ -115,3 +115,5 @@ Não há detecção de serviços efetivamente esquecidos, reserva segregada para
 nem previsão financeira probabilística. Os avisos descrevem limites e hipóteses.
 
 Consultas de agentes, metas e avisos, inclusive marcação de leitura, também usam o limite por minuto do plano após checar exclusão pendente. Testes garantem bloqueio antes de consulta/mutação nos planos Free e Pro.
+
+A configuração web oferece opt-in de e-mail desligado por padrão, preservado ao pausar/reativar ou renovar sessão. Desmarcar revoga a preferência. A entrega ainda depende do serviço habilitado e de endereço confirmado; testes não enviam mensagens reais.
