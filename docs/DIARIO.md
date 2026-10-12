@@ -528,3 +528,11 @@ Adapter consulta assinatura/fatura atuais e confere vínculo, quantidade e
 pagamento; estados trial/past_due/canceled não concedem acesso. Make check
 passou com 282 testes e 81,42% de cobertura. Docker local falhou ao iniciar;
 integrações desta retomada serão comprovadas no CI, não contadas como locais.
+
+
+## 12/10/2026 — revisão paralela e conclusão em partes
+
+Três agentes revisaram backend, frontend e cobrança. O consumo LLM mensal
+agora vem de agregação SQL por usuário, sem transformar tokens ausentes em zero.
+57 integrações locais PostgreSQL/Redis passaram nesta retomada, incluindo a
+prova nova de isolamento/mês/ausência. Não houve chamada de cobrança real.

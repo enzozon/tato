@@ -153,3 +153,13 @@ valida assinatura e vínculo remoto/local antes de usá-la.
 Isso exige migration de permissões; aguarda checkpoint específico antes de
 aplicar. Usar o administrador de migrations no webhook foi descartado porque
 contornaria RLS. Nenhuma nova tabela ou coluna é proposta neste checkpoint.
+
+
+## Consumo LLM por usuário
+
+`GET /me/llm-usage` agrega tentativas persistidas no mês UTC pela conexão RLS.
+Soma somente tokens conhecidos; ausência completa permanece nula, e contadores
+indicam medições parciais. Zero é uma medição válida. Tempo total inclui erros.
+Não retorna conteúdo pessoal nem estima saldo/limite das contas dos provedores.
+Testes cobrem identidade, `no-store`, exclusão pendente, fronteiras do mês,
+usuários distintos e valores ausentes no PostgreSQL.
