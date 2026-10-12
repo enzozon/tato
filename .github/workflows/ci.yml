@@ -45,6 +45,17 @@ jobs:
       - run: make sync
       - run: uv run --locked pre-commit run --all-files
 
+  container:
+    name: Imagem da API
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Construir imagem sem segredos
+        run: docker build -f apps/api/Dockerfile -t tato-api:ci .
+      - name: Validar imagem sem provedores ou rede externa
+        run: python3 scripts/smoke_api_image.py tato-api:ci
+
   infrastructure:
     name: Infraestrutura local
     runs-on: ubuntu-latest
