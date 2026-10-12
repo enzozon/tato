@@ -167,3 +167,16 @@ usuários distintos e valores ausentes no PostgreSQL.
 O adapter Stripe também recusa controles, userinfo vazio e portas inválidas no retorno. IDs de checkout, cliente e assinatura precisam ter formato completo antes de qualquer uso remoto; regressões cobrem respostas adulteradas.
 
 A tela Conta mostra métricas LLM em painel independente: null aparece como não informado, zero permanece zero e contagens ausentes explicam somas parciais. Erro não oculta exclusão/consumo e resposta de token antigo é descartada.
+
+### Adapter Pix sandbox
+
+`billing_abacate.py` exige chave `dev_` antes da requisição e recusa produção.
+Usa PIX v2 com valor fixo aprovado de 3.900 centavos, validade de uma hora e
+vínculos de dono/request_id; resposta exige devMode booleano verdadeiro.
+QR não aparece em repr. Não há retry automático: timeout exige reconciliação,
+pois externalId não possui garantia documentada de idempotência neste contrato.
+Vinte testes MockTransport cobrem a fronteira. Nenhuma chamada real foi feita.
+Sem rota, escrita de assinatura ou concessão de Pro; integração depende do
+fechamento do ledger/webhook. Contrato oficial conferido em 12/10/2026:
+https://docs.abacatepay.com/pages/transparents/create e
+https://www.abacatepay.com/blog/como-testar-gateway-sandbox-abacatepay.
