@@ -101,3 +101,5 @@ para `tato_dev_20261005`, com chaves novas e corpus público indexado. Os dados
 cifrados antigos continuam inacessíveis sem a chave original. Em 07/10/2026,
 o fluxo remoto passou com R$ 12,34 de despesa e R$ 87,66 de saldo sintéticos;
 conta de teste removida. Isso não valida instalação física ou envio de e-mail.
+
+Respostas atrasadas de agentes não substituem alterações mais recentes nem a sessão renovada. Exclusão só encerra a sessão local se a identidade atual ainda for a dona da operação. Regressões desktop/mobile cobrem a concorrência.

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cents, money, request, type Account } from '../lib/client';
 
 const kinds = {subscription_watch:'Vigia de assinatura',anomaly:'Desvio de padrão',runway:'Fôlego',goal:'Meta'};
@@ -14,8 +14,15 @@ const labels:Record<string,string>={balance_cents:'Saldo registrado',target_cent
 export function Agents({token,accounts,limit}:{token:string;accounts:Account[];limit:number}) {
   const [agents,setAgents]=useState<Agent[]>([]),[goals,setGoals]=useState<Goal[]>([]),[insights,setInsights]=useState<Insight[]>([]);
   const [kind,setKind]=useState<Kind>('runway'),[busy,setBusy]=useState(false),[error,setError]=useState('');
-  async function load(){const [a,g,i]=await Promise.all([request<Agent[]>('/agents',token),request<Goal[]>('/goals',token),request<Insight[]>('/insights',token)]);setAgents(a);setGoals(g);setInsights(i);}
-  useEffect(()=>{load().catch(()=>setError('Não foi possível carregar seus agentes.'));},[]);
+  const generation=useRef(0),accessToken=useRef(token);
+  accessToken.current=token;
+  async function load(){
+    if(token!==accessToken.current)return;
+    const version=++generation.current;
+    const [a,g,i]=await Promise.all([request<Agent[]>('/agents',token),request<Goal[]>('/goals',token),request<Insight[]>('/insights',token)]);
+    if(version===generation.current){setAgents(a);setGoals(g);setInsights(i);}
+  }
+  useEffect(()=>{let active=true;load().catch(()=>{if(active)setError('Não foi possível carregar seus agentes.');});return()=>{active=false;generation.current++;};},[token]);
   async function action(work:()=>Promise<unknown>){setBusy(true);setError('');try{await work();await load();}catch(e){setError(e instanceof Error?e.message:'Operação indisponível.');}finally{setBusy(false);}}
   function configure(event:React.FormEvent<HTMLFormElement>){event.preventDefault();const data=new FormData(event.currentTarget);
     void action(()=>request(`/agents/${kind}`,token,{method:'PUT',body:JSON.stringify({account_id:data.get('account_id'),goal_id:kind==='goal'?data.get('goal_id'):null,enabled:true,email_enabled:false})}));}

@@ -548,3 +548,5 @@ Conversa livre ganhou regressões para centenas/bilhões e recomendações de aq
 Exportação de configuração pública rejeita espaços/controles, credenciais vazias e portas inválidas; a lista de variáveis permitidas foi preservada.
 
 Stripe sandbox recebeu validação estrita de URL e identificadores completos. Nenhuma cobrança real ou concessão de Pro foi ativada.
+
+Regressões web corrigem respostas atrasadas de agentes e exclusão após troca de identidade. A remoção experimental da guarda fez a regressão falhar, confirmando que o teste detecta o problema.

@@ -5,7 +5,7 @@ import { auth, request, type Profile } from '../lib/client';
 type Capacity={used:number;limit:number|null;remaining:number|null};
 type Usage={period_end:string;messages:Capacity;import_sources:Capacity;agents:Capacity};
 
-export function Settings({token,profile}:{token:string;profile:Profile}) {
+export function Settings({token,profile,owner}:{token:string;profile:Profile;owner:string}) {
   const [confirmation,setConfirmation]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
   const [usage,setUsage]=useState<Usage>(),[usageError,setUsageError]=useState('');
   useEffect(()=>{
@@ -15,7 +15,11 @@ export function Settings({token,profile}:{token:string;profile:Profile}) {
     return()=>{active=false;};
   },[token]);
   async function remove(event:React.FormEvent){event.preventDefault();if(confirmation!=='EXCLUIR')return;setBusy(true);setError('');
-    try{await request('/me',token,{method:'DELETE',body:JSON.stringify({confirm:true})});await auth?.auth.signOut({scope:'local'});}
+    try{
+      await request('/me',token,{method:'DELETE',body:JSON.stringify({confirm:true})});
+      const current=await auth?.auth.getSession();
+      if(current?.data.session?.user.id===owner)await auth?.auth.signOut({scope:'local'});
+    }
     catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir. A solicitação pode estar pendente; tente novamente.');}
     finally{setBusy(false);}}
   return <section className="narrow stack"><h1>Sua conta.</h1><div className="panel"><h3>Plano {profile.plan.name}</h3><p>{profile.plan.agents} agente(s) ativo(s). {profile.plan.messages_per_month ?? 'Sem limite de'} mensagens por mês.</p><p>Cobrança e mudança de plano ainda não estão disponíveis.</p></div>
