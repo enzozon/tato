@@ -18,6 +18,8 @@ def test_configuration_cron_inbox_and_read_are_isolated(
     runtime_engine, owners, agent_accounts, monkeypatch
 ):
     owner = owners[0]
+    monkeypatch.setenv("TATO_ENV", "development")
+    monkeypatch.setenv("RATE_LIMIT_BACKEND", "memory")
     monkeypatch.setenv("DEDUP_HMAC_KEY", base64.b64encode(b"y" * 32).decode())
     monkeypatch.setenv("AGENTS_RUN_TOKEN", "z" * 32)
     with account_session(runtime_engine, owner) as session:
@@ -34,7 +36,9 @@ def test_configuration_cron_inbox_and_read_are_isolated(
                 "/goals", json={"description": "Reserva sintética", "target_cents": 10000}
             )
             assert goal.status_code == 201
-            assert client.get("/goals").json()[0]["description"] == "Reserva sintética"
+            goals = client.get("/goals")
+            assert goals.status_code == 200
+            assert goals.json()[0]["description"] == "Reserva sintética"
             configured = client.put(
                 "/agents/goal",
                 json={"account_id": str(agent_accounts[0]), "goal_id": goal.json()["id"]},

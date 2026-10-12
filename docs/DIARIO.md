@@ -558,3 +558,8 @@ Painel de IA concluído com seis testes desktop/mobile para null/zero, falha iso
 Adapter Pix exclusivamente sandbox revisado por outro agente, com vinte testes simulados. Ainda não expõe checkout nem concede plano.
 
 Plano de conclusão documenta responsáveis, dependências e pendências das etapas 10–12. Avaliação real de recuperação manteve baseline; judge remoto não foi executado.
+
+CI detectou dependência oculta do .env no teste HTTP de agentes: leituras novas
+usavam o padrão Upstash sem credenciais no runner. O teste agora escolhe
+explicitamente limitador em memória de desenvolvimento; integração repetida
+com ambiente padrão do CI, sem depender da configuração privada local.
