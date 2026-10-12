@@ -552,3 +552,5 @@ Stripe sandbox recebeu validação estrita de URL e identificadores completos. N
 Regressões web corrigem respostas atrasadas de agentes e exclusão após troca de identidade. A remoção experimental da guarda fez a regressão falhar, confirmando que o teste detecta o problema.
 
 Opt-in de e-mail disponível na interface, com preservação e revogação testadas em desktop/mobile. Nenhuma mensagem real enviada.
+
+Painel de IA concluído com seis testes desktop/mobile para null/zero, falha isolada e resposta antiga após renovação. Não apresenta saldo dos provedores.

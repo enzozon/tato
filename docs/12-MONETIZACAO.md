@@ -165,3 +165,5 @@ Testes cobrem identidade, `no-store`, exclusão pendente, fronteiras do mês,
 usuários distintos e valores ausentes no PostgreSQL.
 
 O adapter Stripe também recusa controles, userinfo vazio e portas inválidas no retorno. IDs de checkout, cliente e assinatura precisam ter formato completo antes de qualquer uso remoto; regressões cobrem respostas adulteradas.
+
+A tela Conta mostra métricas LLM em painel independente: null aparece como não informado, zero permanece zero e contagens ausentes explicam somas parciais. Erro não oculta exclusão/consumo e resposta de token antigo é descartada.
