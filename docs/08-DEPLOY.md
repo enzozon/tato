@@ -59,10 +59,26 @@ não estão embutidos nem foram baixados nesse ensaio; inferência real, cache
 gravável, cold start e pico de RAM precisam de medição antes de escolher host.
 Não se pode concluir que 512 MiB suportam o produto apenas desse resultado.
 
-## Imagem no CI
+## Verificações de segurança e CI
 
-O job Imagem da API constrói o Dockerfile e executa o smoke sem segredos,
-rede externa ou provedores. O resultado remoto será verificado no SHA exato.
+O CI adiciona jobs separados de imagem e segurança, sem secrets de aplicação.
+O primeiro constrói o Dockerfile e executa o mesmo smoke isolado acima. O segundo
+exporta somente dependências de runtime travadas com hashes e usa pip-audit
+2.10.1 efêmero, sem instalar a ferramenta no ambiente da API. Falha em auditoria
+ou coleta de dependências não é convertida em aprovação.
+
+Auditorias locais em 12/10: 53 dependências Windows e 50 Linux, ambas com zero
+vulnerabilidades conhecidas e exit 0. A execução Linux usou o estágio de
+dependências da imagem, sem segredos; o job remoto no CI ainda é prova separada.
+O resultado consulta avisos conhecidos do PyPI; não prova ausência de bugs,
+vulnerabilidades desconhecidas ou falhas da imagem base Debian.
+
+Gitleaks CLI 8.30.1 usa licença MIT, sem action paga ou chave de licença. O CI
+baixa o binário oficial Linux x64 e verifica SHA-256 literal antes de executar.
+Checkout completo permite verificar o histórico; `--redact=100`, sem modo
+verbose, evita expor correspondências. Ensaio local no histórico de todas as
+refs: exit 0, zero achados. Arquivos ignorados de trabalho não são alvo desse
+modo Git; o ensaio não leu `.env` ou extratos locais.
 
 Migrations continuam sendo uma operação administrativa separada; não rodam
 automaticamente ao iniciar a imagem. Credenciais administrativas não devem ser
@@ -74,3 +90,6 @@ e coleta de quotas permanecem pendentes do destino aprovado e da etapa 10.
 - [Docker: build em múltiplos estágios](https://docs.docker.com/build/building/multi-stage/).
 - [Docker: contexto e dockerignore](https://docs.docker.com/build/concepts/context/#dockerignore-files).
 - [Astral: uv em Docker, fonte oficial](https://github.com/astral-sh/uv/blob/main/docs/guides/integration/docker.md).
+- [PyPA: pip-audit](https://pypi.org/project/pip-audit/).
+- [Gitleaks: release oficial 8.30.1](https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1).
+- [Gitleaks: licença MIT](https://github.com/gitleaks/gitleaks/blob/master/LICENSE).
