@@ -556,3 +556,5 @@ Opt-in de e-mail disponível na interface, com preservação e revogação testa
 Painel de IA concluído com seis testes desktop/mobile para null/zero, falha isolada e resposta antiga após renovação. Não apresenta saldo dos provedores.
 
 Adapter Pix exclusivamente sandbox revisado por outro agente, com vinte testes simulados. Ainda não expõe checkout nem concede plano.
+
+Plano de conclusão documenta responsáveis, dependências e pendências das etapas 10–12. Avaliação real de recuperação manteve baseline; judge remoto não foi executado.
