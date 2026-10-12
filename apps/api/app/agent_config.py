@@ -75,6 +75,7 @@ def configure(engine: Engine, owner: UUID, kind: AgentKind, data: AgentInput) ->
 def list_agents(engine: Engine, owner: UUID) -> list[AgentView]:
     with account_session(engine, owner) as session:
         require_active(session, owner)
+        check_rate(owner, user_plan(session, owner).requests_per_minute)
         return [
             AgentView.model_validate({key: getattr(row, key) for key in AgentView.model_fields})
             for row in session.exec(

@@ -113,3 +113,5 @@ idempotente e tentativas de entrega persistidas. Não houve envio real de e-mail
 Cron remoto aguarda deploy e configuração; interface de agentes entra na etapa 9.
 Não há detecção de serviços efetivamente esquecidos, reserva segregada para metas
 nem previsão financeira probabilística. Os avisos descrevem limites e hipóteses.
+
+Consultas de agentes, metas e avisos, inclusive marcação de leitura, também usam o limite por minuto do plano após checar exclusão pendente. Testes garantem bloqueio antes de consulta/mutação nos planos Free e Pro.

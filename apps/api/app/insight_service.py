@@ -12,6 +12,8 @@ from app.agent_rules import Signal
 from app.crypto import decrypt_text, load_key
 from app.llm_service import require_active
 from app.models import Goal, Insight
+from app.plans import user_plan
+from app.rate_limit import check_rate
 
 
 class InsightView(BaseModel):
@@ -29,6 +31,7 @@ def insights(engine: Engine, owner: UUID, limit: int) -> list[InsightView]:
     key = load_key("DATA_ENCRYPTION_KEY")
     with account_session(engine, owner) as session:
         require_active(session, owner)
+        check_rate(owner, user_plan(session, owner).requests_per_minute)
         rows = session.exec(
             select(Insight)
             .where(Insight.user_id == owner)
@@ -51,6 +54,7 @@ def insights(engine: Engine, owner: UUID, limit: int) -> list[InsightView]:
 def mark_read(engine: Engine, owner: UUID, insight_id: UUID) -> None:
     with account_session(engine, owner) as session:
         require_active(session, owner)
+        check_rate(owner, user_plan(session, owner).requests_per_minute)
         row = session.get(Insight, insight_id)
         if row is None or row.user_id != owner:
             raise HTTPException(404, "Aviso não encontrado.")
@@ -63,6 +67,7 @@ def goals(engine: Engine, owner: UUID) -> list[GoalView]:
     key = load_key("DATA_ENCRYPTION_KEY")
     with account_session(engine, owner) as session:
         require_active(session, owner)
+        check_rate(owner, user_plan(session, owner).requests_per_minute)
         rows = session.exec(
             select(Goal)
             .where(Goal.user_id == owner)
