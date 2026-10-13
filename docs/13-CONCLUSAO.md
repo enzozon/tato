@@ -39,7 +39,7 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
 ## Etapa 11 — publicação e experimento
 
 - [ ] Escolher hospedagem/API e aprovar deploy. Build local não escolhe provider.
-- [ ] Incorporar imagem revisada, build no CI, auditoria de dependências e
+- [x] Incorporar imagem revisada, build no CI, auditoria de dependências e
   detecção de segredos com ferramentas documentadas.
 - [ ] Credenciais de CI, smoke HTTPS incluindo prontidão, rollback verificável.
 - [ ] Medir carga/cold start/RAM de embedding e reranking, consumo observado e
@@ -79,4 +79,9 @@ e bloqueio de exclusão pendente. Configuração desativada/inválida não liber
 botões; preços e concessão de plano continuam sendo decisões do backend.
 O fluxo de pagamento permanece desativado até concluir seu ciclo de vida.
 
-Validação local desta revisão: 341 testes Python/HTTP, cobertura 82,02%, 57 integrações PostgreSQL/Redis, 34 Playwright desktop/mobile, TypeScript/build estático e avaliação RAG com baseline preservado. Verificações externas/produção e judge remoto continuam distintos desta prova local.
+Validação local atualizada em 13/10: 389 testes Python/HTTP, cobertura 81,97%,
+80 integrações PostgreSQL/Redis/RLS sem skips, 58 Playwright desktop/mobile,
+TypeScript/build estático e avaliação RAG real com baseline preservado
+(RRF hit@5=0,975/MRR=0,835417). Revisão em 320px não encontrou overflow nos
+fluxos inspecionados. Verificações externas/produção, instalação física,
+auditoria WCAG completa e judge remoto não foram realizados nesta retomada.

@@ -593,3 +593,9 @@ regressões desktop/mobile impedem reenviar operações já confirmadas.
 Instalação PWA trata rejeições do navegador e mantém instruções manuais.
 Quatro cenários desktop/mobile verificam ausência de erro não capturado e
 consumo único do evento; isso não prova instalação física em Android/iPhone.
+
+Validação de 13/10: 389 testes Python/HTTP (81,97% de cobertura), 80 integrações
+PostgreSQL/Redis/RLS sem skips, 58 Playwright desktop/mobile, build estático e
+TypeScript/SW aprovados. RAG real em cache offline preservou hit@5=0,975 e
+MRR=0,835417. Os 14 testes novos de acesso à cobrança provam identidade,
+retomada, portal e bloqueio de exclusão sem chamadas externas.
