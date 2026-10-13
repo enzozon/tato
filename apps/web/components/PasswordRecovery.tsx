@@ -4,6 +4,7 @@ import { auth } from '../lib/client';
 
 export function PasswordRecovery({ owner, currentOwner, cancel }: { owner: string; currentOwner: string; cancel: () => Promise<void> }) {
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [done, setDone] = useState(false);
+  const [exitError, setExitError] = useState('');
   const identity = useRef(currentOwner);
   identity.current = currentOwner;
   const valid = !!owner && owner === currentOwner;
@@ -23,9 +24,9 @@ export function PasswordRecovery({ owner, currentOwner, cancel }: { owner: strin
     finally { setBusy(false); }
   }
   async function leave() {
-    setBusy(true); setError('');
+    setBusy(true); setError(''); setExitError('');
     try { await cancel(); }
-    catch { setError('Não foi possível sair agora. Tente novamente.'); setBusy(false); }
+    catch { setExitError('Não foi possível sair agora. Tente novamente.'); setBusy(false); }
   }
   return <section className="narrow panel"><h1>Definir nova senha.</h1>
     {!valid ? <p role="alert">Link ausente, expirado ou de outra sessão. Solicite um novo link após sair.</p> : done ?
@@ -34,6 +35,7 @@ export function PasswordRecovery({ owner, currentOwner, cancel }: { owner: strin
         <label>Confirmar nova senha<input name="confirmation" type="password" minLength={8} autoComplete="new-password" required disabled={busy}/></label>
         <button disabled={busy}>Salvar nova senha</button></form>}
     {error && valid && <p role="alert" className="error">{error}</p>}
+    {exitError && <p role="alert" className="error">{exitError}</p>}
     <button className="secondary" disabled={busy} onClick={leave}>{done ? 'Voltar ao login' : 'Cancelar e sair'}</button>
   </section>;
 }

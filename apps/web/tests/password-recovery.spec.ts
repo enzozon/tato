@@ -10,11 +10,12 @@ function token(id = owner, seconds = 3600) {
 function link(type = 'recovery', seconds = 3600) {
   return `/app/?recovery=1#access_token=${token(owner, seconds)}&refresh_token=synthetic-refresh&expires_in=${seconds}&token_type=bearer&type=${type}`;
 }
-async function simulate(page: Page, options: { requestStatus?: number; updateFails?: boolean; refreshOwner?: string; expired?: boolean; updateOwner?: string; authStatus?: number } = {}) {
+async function simulate(page: Page, options: { requestStatus?: number; updateFails?: boolean; refreshOwner?: string; expired?: boolean; updateOwner?: string; authStatus?: number; logoutFails?: boolean } = {}) {
   let updates = 0, apiCalls = 0;
   await page.route('http://127.0.0.1:8000/**', route => { apiCalls++; return route.fulfill({ status: 503, json: {} }); });
   await page.route('https://auth.example.test/**', route => {
     const request = route.request(), url = new URL(request.url());
+    if (url.pathname.endsWith('/logout') && options.logoutFails) return route.fulfill({ status: 503, json: { msg: 'synthetic logout failure' } });
     if (url.pathname.endsWith('/recover')) {
       expect(url.searchParams.get('redirect_to')).toBe('http://127.0.0.1:3000/app/?recovery=1');
       expect(request.postDataJSON().email).toBe(user.email);
@@ -134,4 +135,19 @@ test('resposta de atualização de outro usuário não libera recuperação ou d
   await expect(page.locator('main').getByRole('alert')).toContainText('Link ausente, expirado ou de outra sessão');
   await expect(page.getByText('Senha atualizada. Entre novamente com sua nova senha.')).toHaveCount(0);
   expect(calls.updates()).toBe(1); expect(calls.apiCalls()).toBe(0);
+});
+
+test('falha ao cancelar gate inválido aparece e permite repetir somente a saída', async ({ page }) => {
+  const options = { logoutFails: true }, calls = await simulate(page, options);
+  await page.goto(link('signup'));
+  await expect(page.locator('main').getByRole('alert')).toContainText('Link ausente, expirado ou de outra sessão');
+  await page.getByRole('button', { name: 'Cancelar e sair' }).click();
+  await expect(page.getByText('Não foi possível sair agora. Tente novamente.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Cancelar e sair' })).toBeEnabled();
+  await expect(page.getByRole('heading', { name: 'Uma visão tranquila.' })).toHaveCount(0);
+  expect(calls.updates()).toBe(0); expect(calls.apiCalls()).toBe(0);
+  options.logoutFails = false;
+  await page.getByRole('button', { name: 'Cancelar e sair' }).click();
+  await expect(page.getByRole('heading', { name: 'Que bom te ver.' })).toBeVisible();
+  expect(calls.apiCalls()).toBe(0);
 });

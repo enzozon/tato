@@ -17,6 +17,7 @@ export default function AppPage() {
   const identityId = useRef('');
   const accessToken = useRef('');
   const recoveryOwner = useRef<string | null>(null);
+  const closingRecovery = useRef(false);
   const [recovery, setRecovery] = useState<string | null>(null);
   const [owner, setOwner] = useState('');
   const [tab, setTab] = useState('Resumo');
@@ -56,7 +57,7 @@ export default function AppPage() {
         window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}`);
         generation.current++; setProfile(undefined); setData(undefined);
       }
-      if (event === 'SIGNED_OUT') { recoveryOwner.current = null; setRecovery(null); }
+      if (event === 'SIGNED_OUT' && !closingRecovery.current) { recoveryOwner.current = null; setRecovery(null); }
       if (nextToken === accessToken.current && nextOwner === identityId.current) return;
       generation.current++;
       accessToken.current = nextToken;
@@ -70,10 +71,13 @@ export default function AppPage() {
   }, []);
   useEffect(()=>{let active=true;if (token && recovery === null) refresh(token).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};}, [token, recovery]);
   async function cancelRecovery() {
-    const result = await auth?.auth.signOut({scope:'local'});
-    if (result?.error) throw result.error;
-    recoveryOwner.current = null; setRecovery(null);
-    window.history.replaceState(null, '', '/app/');
+    closingRecovery.current = true;
+    try {
+      const result = await auth?.auth.signOut({scope:'local'});
+      if (result?.error) throw result.error;
+      recoveryOwner.current = null; setRecovery(null);
+      window.history.replaceState(null, '', '/app/');
+    } finally { closingRecovery.current = false; }
   }
   async function onboarding() {
     const version = generation.current;

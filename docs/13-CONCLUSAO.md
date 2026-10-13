@@ -81,7 +81,7 @@ botões; preços e concessão de plano continuam sendo decisões do backend.
 O fluxo de pagamento permanece desativado até concluir seu ciclo de vida.
 
 Validação local atualizada em 13/10: 389 testes Python/HTTP, cobertura 81,97%,
-80 integrações PostgreSQL/Redis/RLS sem skips, 80 Playwright desktop/mobile,
+80 integrações PostgreSQL/Redis/RLS sem skips, 82 Playwright desktop/mobile,
 TypeScript/build estático e avaliação RAG real com baseline preservado
 (RRF hit@5=0,975/MRR=0,835417). Revisão em 320px não encontrou overflow nos
 fluxos inspecionados. Verificações externas/produção, instalação física,

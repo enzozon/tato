@@ -137,6 +137,10 @@ novo login; cancelar encerra a sessão local e remove o parâmetro de retorno.
 Após `auth.initialize()` concluir, callbacks inválidos, expirados ou com falha
 transitória também têm credenciais removidas da URL. A limpeza aguarda o SDK
 consumir o retorno, não altera outra navegação e não libera a recuperação.
+Falha ao sair também aparece para links inválidos, mantém o dashboard fechado
+e permite repetir o cancelamento.
+O SDK pode remover a sessão local antes de devolver erro remoto; nesse caso,
+o gate preserva o aviso, sem afirmar que a revogação remota foi confirmada.
 
 Para validar externamente, o responsável precisa autorizar a URL exata de
 retorno em Supabase → Authentication → URL Configuration e configurar envio

@@ -615,3 +615,10 @@ Regressões verificam link expirado, retorno malformado e falha transitória;
 nenhuma falha libera o formulário ou consulta registros financeiros.
 Na base main integrada: 80 Playwright desktop/mobile (22 de recuperação),
 389 testes Python/HTTP com 81,97% de cobertura e checks estáticos aprovados.
+
+Reproduzida falha de logout ocultada quando o link de recuperação era inválido.
+O erro de saída agora independe da validade do link; a interface continua
+bloqueada e permite repetir a saída até voltar ao login, sem consultar dados.
+O SDK emite SIGNED_OUT mesmo após erro remoto; durante o cancelamento, esse
+evento não desmonta o formulário antes de ele apresentar o erro. Não se presume
+revogação remota a partir da remoção da sessão local.
