@@ -589,3 +589,7 @@ encontrou e corrigiu o loop de checkout encerrado; regressões desktop/mobile ve
 Revisão de UI reproduziu criação duplicada após POST bem-sucedido e GET falho.
 Conta e importação agora distinguem gravação de atualização do resumo; quatro
 regressões desktop/mobile impedem reenviar operações já confirmadas.
+
+Instalação PWA trata rejeições do navegador e mantém instruções manuais.
+Quatro cenários desktop/mobile verificam ausência de erro não capturado e
+consumo único do evento; isso não prova instalação física em Android/iPhone.
