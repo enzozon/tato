@@ -581,3 +581,7 @@ redirecionamento e URLs adulteradas; nenhuma sessão remota foi criada.
 Revisão paralela identificou que fatura paga permanece paga após reembolso.
 A concessão de estado ativo agora verifica a cadeia até a cobrança atual;
 regressões simuladas cobrem reembolso parcial/total, disputa e contrato ausente.
+
+Interface de cobrança usa disponibilidade do backend, conserva pedidos em
+falhas e só libera novo UUID após reconciliação de cancelamento. Revisão cruzada
+encontrou e corrigiu o loop de checkout encerrado; regressões desktop/mobile verdes.
