@@ -567,3 +567,9 @@ com ambiente padrão do CI, sem depender da configuração privada local.
 Etapa 11 iniciada em worktree separado: imagem da API sem ferramentas de build, UID1000, raiz somente leitura e contexto restrito. Build/smoke locais passaram; /ready retorna503 sem banco. Sem deploy ou escolha de provider.
 
 CI acrescenta pip-audit2.10.1 e Gitleaks8.30.1 com checksum. Auditorias locais Windows53/Linux50 dependências e histórico Git sem achados conhecidos; jobs remotos serão verificados antes de afirmar aprovação.
+
+Retomada de 12/10: PRs #19 e #20 integradas após CI verde, sem deploy.
+Checkpoint de `tato_billing` aprovado; migration 0009 aplicada localmente e
+66 integrações PostgreSQL/Redis passaram, incluindo nove provas do papel
+restrito. Bootstrap preserva bancos anteriores e não concede privilégios
+administrativos. Webhook e limpeza remota continuam pendentes.

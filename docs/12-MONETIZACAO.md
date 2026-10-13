@@ -150,9 +150,16 @@ Ele lê usuários e pode escrever somente assinaturas, checkouts e eventos, sob
 RLS pelo mesmo `app.user_id`. A API comum `tato_app` continua sem escrita em
 assinaturas. Rotas de usuário não recebem a conexão de cobrança; webhook
 valida assinatura e vínculo remoto/local antes de usá-la.
-Isso exige migration de permissões; aguarda checkpoint específico antes de
-aplicar. Usar o administrador de migrations no webhook foi descartado porque
+Checkpoint aprovado por Enzo em 12/10/2026; migration `0009` aplicada nos bancos
+locais de desenvolvimento e teste. Usar o administrador no webhook foi descartado porque
 contornaria RLS. Nenhuma nova tabela ou coluna é proposta neste checkpoint.
+
+O papel nasce sem login. `scripts/bootstrap_billing.py` habilita a credencial
+de desenvolvimento via `BILLING_DATABASE_URL`, exclusivamente em banco local
+novo ou `tato_test`, após verificar privilégios e ausência de vínculos entre papéis.
+Nove testes PostgreSQL provam o escopo de escrita, isolamento por usuário e
+bloqueio de dados financeiros privados. Cobrança continua desativada até
+fechar webhooks, reconciliação e limpeza remota.
 
 
 ## Consumo LLM por usuário
