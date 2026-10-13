@@ -116,3 +116,9 @@ a importação remove a prévia confirmada e informa que os registros foram salv
 
 Instalação consome o evento `beforeinstallprompt` uma única vez. Rejeições do
 prompt ou da escolha do navegador apresentam orientação, sem erro não capturado.
+
+Campos de formulário usam `--muted` na borda: contraste de 6,21:1 sobre branco,
+acima do mínimo 3:1 do [WCAG 1.4.11](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html).
+A borda anterior atingia 2,10:1 e não distinguia campos vazios do painel branco.
+Playwright calcula o contraste das cores computadas dos campos de login contra
+as superfícies interna e externa em desktop/mobile; isso não é auditoria completa.

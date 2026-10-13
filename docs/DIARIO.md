@@ -599,3 +599,9 @@ PostgreSQL/Redis/RLS sem skips, 58 Playwright desktop/mobile, build estático e
 TypeScript/SW aprovados. RAG real em cache offline preservou hit@5=0,975 e
 MRR=0,835417. Os 14 testes novos de acesso à cobrança provam identidade,
 retomada, portal e bloqueio de exclusão sem chamadas externas.
+
+### 13/10/2026 — contraste dos campos
+
+Revisão de acessibilidade identificou bordas com contraste 2,10:1 sobre branco.
+Reutilizamos `--muted` (6,21:1) para distinguir campos vazios sem criar outro token.
+A regressão mede cores computadas no login real, em desktop/mobile, sem alterar o DOM.
