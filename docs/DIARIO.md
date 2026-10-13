@@ -573,3 +573,7 @@ Checkpoint de `tato_billing` aprovado; migration 0009 aplicada localmente e
 66 integrações PostgreSQL/Redis passaram, incluindo nove provas do papel
 restrito. Bootstrap preserva bancos anteriores e não concede privilégios
 administrativos. Webhook e limpeza remota continuam pendentes.
+
+Adapter do portal sandbox validado com URLs restritas, retorno fixo e
+idempotência. Testes simulados incluem cliente divergente, modo real,
+redirecionamento e URLs adulteradas; nenhuma sessão remota foi criada.

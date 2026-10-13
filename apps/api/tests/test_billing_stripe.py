@@ -206,3 +206,94 @@ def test_checkout_rejects_malformed_provider_references(mutation):
     with httpx.Client() as client, pytest.raises(BillingUnavailable):
         provider = StripeSandbox("sk_test_demo", "price_test", client, "https://tato.example/app/")
         provider.validate_checkout(payload, owner, request_id)
+
+
+def test_portal_is_test_only_bound_to_customer_and_idempotent():
+    request_id = uuid4()
+    calls = []
+
+    def transport(request):
+        calls.append(request)
+        assert request.method == "POST" and request.url.path == "/v1/billing_portal/sessions"
+        assert parse_qs(request.content.decode()) == {
+            "customer": ["cus_demo"],
+            "return_url": ["https://tato.example/app/"],
+            "locale": ["pt-BR"],
+        }
+        return httpx.Response(
+            200,
+            json={
+                "id": "bps_synthetic",
+                "object": "billing_portal.session",
+                "customer": "cus_demo",
+                "return_url": "https://tato.example/app/",
+                "livemode": False,
+                "url": "https://billing.stripe.com/p/session?secret=test_synthetic",
+            },
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(transport)) as client:
+        provider = StripeSandbox("sk_test_demo", "price_test", client, "https://tato.example/app/")
+        assert provider.portal("cus_demo", request_id).startswith("https://billing.stripe.com/")
+        provider.portal("cus_demo", request_id)
+        with pytest.raises(BillingUnavailable):
+            provider.portal("cus_demo/other", request_id)
+    assert len(calls) == 2
+    assert calls[0].headers["Idempotency-Key"] == calls[1].headers["Idempotency-Key"]
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        {"livemode": True},
+        {"livemode": 0},
+        {"customer": "cus_other"},
+        {"return_url": "https://other.example/"},
+        {"object": "customer"},
+        {"id": "bps_"},
+        {"url": None},
+        {"url": "https://billing.stripe.com.evil/p/session"},
+        {"url": "https://user@billing.stripe.com/p/session"},
+        {"url": "http://billing.stripe.com/p/session"},
+        {"url": "https://billing.stripe.com:444/p/session"},
+        {"url": "https://billing.stripe.com/p/sessionevil"},
+        {"url": "https://billing.stripe.com/p/session\n"},
+    ],
+)
+def test_portal_rejects_untrusted_response(mutation):
+    payload = {
+        "id": "bps_demo",
+        "object": "billing_portal.session",
+        "customer": "cus_demo",
+        "return_url": "https://tato.example/app/",
+        "livemode": False,
+        "url": "https://billing.stripe.com/p/session?secret=test_synthetic",
+        **mutation,
+    }
+    with (
+        httpx.Client(
+            transport=httpx.MockTransport(lambda _: httpx.Response(200, json=payload))
+        ) as client,
+        pytest.raises(BillingUnavailable) as error,
+    ):
+        StripeSandbox("sk_test_demo", "price_test", client, "https://tato.example/app/").portal(
+            "cus_demo", uuid4()
+        )
+    assert "test_synthetic" not in str(error.value)
+
+
+def test_portal_never_follows_redirect_or_retries():
+    calls = []
+
+    def transport(request):
+        calls.append(request)
+        return httpx.Response(307, headers={"Location": "https://unexpected.example/"})
+
+    with (
+        httpx.Client(transport=httpx.MockTransport(transport), follow_redirects=True) as client,
+        pytest.raises(BillingUnavailable),
+    ):
+        StripeSandbox("sk_test_demo", "price_test", client, "https://tato.example/app/").portal(
+            "cus_demo", uuid4()
+        )
+    assert len(calls) == 1

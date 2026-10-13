@@ -187,3 +187,12 @@ Sem rota, escrita de assinatura ou concessão de Pro; integração depende do
 fechamento do ledger/webhook. Contrato oficial conferido em 12/10/2026:
 https://docs.abacatepay.com/pages/transparents/create e
 https://www.abacatepay.com/blog/como-testar-gateway-sandbox-abacatepay.
+
+### Portal Stripe de teste
+
+O adapter cria sessão temporária somente para cliente Stripe validado, com
+retorno fixo e idempotência por cliente/request_id. Recusa modo real,
+redirecionamentos e URLs fora de `https://billing.stripe.com/p/session`.
+A URL não deve ser persistida nem registrada. O serviço autenticado ainda
+precisa obter o cliente do vínculo local; não aceitar esse ID da interface.
+Contrato: https://docs.stripe.com/api/customer_portal/sessions/create.
