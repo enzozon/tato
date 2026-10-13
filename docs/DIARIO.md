@@ -585,3 +585,7 @@ regressões simuladas cobrem reembolso parcial/total, disputa e contrato ausente
 Interface de cobrança usa disponibilidade do backend, conserva pedidos em
 falhas e só libera novo UUID após reconciliação de cancelamento. Revisão cruzada
 encontrou e corrigiu o loop de checkout encerrado; regressões desktop/mobile verdes.
+
+Revisão de UI reproduziu criação duplicada após POST bem-sucedido e GET falho.
+Conta e importação agora distinguem gravação de atualização do resumo; quatro
+regressões desktop/mobile impedem reenviar operações já confirmadas.

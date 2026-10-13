@@ -109,3 +109,7 @@ Conta inclui cobrança exclusivamente de teste. A disponibilidade vem de
 reutiliza UUID mesmo após falha/renovação; UUID cancelado só é descartado depois
 de confirmar ausência de pendente. Portal recebe apenas UUID e aceita destino
 Stripe validado. URLs temporárias não são persistidas pela interface.
+
+Após salvar conta/importação, falha ao atualizar o resumo não apaga a confirmação.
+A conta limpa o formulário já salvo e oferece repetir somente a leitura;
+a importação remove a prévia confirmada e informa que os registros foram salvos.
