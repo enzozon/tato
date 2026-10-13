@@ -32,8 +32,10 @@ export function Import({token, accounts, refresh}: {token:string; accounts:Accou
     try {
       payload.set('receipt',preview.receipt);
       const result = await request<{inserted:number; duplicates:number; warning?:string}>('/import/confirm',token,{method:'POST',body:payload});
-      setMessage(`${result.inserted} lançamentos importados; ${result.duplicates} duplicados ignorados. ${result.warning || ''}`);
-      setPreview(undefined); setPayload(undefined); await refresh();
+      const success = `${result.inserted} lançamentos importados; ${result.duplicates} duplicados ignorados. ${result.warning || ''}`;
+      setMessage(success); setPreview(undefined); setPayload(undefined);
+      try { await refresh(); }
+      catch { setMessage(`${success} Não foi possível atualizar o resumo; a importação já foi salva.`); }
     } catch(e) {setMessage(e instanceof Error ? e.message : 'Importação indisponível.');}
     finally {setBusy(false);}
   }

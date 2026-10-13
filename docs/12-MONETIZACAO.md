@@ -150,9 +150,16 @@ Ele lê usuários e pode escrever somente assinaturas, checkouts e eventos, sob
 RLS pelo mesmo `app.user_id`. A API comum `tato_app` continua sem escrita em
 assinaturas. Rotas de usuário não recebem a conexão de cobrança; webhook
 valida assinatura e vínculo remoto/local antes de usá-la.
-Isso exige migration de permissões; aguarda checkpoint específico antes de
-aplicar. Usar o administrador de migrations no webhook foi descartado porque
+Checkpoint aprovado por Enzo em 12/10/2026; migration `0009` aplicada nos bancos
+locais de desenvolvimento e teste. Usar o administrador no webhook foi descartado porque
 contornaria RLS. Nenhuma nova tabela ou coluna é proposta neste checkpoint.
+
+O papel nasce sem login. `scripts/bootstrap_billing.py` habilita a credencial
+de desenvolvimento via `BILLING_DATABASE_URL`, exclusivamente em banco local
+novo ou `tato_test`, após verificar privilégios e ausência de vínculos entre papéis.
+Nove testes PostgreSQL provam o escopo de escrita, isolamento por usuário e
+bloqueio de dados financeiros privados. Cobrança continua desativada até
+fechar webhooks, reconciliação e limpeza remota.
 
 
 ## Consumo LLM por usuário
@@ -180,3 +187,22 @@ Sem rota, escrita de assinatura ou concessão de Pro; integração depende do
 fechamento do ledger/webhook. Contrato oficial conferido em 12/10/2026:
 https://docs.abacatepay.com/pages/transparents/create e
 https://www.abacatepay.com/blog/como-testar-gateway-sandbox-abacatepay.
+
+### Portal Stripe de teste
+
+O adapter cria sessão temporária somente para cliente Stripe validado, com
+retorno fixo e idempotência por cliente/request_id. Recusa modo real,
+redirecionamentos e URLs fora de `https://billing.stripe.com/p/session`.
+A URL não deve ser persistida nem registrada. O serviço autenticado ainda
+precisa obter o cliente do vínculo local; não aceitar esse ID da interface.
+Contrato: https://docs.stripe.com/api/customer_portal/sessions/create.
+
+### Confirmação do pagamento atual
+
+Fatura `paid` não prova ausência de reembolso. Antes de produzir estado ativo,
+o adapter expande `payments` e exige um pagamento de fatura completo, vinculado
+ao PaymentIntent e à cobrança atual, no cliente esperado, em BRL e modo teste.
+Valores são inteiros de 3.900 centavos. Reembolso parcial/total ou disputa
+produz `past_due`; contrato ausente ou divergente falha sem expor payload.
+Isso ainda precisa ser acionado pelos webhooks de reembolso/disputa.
+Contrato: https://docs.stripe.com/invoicing/partial-payments.

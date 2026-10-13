@@ -103,3 +103,16 @@ o fluxo remoto passou com R$ 12,34 de despesa e R$ 87,66 de saldo sintéticos;
 conta de teste removida. Isso não valida instalação física ou envio de e-mail.
 
 Respostas atrasadas de agentes não substituem alterações mais recentes nem a sessão renovada. Exclusão só encerra a sessão local se a identidade atual ainda for a dona da operação. Regressões desktop/mobile cobrem a concorrência.
+
+Conta inclui cobrança exclusivamente de teste. A disponibilidade vem de
+`/billing/status`; retorno do navegador não concede plano. Checkout pendente
+reutiliza UUID mesmo após falha/renovação; UUID cancelado só é descartado depois
+de confirmar ausência de pendente. Portal recebe apenas UUID e aceita destino
+Stripe validado. URLs temporárias não são persistidas pela interface.
+
+Após salvar conta/importação, falha ao atualizar o resumo não apaga a confirmação.
+A conta limpa o formulário já salvo e oferece repetir somente a leitura;
+a importação remove a prévia confirmada e informa que os registros foram salvos.
+
+Instalação consome o evento `beforeinstallprompt` uma única vez. Rejeições do
+prompt ou da escolha do navegador apresentam orientação, sem erro não capturado.

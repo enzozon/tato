@@ -184,9 +184,46 @@ class StripeSandbox:
             hosted_url(result.url)
         return result
 
+    def portal(self, customer_id: str, request_id: UUID) -> str:
+        if not fullmatch(r"cus_[A-Za-z0-9_]+", customer_id):
+            raise BillingUnavailable("Referência de cliente inválida.")
+        payload = self.request(
+            "POST",
+            "billing_portal/sessions",
+            key=f"tato-portal-{customer_id}-{request_id}",
+            data={"customer": customer_id, "return_url": self.return_url, "locale": "pt-BR"},
+        )
+        value = payload.get("url")
+        try:
+            if (
+                payload.get("customer") != customer_id
+                or payload.get("object") != "billing_portal.session"
+                or payload.get("return_url") != self.return_url
+                or not isinstance(payload.get("id"), str)
+                or not fullmatch(r"bps_[A-Za-z0-9_]+", payload["id"])
+                or not isinstance(value, str)
+            ):
+                raise ValueError
+            url = urlsplit(value)
+            if (
+                url.scheme != "https"
+                or url.hostname != "billing.stripe.com"
+                or url.port not in {None, 443}
+                or url.username is not None
+                or url.password is not None
+                or not (url.path == "/p/session" or url.path.startswith("/p/session/"))
+                or any(ord(char) < 33 for char in value)
+            ):
+                raise ValueError
+            return value
+        except ValueError:
+            raise BillingUnavailable("Sessão do portal de teste inválida.") from None
+
     def subscription_state(
         self, external_id: str, owner: UUID, request_id: UUID, customer_id: str
     ) -> StripeSubscriptionState:
+        from app.billing_payment import payment_clear
+
         if not fullmatch(r"sub_[A-Za-z0-9_]+", external_id) or not fullmatch(
             r"cus_[A-Za-z0-9_]+", customer_id
         ):
@@ -242,7 +279,7 @@ class StripeSandbox:
                     r"in_[A-Za-z0-9_]+", invoice_id
                 ):
                     raise BillingUnavailable("Referência de fatura inválida.")
-                invoice = self.request("GET", f"invoices/{invoice_id}")
+                invoice = self.request("GET", f"invoices/{invoice_id}?expand[]=payments")
                 if (
                     invoice["id"] != invoice_id
                     or invoice["customer"] != customer_id
@@ -255,6 +292,7 @@ class StripeSandbox:
                     invoice["status"] == "paid"
                     and type(invoice["amount_paid"]) is int
                     and invoice["amount_paid"] == 3900
+                    and payment_clear(self, invoice, customer_id)
                 ):
                     mapped = "active"
             return StripeSubscriptionState(

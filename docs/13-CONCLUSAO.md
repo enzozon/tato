@@ -23,10 +23,10 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
 
 ## Etapa 10 — fechamento obrigatório
 
-- [ ] Aprovar papel restrito `tato_billing` e `BILLING_DATABASE_URL` antes da
+- [x] Aprovar papel restrito `tato_billing` e `BILLING_DATABASE_URL` antes da
   migration de permissões proposta em `12-MONETIZACAO.md`.
-- [ ] Aplicar essa migration no banco descartável e provar RLS/negação de acesso
-  a extratos; somente então conectar escrita de assinaturas ao webhook.
+- [x] Aplicar a migration no banco descartável e provar RLS/negação de acesso
+  a extratos. A escrita de assinaturas pelo webhook continua pendente.
 - [ ] Eventos persistentes, replay/idempotência, reconciliação de estado remoto,
   expiração, reembolso/disputa e exclusão/limpeza de vínculos remotos.
 - [ ] Portal Stripe, integração Pix, rotas e interface de plano; preservar preço
@@ -39,7 +39,7 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
 ## Etapa 11 — publicação e experimento
 
 - [ ] Escolher hospedagem/API e aprovar deploy. Build local não escolhe provider.
-- [ ] Incorporar imagem revisada, build no CI, auditoria de dependências e
+- [x] Incorporar imagem revisada, build no CI, auditoria de dependências e
   detecção de segredos com ferramentas documentadas.
 - [ ] Credenciais de CI, smoke HTTPS incluindo prontidão, rollback verificável.
 - [ ] Medir carga/cold start/RAM de embedding e reranking, consumo observado e
@@ -64,7 +64,24 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
 Antes de cada commit: `make check`, diff de até 400 linhas e documentação da
 parte. Antes de merge: CI do SHA exato, integrações Postgres/Redis, avaliação
 RAG e testes web pertinentes. Nenhum teste ignorado conta como aprovado.
-PR19 continua rascunho enquanto o fechamento da etapa 10 estiver incompleto.
-Não houve migração adicional de permissões, deploy ou cobrança nesta revisão.
+PR19 e PR20 foram integradas com os checks dos respectivos SHAs aprovados,
+no escopo de preparação de monetização e empacotamento. A continuação da
+etapa 10 usa `codex/etapa-10-cobranca-segura`. Migration 0009 aplicada somente
+localmente; nenhuma cobrança ou publicação foi realizada.
 
-Validação local desta revisão: 341 testes Python/HTTP, cobertura 82,02%, 57 integrações PostgreSQL/Redis, 34 Playwright desktop/mobile, TypeScript/build estático e avaliação RAG com baseline preservado. Verificações externas/produção e judge remoto continuam distintos desta prova local.
+### Status e portal autenticados
+
+`GET /billing/status` informa disponibilidade de teste, ações possíveis e UUID
+de checkout Stripe pendente, sem identificadores do cliente/provedor.
+`POST /billing/stripe/portal` aceita somente `request_id`; cliente vem da
+assinatura local sob RLS. Ambas as rotas usam `no-store`, limite por minuto
+e bloqueio de exclusão pendente. Configuração desativada/inválida não libera
+botões; preços e concessão de plano continuam sendo decisões do backend.
+O fluxo de pagamento permanece desativado até concluir seu ciclo de vida.
+
+Validação local atualizada em 13/10: 389 testes Python/HTTP, cobertura 81,97%,
+80 integrações PostgreSQL/Redis/RLS sem skips, 58 Playwright desktop/mobile,
+TypeScript/build estático e avaliação RAG real com baseline preservado
+(RRF hit@5=0,975/MRR=0,835417). Revisão em 320px não encontrou overflow nos
+fluxos inspecionados. Verificações externas/produção, instalação física,
+auditoria WCAG completa e judge remoto não foram realizados nesta retomada.

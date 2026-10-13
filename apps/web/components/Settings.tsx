@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { auth, request, type Profile } from '../lib/client';
+import { Billing } from './Billing';
 
 type Capacity={used:number;limit:number|null;remaining:number|null};
 type Usage={period_end:string;messages:Capacity;import_sources:Capacity;agents:Capacity};
@@ -28,7 +29,8 @@ export function Settings({token,profile,owner}:{token:string;profile:Profile;own
     }
     catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir. A solicitação pode estar pendente; tente novamente.');}
     finally{setBusy(false);}}
-  return <section className="narrow stack"><h1>Sua conta.</h1><div className="panel"><h3>Plano {profile.plan.name}</h3><p>{profile.plan.agents} agente(s) ativo(s). {profile.plan.messages_per_month ?? 'Sem limite de'} mensagens por mês.</p><p>Cobrança e mudança de plano ainda não estão disponíveis.</p></div>
+  return <section className="narrow stack"><h1>Sua conta.</h1><div className="panel"><h3>Plano {profile.plan.name}</h3><p>{profile.plan.agents} agente(s) ativo(s). {profile.plan.messages_per_month ?? 'Sem limite de'} mensagens por mês.</p></div>
+    <Billing token={token}/>
     <section className="panel" aria-label="Consumo do plano"><h2>Uso do seu plano</h2>
       {usage ? <><dl>{([['messages','Mensagens neste mês'],['import_sources','Fontes importadas'],['agents','Agentes ativos']] as const).map(([key,label])=>{
         const item=usage[key];return <div key={key}><dt>{label}</dt><dd>{item.used} usados · {item.limit==null?'sem limite contratual':`${item.remaining} restantes de ${item.limit}`}</dd></div>;

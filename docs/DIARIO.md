@@ -567,3 +567,35 @@ com ambiente padrão do CI, sem depender da configuração privada local.
 Etapa 11 iniciada em worktree separado: imagem da API sem ferramentas de build, UID1000, raiz somente leitura e contexto restrito. Build/smoke locais passaram; /ready retorna503 sem banco. Sem deploy ou escolha de provider.
 
 CI acrescenta pip-audit2.10.1 e Gitleaks8.30.1 com checksum. Auditorias locais Windows53/Linux50 dependências e histórico Git sem achados conhecidos; jobs remotos serão verificados antes de afirmar aprovação.
+
+Retomada de 12/10: PRs #19 e #20 integradas após CI verde, sem deploy.
+Checkpoint de `tato_billing` aprovado; migration 0009 aplicada localmente e
+66 integrações PostgreSQL/Redis passaram, incluindo nove provas do papel
+restrito. Bootstrap preserva bancos anteriores e não concede privilégios
+administrativos. Webhook e limpeza remota continuam pendentes.
+
+Adapter do portal sandbox validado com URLs restritas, retorno fixo e
+idempotência. Testes simulados incluem cliente divergente, modo real,
+redirecionamento e URLs adulteradas; nenhuma sessão remota foi criada.
+
+Revisão paralela identificou que fatura paga permanece paga após reembolso.
+A concessão de estado ativo agora verifica a cadeia até a cobrança atual;
+regressões simuladas cobrem reembolso parcial/total, disputa e contrato ausente.
+
+Interface de cobrança usa disponibilidade do backend, conserva pedidos em
+falhas e só libera novo UUID após reconciliação de cancelamento. Revisão cruzada
+encontrou e corrigiu o loop de checkout encerrado; regressões desktop/mobile verdes.
+
+Revisão de UI reproduziu criação duplicada após POST bem-sucedido e GET falho.
+Conta e importação agora distinguem gravação de atualização do resumo; quatro
+regressões desktop/mobile impedem reenviar operações já confirmadas.
+
+Instalação PWA trata rejeições do navegador e mantém instruções manuais.
+Quatro cenários desktop/mobile verificam ausência de erro não capturado e
+consumo único do evento; isso não prova instalação física em Android/iPhone.
+
+Validação de 13/10: 389 testes Python/HTTP (81,97% de cobertura), 80 integrações
+PostgreSQL/Redis/RLS sem skips, 58 Playwright desktop/mobile, build estático e
+TypeScript/SW aprovados. RAG real em cache offline preservou hit@5=0,975 e
+MRR=0,835417. Os 14 testes novos de acesso à cobrança provam identidade,
+retomada, portal e bloqueio de exclusão sem chamadas externas.

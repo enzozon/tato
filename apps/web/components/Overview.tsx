@@ -5,16 +5,27 @@ import { Mascot } from '../../../packages/mascot/Mascot';
 
 export function Overview({ data, token, refresh }: { data: Summary; token: string; refresh: () => Promise<void> }) {
   const [error, setError] = useState(''), [busy, setBusy] = useState(false);
+  const [refreshFailed, setRefreshFailed] = useState(false);
+  async function retryRefresh() {
+    setBusy(true);
+    try { await refresh(); setRefreshFailed(false); setError(''); }
+    catch { setError('Conta criada. Não foi possível atualizar o resumo; repita somente a atualização.'); }
+    finally { setBusy(false); }
+  }
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); const form = event.currentTarget, fields = new FormData(form);
-    setBusy(true); setError('');
+    setBusy(true); setError(''); setRefreshFailed(false); let saved = false;
     try {
       await request('/accounts', token, {method:'POST', body:JSON.stringify({
         name: fields.get('name'), kind: fields.get('kind'), opening_date: fields.get('date'),
         opening_balance_cents: cents(String(fields.get('balance'))),
       })});
-      await refresh(); form.reset();
-    } catch(e) { setError(e instanceof Error ? e.message : 'Não foi possível criar a conta.'); }
+      saved = true; form.reset(); await refresh();
+    } catch(e) {
+      setRefreshFailed(saved);
+      setError(saved ? 'Conta criada. Não foi possível atualizar o resumo; repita somente a atualização.' :
+        e instanceof Error ? e.message : 'Não foi possível criar a conta.');
+    }
     finally { setBusy(false); }
   }
   return <div className="stack"><div><span className="eyebrow">Seu ponto de partida</span><h1>Uma visão tranquila.</h1>
@@ -32,5 +43,6 @@ export function Overview({ data, token, refresh }: { data: Summary; token: strin
         <label>Primeiro dia do período<input name="date" type="date" required /></label>
         <label>Saldo de abertura (R$)<input name="balance" inputMode="decimal" defaultValue="0,00" required /></label>
         <button disabled={busy}>Salvar conta</button></form>{error && <p className="error" role="alert">{error}</p>}
+      {refreshFailed && <button className="secondary" disabled={busy} onClick={retryRefresh}>Atualizar resumo</button>}
     </details></div>;
 }
