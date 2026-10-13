@@ -599,3 +599,12 @@ PostgreSQL/Redis/RLS sem skips, 58 Playwright desktop/mobile, build estático e
 TypeScript/SW aprovados. RAG real em cache offline preservou hit@5=0,975 e
 MRR=0,835417. Os 14 testes novos de acesso à cobrança provam identidade,
 retomada, portal e bloqueio de exclusão sem chamadas externas.
+
+Recuperação de senha em worktree isolado: solicitação genérica, retorno fixo,
+evento PASSWORD_RECOVERY observado antes da hidratação e formulário vinculado
+ao usuário da recuperação. Dashboard bloqueado até sair; sucesso exige novo
+login. Testes sintéticos cobrem confirmação, falha, renovação, troca de identidade
+e parâmetro sem autorização. Nenhum e-mail real ou ajuste remoto foi realizado.
+Validação local: 52 Playwright desktop/mobile (18 de recuperação), TypeScript,
+build estático e 341 testes Python/HTTP com cobertura de 82,02%. A confirmação
+de e-mail real e o funcionamento da allowlist continuam sem prova externa.

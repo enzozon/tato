@@ -2,12 +2,13 @@
 import { useEffect, useRef, useState } from 'react';
 import identity from '../../../../packages/mascot/identity.json';
 import { Login } from '../../components/Login';
+import { PasswordRecovery } from '../../components/PasswordRecovery';
 import { Overview } from '../../components/Overview';
 import { Chat } from '../../components/Chat';
 import { Import } from '../../components/Import';
 import { Agents } from '../../components/Agents';
 import { Settings } from '../../components/Settings';
-import { auth, request, type Profile, type Summary } from '../../lib/client';
+import { auth, recoveryIdentity, request, type Profile, type Summary } from '../../lib/client';
 
 export default function AppPage() {
   const [token, setToken] = useState(''), [profile, setProfile] = useState<Profile>();
@@ -15,11 +16,13 @@ export default function AppPage() {
   const generation = useRef(0);
   const identityId = useRef('');
   const accessToken = useRef('');
+  const recoveryOwner = useRef<string | null>(null);
+  const [recovery, setRecovery] = useState<string | null>(null);
   const [owner, setOwner] = useState('');
   const [tab, setTab] = useState('Resumo');
   const [visited, setVisited] = useState(['Resumo']);
   async function refresh(current = token) {
-    if (current !== accessToken.current) return;
+    if (current !== accessToken.current || recoveryOwner.current !== null) return;
     const version = generation.current;
     try {
       const p = await request<Profile>('/me', current);
@@ -28,9 +31,20 @@ export default function AppPage() {
     } catch(e) { if (version === generation.current) throw e; }
   }
   useEffect(()=> {
-    const subscription = auth?.auth.onAuthStateChange((_event, session)=>{
+    const captured = recoveryIdentity();
+    if (captured || new URLSearchParams(window.location.search).get('recovery') === '1') {
+      recoveryOwner.current = captured || ''; setRecovery(recoveryOwner.current);
+      if (captured) window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}`);
+    }
+    const subscription = auth?.auth.onAuthStateChange((event, session)=>{
       const nextToken = session?.access_token || '';
       const nextOwner = session?.user.id || '';
+      if (event === 'PASSWORD_RECOVERY' && nextOwner) {
+        recoveryOwner.current ||= nextOwner; setRecovery(recoveryOwner.current);
+        window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}`);
+        generation.current++; setProfile(undefined); setData(undefined);
+      }
+      if (event === 'SIGNED_OUT') { recoveryOwner.current = null; setRecovery(null); }
       if (nextToken === accessToken.current && nextOwner === identityId.current) return;
       generation.current++;
       accessToken.current = nextToken;
@@ -42,15 +56,21 @@ export default function AppPage() {
     }).data.subscription;
     return ()=>{ generation.current++; subscription?.unsubscribe(); };
   }, []);
-  useEffect(()=>{let active=true;if (token) refresh(token).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};}, [token]);
+  useEffect(()=>{let active=true;if (token && recovery === null) refresh(token).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};}, [token, recovery]);
+  async function cancelRecovery() {
+    const result = await auth?.auth.signOut({scope:'local'});
+    if (result?.error) throw result.error;
+    recoveryOwner.current = null; setRecovery(null);
+    window.history.replaceState(null, '', '/app/');
+  }
   async function onboarding() {
     const version = generation.current;
     try { await request('/me/onboarding', token, {method:'POST',body:JSON.stringify({completed:true})}); await refresh(); }
     catch(e) { if (version === generation.current) setError(e instanceof Error ? e.message : 'Não foi possível continuar.'); }
   }
   return <><header><a className="brand" href="/">{identity.name.toLowerCase()}.</a>
-    {token && <nav><span>Plano {profile?.plan.name || '…'}</span><button className="secondary" onClick={()=>auth?.auth.signOut({scope:'local'})}>Sair</button></nav>}</header>
-    <main id="content">{!token ? <Login/> : <>
+    {token && recovery === null && <nav><span>Plano {profile?.plan.name || '…'}</span><button className="secondary" onClick={()=>auth?.auth.signOut({scope:'local'})}>Sair</button></nav>}</header>
+    <main id="content">{recovery !== null ? <PasswordRecovery key={recovery} owner={recovery} currentOwner={owner} cancel={cancelRecovery}/> : !token ? <Login/> : <>
       {error && <p role="alert" className="error">{error} <button onClick={()=>refresh().catch(e=>setError(e.message))}>Tentar novamente</button></p>}
       {!profile && !error && <p role="status">Preparando seu espaço…</p>}
       {profile && !profile.onboarding_completed && <section className="panel"><h2>Você escolhe por onde começar.</h2><p>Cadastre uma conta, importe um extrato e revise a prévia. Não precisamos do seu CPF.</p><button onClick={onboarding}>Entendi, vamos lá</button></section>}
