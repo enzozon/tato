@@ -222,6 +222,8 @@ class StripeSandbox:
     def subscription_state(
         self, external_id: str, owner: UUID, request_id: UUID, customer_id: str
     ) -> StripeSubscriptionState:
+        from app.billing_payment import payment_clear
+
         if not fullmatch(r"sub_[A-Za-z0-9_]+", external_id) or not fullmatch(
             r"cus_[A-Za-z0-9_]+", customer_id
         ):
@@ -277,7 +279,7 @@ class StripeSandbox:
                     r"in_[A-Za-z0-9_]+", invoice_id
                 ):
                     raise BillingUnavailable("Referência de fatura inválida.")
-                invoice = self.request("GET", f"invoices/{invoice_id}")
+                invoice = self.request("GET", f"invoices/{invoice_id}?expand[]=payments")
                 if (
                     invoice["id"] != invoice_id
                     or invoice["customer"] != customer_id
@@ -290,6 +292,7 @@ class StripeSandbox:
                     invoice["status"] == "paid"
                     and type(invoice["amount_paid"]) is int
                     and invoice["amount_paid"] == 3900
+                    and payment_clear(self, invoice, customer_id)
                 ):
                     mapped = "active"
             return StripeSubscriptionState(

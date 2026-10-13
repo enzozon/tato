@@ -196,3 +196,13 @@ redirecionamentos e URLs fora de `https://billing.stripe.com/p/session`.
 A URL não deve ser persistida nem registrada. O serviço autenticado ainda
 precisa obter o cliente do vínculo local; não aceitar esse ID da interface.
 Contrato: https://docs.stripe.com/api/customer_portal/sessions/create.
+
+### Confirmação do pagamento atual
+
+Fatura `paid` não prova ausência de reembolso. Antes de produzir estado ativo,
+o adapter expande `payments` e exige um pagamento de fatura completo, vinculado
+ao PaymentIntent e à cobrança atual, no cliente esperado, em BRL e modo teste.
+Valores são inteiros de 3.900 centavos. Reembolso parcial/total ou disputa
+produz `past_due`; contrato ausente ou divergente falha sem expor payload.
+Isso ainda precisa ser acionado pelos webhooks de reembolso/disputa.
+Contrato: https://docs.stripe.com/invoicing/partial-payments.

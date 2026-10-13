@@ -577,3 +577,7 @@ administrativos. Webhook e limpeza remota continuam pendentes.
 Adapter do portal sandbox validado com URLs restritas, retorno fixo e
 idempotência. Testes simulados incluem cliente divergente, modo real,
 redirecionamento e URLs adulteradas; nenhuma sessão remota foi criada.
+
+Revisão paralela identificou que fatura paga permanece paga após reembolso.
+A concessão de estado ativo agora verifica a cadeia até a cobrança atual;
+regressões simuladas cobrem reembolso parcial/total, disputa e contrato ausente.
