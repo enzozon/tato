@@ -31,6 +31,18 @@ export default function AppPage() {
     } catch(e) { if (version === generation.current) throw e; }
   }
   useEffect(()=> {
+    const callbackUrl = window.location.href;
+    let active = true;
+    function clearCallback() {
+      if (!active || window.location.href !== callbackUrl) return;
+      const url = new URL(callbackUrl), fragment = new URLSearchParams(url.hash.slice(1));
+      const keys = ['access_token','refresh_token','provider_token','provider_refresh_token',
+        'code','error','error_code','error_description','expires_in','expires_at','token_type','type'];
+      let changed = keys.some(key => fragment.has(key));
+      for (const key of keys) if (url.searchParams.has(key)) { url.searchParams.delete(key); changed = true; }
+      if (changed) window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}`);
+    }
+    auth?.auth.initialize().then(clearCallback, clearCallback);
     const captured = recoveryIdentity();
     if (captured || new URLSearchParams(window.location.search).get('recovery') === '1') {
       recoveryOwner.current = captured || ''; setRecovery(recoveryOwner.current);
@@ -54,7 +66,7 @@ export default function AppPage() {
       }
       setToken(nextToken); setError('');
     }).data.subscription;
-    return ()=>{ generation.current++; subscription?.unsubscribe(); };
+    return ()=>{ active = false; generation.current++; subscription?.unsubscribe(); };
   }, []);
   useEffect(()=>{let active=true;if (token && recovery === null) refresh(token).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};}, [token, recovery]);
   async function cancelRecovery() {

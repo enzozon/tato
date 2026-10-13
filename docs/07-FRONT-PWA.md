@@ -134,6 +134,10 @@ confere confirmação e identidade atual antes de `updateUser`, rejeita resposta
 de outro usuário e preserva rascunho na renovação da mesma sessão. Sucesso pede
 novo login; cancelar encerra a sessão local e remove o parâmetro de retorno.
 
+Após `auth.initialize()` concluir, callbacks inválidos, expirados ou com falha
+transitória também têm credenciais removidas da URL. A limpeza aguarda o SDK
+consumir o retorno, não altera outra navegação e não libera a recuperação.
+
 Para validar externamente, o responsável precisa autorizar a URL exata de
 retorno em Supabase → Authentication → URL Configuration e configurar envio
 de e-mail/SMTP e limites gratuitos. Em desenvolvimento, a URL usada nos testes

@@ -10,7 +10,7 @@ function token(id = owner, seconds = 3600) {
 function link(type = 'recovery', seconds = 3600) {
   return `/app/?recovery=1#access_token=${token(owner, seconds)}&refresh_token=synthetic-refresh&expires_in=${seconds}&token_type=bearer&type=${type}`;
 }
-async function simulate(page: Page, options: { requestStatus?: number; updateFails?: boolean; refreshOwner?: string; expired?: boolean; updateOwner?: string } = {}) {
+async function simulate(page: Page, options: { requestStatus?: number; updateFails?: boolean; refreshOwner?: string; expired?: boolean; updateOwner?: string; authStatus?: number } = {}) {
   let updates = 0, apiCalls = 0;
   await page.route('http://127.0.0.1:8000/**', route => { apiCalls++; return route.fulfill({ status: 503, json: {} }); });
   await page.route('https://auth.example.test/**', route => {
@@ -30,6 +30,7 @@ async function simulate(page: Page, options: { requestStatus?: number; updateFai
       return route.fulfill({ json: { access_token: token(id), refresh_token: 'synthetic-refresh', expires_in: 3600, token_type: 'bearer', user: { ...user, id } } });
     }
     if (options.expired && url.pathname.endsWith('/user')) return route.fulfill({ status: 401, json: { code: 'bad_jwt', msg: 'synthetic expired link' } });
+    if (options.authStatus && url.pathname.endsWith('/user')) return route.fulfill({ status: options.authStatus, json: { msg: 'synthetic transient failure' } });
     return route.fulfill({ json: url.pathname.endsWith('/user') ? user : {} });
   });
   return { updates: () => updates, apiCalls: () => apiCalls };
@@ -110,8 +111,19 @@ test('link expirado não permite atualizar senha nem consultar registros', async
   await page.goto(link());
   await expect(page.locator('main').getByRole('alert')).toContainText('Link ausente, expirado ou de outra sessão');
   await expect(page.getByRole('button', { name: 'Salvar nova senha' })).toHaveCount(0);
+  await expect(page).not.toHaveURL(/access_token=|refresh_token=/);
   expect(calls.updates()).toBe(0); expect(calls.apiCalls()).toBe(0);
 });
+
+for (const transient of [false, true]) {
+  test(`callback ${transient ? 'com falha transitória' : 'malformado'} remove tokens após inicialização`, async ({ page }) => {
+    const calls = await simulate(page, { authStatus: transient ? 503 : undefined });
+    await page.goto(transient ? link() : link().replace('&token_type=bearer', ''));
+    await expect(page.locator('main').getByRole('alert')).toContainText('Link ausente, expirado ou de outra sessão');
+    await expect(page).not.toHaveURL(/access_token=|refresh_token=/);
+    expect(calls.updates()).toBe(0); expect(calls.apiCalls()).toBe(0);
+  });
+}
 
 test('resposta de atualização de outro usuário não libera recuperação ou dashboard', async ({ page }) => {
   const calls = await simulate(page, { updateOwner: other });
