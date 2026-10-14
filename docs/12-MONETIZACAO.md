@@ -236,3 +236,8 @@ JSON, limita streaming a 64 KiB e aceita somente snapshot API
 2026-09-30.endive em modo teste. Tipos desconhecidos s?o ignorados; assinatura
 ou contrato inv?lido retorna 400, indisponibilidade retorna 503 para retry.
 Opera??es bloqueantes usam threadpool; n?o h? fila nem ativa??o autom?tica.
+
+Reconcilia??o manual: scripts/reconcile_billing.py exige --owner e
+--request-id UUID mais --confirm-sandbox. Usa o mesmo rec?lculo sob lock,
+sem fabricar evento Stripe nem criar nova cobran?a. Nunca execute sem revisar
+as chaves de teste e o papel de banco; sa?das n?o exp?em IDs ou payloads.

@@ -626,3 +626,7 @@ identificou renova??o expirada presa em pending; corrigida antes do commit.
 Endpoint Stripe autenticado pelos bytes originais comprovado por HTTP local:
 assinatura, replay vencido, live, vers?o, JSON, tamanho e falha recuper?vel.
 As provas persistentes de replay/isolamento/rollback usam PostgreSQL real.
+
+Comando administrativo de reconcilia??o implementado com opt-in antes de
+qualquer rede/banco; testes locais comprovam recusa sem confirma??o e erro
+sanitizado. N?o foi executado contra Stripe real.
