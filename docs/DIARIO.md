@@ -636,3 +636,10 @@ Helpers isolados validam cliente vivo/tombstone e corrida ao expirar checkout;
 testes MockTransport recusam modo real, referência divergente e erro privado.
 Nenhuma chamada remota real ou alteração de referências SQL.
 
+Limpeza de conta recebe Session existente, consulta vínculos apenas do dono,
+expira checkout aberto e deduplica clientes completos antes de removê-los.
+Reserva inconclusiva e vínculo remoto divergente bloqueiam a exclusão sem
+apagar referências locais. Testes simulam webhook ausente e retry tombstone;
+isolamento real de PostgreSQL continua coberto pela suíte específica, sem SQLite.
+Validação local: make check aprovado, 435 testes, cobertura 82,64%; 30 cenários
+de limpeza simulados. Integrações PostgreSQL não executadas nesta frente.

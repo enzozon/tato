@@ -3,8 +3,11 @@ from typing import Any
 from uuid import UUID
 
 import httpx
+from sqlmodel import Session, select
 
+from app.billing_resolution import find_reserved_checkout
 from app.billing_stripe import API_VERSION, BillingUnavailable, StripeCheckout, StripeSandbox
+from app.models import BillingCheckout, Subscription
 
 
 def customer_request(provider: StripeSandbox, method: str, customer_id: str) -> bool:
@@ -57,3 +60,45 @@ def expire_checkout(
     if result.id != remote.id or result.status != "expired":
         raise BillingUnavailable("Expiração de checkout inválida.")
     return result
+
+
+def cleanup(session: Session, owner: UUID, provider: StripeSandbox) -> None:
+    """Executado sob account_session, após confirmar o marcador de exclusão."""
+    subscription = session.exec(select(Subscription).where(Subscription.user_id == owner)).first()
+    rows = session.exec(select(BillingCheckout).where(BillingCheckout.user_id == owner)).all()
+    if subscription is not None and subscription.billing_provider not in {None, "stripe"}:
+        raise BillingUnavailable("Provedor de limpeza indisponível.")
+    customers: set[str] = set()
+    bindings: set[tuple[str, str | None]] = set()
+    for row in rows:
+        if row.provider != "stripe":
+            raise BillingUnavailable("Provedor de limpeza indisponível.")
+        if row.external_id is None:
+            remote = find_reserved_checkout(provider, owner, row.request_id, row.created_at)
+            if remote is None:
+                # Ausência na listagem não prova ausência de efeito remoto em reserva pendente.
+                raise BillingUnavailable("Reserva de checkout exige reconciliação.")
+            remote = provider.retrieve_checkout(remote.id, owner, row.request_id)
+        else:
+            remote = provider.retrieve_checkout(row.external_id, owner, row.request_id)
+        if remote.status == "open":
+            remote = expire_checkout(provider, remote, owner, row.request_id)
+        if remote.status == "complete":
+            if remote.customer is None:
+                raise BillingUnavailable("Cliente do checkout ainda indisponível.")
+            customers.add(remote.customer)
+            bindings.add((remote.customer, remote.subscription))
+    if (
+        subscription is not None
+        and subscription.billing_provider == "stripe"
+        and (
+            subscription.external_customer_id is None
+            or subscription.external_id is None
+            or (subscription.external_customer_id, subscription.external_id) not in bindings
+        )
+    ):
+        raise BillingUnavailable("Vínculo de assinatura exige reconciliação.")
+    # Todas as referências foram verificadas antes de remover qualquer cliente.
+    for customer_id in sorted(customers):
+        if not customer_request(provider, "GET", customer_id):
+            customer_request(provider, "DELETE", customer_id)

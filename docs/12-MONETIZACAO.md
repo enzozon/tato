@@ -250,3 +250,9 @@ relê estado em corrida com pagamento e falha se continuar aberto.
 Contratos: https://docs.stripe.com/api/customers/delete e
 https://docs.stripe.com/api/checkout/sessions/expire.
 
+`billing_cleanup.cleanup` reutiliza a transação de conta e lê somente os vínculos
+do dono. Valida e expira checkouts antes de remover clientes únicos; checkout
+completo sem webhook também fornece o vínculo. Assinatura local exige o par
+cliente/assinatura confirmado no checkout. Reserva sem ID não localizada
+bloqueia a exclusão para reconciliação. Nenhuma referência SQL é removida pelo
+helper: falha mantém a retomada possível, inclusive após DELETE remoto efetivo.
