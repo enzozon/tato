@@ -643,3 +643,8 @@ apagar referências locais. Testes simulam webhook ausente e retry tombstone;
 isolamento real de PostgreSQL continua coberto pela suíte específica, sem SQLite.
 Validação local: make check aprovado, 435 testes, cobertura 82,64%; 30 cenários
 de limpeza simulados. Integrações PostgreSQL não executadas nesta frente.
+Revisão incluiu clientes deixados por confirmação incompleta em checkout
+expirado; regressões cobrem sessão já expirada e sessão aberta expirada na limpeza,
+mantendo referências locais e sem criação remota.
+make check aprovado após correção: 437 testes, 82,66% de cobertura; 32 cenários
+simulados de limpeza, sem chamadas remotas reais.

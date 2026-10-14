@@ -86,8 +86,9 @@ def cleanup(session: Session, owner: UUID, provider: StripeSandbox) -> None:
         if remote.status == "complete":
             if remote.customer is None:
                 raise BillingUnavailable("Cliente do checkout ainda indisponível.")
-            customers.add(remote.customer)
             bindings.add((remote.customer, remote.subscription))
+        if remote.customer is not None:
+            customers.add(remote.customer)
     if (
         subscription is not None
         and subscription.billing_provider == "stripe"

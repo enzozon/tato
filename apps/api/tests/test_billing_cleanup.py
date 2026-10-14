@@ -366,3 +366,50 @@ def test_cleanup_rejects_unresolved_links_before_deleting_customer(missing):
     ):
         cleanup(session, owner, provider(client))
     assert_read_only_owner(session, owner)
+
+
+@pytest.mark.parametrize("initial_status", ["open", "expired"])
+def test_cleanup_removes_customer_left_by_incomplete_confirmation(initial_status):
+    owner, request_id = uuid4(), uuid4()
+    row = BillingCheckout(
+        user_id=owner,
+        provider="stripe",
+        request_id=request_id,
+        external_id="cs_test_demo",
+        amount_cents=3900,
+    )
+    session = local_session(owner, [row])
+    calls = []
+
+    def transport(request):
+        calls.append((request.method, request.url.path))
+        if "checkout/sessions/" in request.url.path:
+            status = initial_status if request.method == "GET" else "expired"
+            return httpx.Response(
+                200,
+                json=checkout_payload(
+                    owner,
+                    request_id,
+                    status=status,
+                    customer="cus_incomplete",
+                ),
+            )
+        assert request.url.path == "/v1/customers/cus_incomplete"
+        return httpx.Response(
+            200,
+            json={
+                "id": "cus_incomplete",
+                "object": "customer",
+                **({"deleted": True} if request.method == "DELETE" else {"livemode": False}),
+            },
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(transport)) as client:
+        cleanup(session, owner, provider(client))
+    assert calls[-2:] == [
+        ("GET", "/v1/customers/cus_incomplete"),
+        ("DELETE", "/v1/customers/cus_incomplete"),
+    ]
+    assert sum(method == "POST" for method, _ in calls) == (initial_status == "open")
+    assert row.external_id == "cs_test_demo" and row.status == "pending"
+    assert_read_only_owner(session, owner)

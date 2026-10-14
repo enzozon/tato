@@ -256,3 +256,6 @@ completo sem webhook também fornece o vínculo. Assinatura local exige o par
 cliente/assinatura confirmado no checkout. Reserva sem ID não localizada
 bloqueia a exclusão para reconciliação. Nenhuma referência SQL é removida pelo
 helper: falha mantém a retomada possível, inclusive após DELETE remoto efetivo.
+Clientes já associados a checkouts expirados também são removidos: a confirmação
+incompleta pode criar cliente antes de completar a sessão. O vínculo local de
+assinatura continua exigindo checkout completo validado.
