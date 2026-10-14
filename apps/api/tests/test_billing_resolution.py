@@ -20,7 +20,10 @@ def test_dispute_resolves_through_current_invoice_without_list_livemode():
         "/v1/invoices/in_demo": {
             "id": "in_demo",
             "customer": "cus_demo",
-            "parent": {"subscription_details": {"subscription": "sub_demo"}},
+            "parent": {
+                "type": "subscription_details",
+                "subscription_details": {"subscription": "sub_demo"},
+            },
         },
         "/v1/subscriptions/sub_demo": {
             "id": "sub_demo",
@@ -64,6 +67,40 @@ def test_dispute_resolves_through_current_invoice_without_list_livemode():
         with pytest.raises(BillingUnavailable):
             resolve_subscription(provider, "charge.dispute.created", "dp_x/../other")
     assert len(calls) == 15
+
+
+@pytest.mark.parametrize("defect", ["customer", "parent", "metadata"])
+def test_invoice_resolution_rejects_cross_customer_or_malformed_contract(defect):
+    owner, request_id = uuid4(), uuid4()
+    invoice = {
+        "id": "in_demo",
+        "customer": "cus_demo",
+        "parent": {
+            "type": "subscription_details",
+            "subscription_details": {"subscription": "sub_demo"},
+        },
+    }
+    subscription = {
+        "id": "sub_demo",
+        "customer": "cus_demo",
+        "metadata": {"user_id": str(owner), "request_id": str(request_id)},
+    }
+    if defect == "customer":
+        subscription["customer"] = "cus_other"
+    elif defect == "parent":
+        invoice["parent"]["type"] = "quote_details"
+    else:
+        subscription["metadata"]["user_id"] = 123
+
+    def transport(request):
+        payload = invoice if "invoices" in request.url.path else subscription
+        return httpx.Response(200, json={"livemode": False, **payload})
+
+    with httpx.Client(transport=httpx.MockTransport(transport)) as client:
+        provider = StripeSandbox("sk_test_demo", "price_demo", client, "https://tato.example/")
+        with pytest.raises(BillingUnavailable) as error:
+            resolve_subscription(provider, "invoice.paid", "in_demo")
+        assert str(error.value) == "Vínculo remoto de cobrança inválido."
 
 
 def test_expired_checkout_without_subscription_still_resolves_owned_reservation():

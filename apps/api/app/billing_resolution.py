@@ -43,6 +43,13 @@ def object_by_id(provider: StripeSandbox, resource: str, value: Any, prefix: str
     return result
 
 
+def metadata_identity(payload: dict[str, Any]) -> tuple[UUID, UUID]:
+    owner, request_id = payload["metadata"]["user_id"], payload["metadata"]["request_id"]
+    if not isinstance(owner, str) or not isinstance(request_id, str):
+        raise ValueError
+    return UUID(owner), UUID(request_id)
+
+
 def resolve_subscription(
     provider: StripeSandbox, kind: str, object_id: str
 ) -> SubscriptionReference:
@@ -50,6 +57,7 @@ def resolve_subscription(
         if kind not in EVENT_TYPES:
             raise ValueError
         value = object_id
+        expected_customer = None
         if kind.startswith("charge.dispute."):
             value = object_by_id(provider, "disputes", value, "dp")["charge"]
         if kind.startswith("charge."):
@@ -79,27 +87,33 @@ def resolve_subscription(
             invoice = object_by_id(provider, "invoices", payment["invoice"], "in")
             if invoice["customer"] != intent["customer"]:
                 raise ValueError
+            if invoice["parent"]["type"] != "subscription_details":
+                raise ValueError
+            expected_customer = invoice["customer"]
             value = invoice["parent"]["subscription_details"]["subscription"]
         elif kind.startswith("checkout."):
             checkout = object_by_id(provider, "checkout/sessions", value, "cs_test")
-            owner, request_id = (
-                UUID(checkout["metadata"]["user_id"]),
-                UUID(checkout["metadata"]["request_id"]),
-            )
+            owner, request_id = metadata_identity(checkout)
             validated = provider.validate_checkout(checkout, owner, request_id)
             return SubscriptionReference(
                 owner, request_id, validated.subscription, validated.customer, validated.id
             )
         elif kind.startswith("invoice."):
             invoice = object_by_id(provider, "invoices", value, "in")
+            if invoice["parent"]["type"] != "subscription_details":
+                raise ValueError
+            expected_customer = invoice["customer"]
             value = invoice["parent"]["subscription_details"]["subscription"]
         subscription = object_by_id(provider, "subscriptions", value, "sub")
         customer = subscription["customer"]
         if not isinstance(customer, str) or not fullmatch(r"cus_[A-Za-z0-9_]+", customer):
             raise ValueError
+        if expected_customer is not None and customer != expected_customer:
+            raise ValueError
+        owner, request_id = metadata_identity(subscription)
         return SubscriptionReference(
-            owner=UUID(subscription["metadata"]["user_id"]),
-            request_id=UUID(subscription["metadata"]["request_id"]),
+            owner=owner,
+            request_id=request_id,
             subscription_id=subscription["id"],
             customer_id=customer,
         )

@@ -606,3 +606,7 @@ Iniciada continua??o isolada de webhooks/limpeza, sem ativar cobran?a.
 Resolvidos v?nculos remotos por IDs validados; listas verificam modo teste por
 item. Testes HTTP simulados incluem disputa, lista amb?gua/live e expira??o.
 Nenhuma chamada real, nova migration ou altera??o de credenciais.
+
+Revis?o independente do resolver apontou v?nculos de cliente n?o comparados
+na passagem fatura?assinatura, parent.type permissivo e UUID recebendo tipo
+inv?lido. Corrigidos com tr?s regress?es simuladas; erros s?o sanitizados.
