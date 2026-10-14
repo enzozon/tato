@@ -1,11 +1,12 @@
 """Resolução de IDs remotos; nenhum payload é persistido ou registrado."""
 
 from dataclasses import dataclass
+from datetime import datetime
 from re import fullmatch
 from typing import Any
 from uuid import UUID
 
-from app.billing_stripe import BillingUnavailable, StripeSandbox
+from app.billing_stripe import BillingUnavailable, StripeCheckout, StripeSandbox
 
 EVENT_TYPES = frozenset(
     {
@@ -108,7 +109,7 @@ def resolve_subscription(
         customer = subscription["customer"]
         if not isinstance(customer, str) or not fullmatch(r"cus_[A-Za-z0-9_]+", customer):
             raise ValueError
-        if expected_customer is not None and customer != expected_customer:
+        if kind.startswith(("charge.", "invoice.")) and customer != expected_customer:
             raise ValueError
         owner, request_id = metadata_identity(subscription)
         return SubscriptionReference(
@@ -119,3 +120,40 @@ def resolve_subscription(
         )
     except (KeyError, TypeError, ValueError):
         raise BillingUnavailable("Vínculo remoto de cobrança inválido.") from None
+
+
+def find_reserved_checkout(
+    provider: StripeSandbox, owner: UUID, request_id: UUID, created_at: datetime
+) -> StripeCheckout | None:
+    """Localiza efeito remoto perdido sem repetir uma criação potencialmente cobrada."""
+    params = {"created[gte]": str(int(created_at.timestamp()) - 300), "limit": "100"}
+    found: StripeCheckout | None = None
+    cursors: set[str] = set()
+    # ponytail: máximo 2.000 sessões por busca; acima disso exige reconciliação operacional.
+    for _ in range(20):
+        page = provider.request("GET", "checkout/sessions", params=params, list_response=True)
+        for row in page["data"]:
+            metadata = row.get("metadata")
+            if (
+                not isinstance(metadata, dict)
+                or metadata.get("user_id") != str(owner)
+                or metadata.get("request_id") != str(request_id)
+            ):
+                continue
+            result = provider.validate_checkout(row, owner, request_id)
+            if found is not None:
+                raise BillingUnavailable("Reserva remota ambígua.")
+            found = result
+        if page["has_more"] is False:
+            return found
+        rows = page["data"]
+        cursor = rows[-1].get("id") if rows else None
+        if (
+            not isinstance(cursor, str)
+            or not fullmatch(r"cs_test_[A-Za-z0-9_]+", cursor)
+            or cursor in cursors
+        ):
+            raise BillingUnavailable("Paginação remota inválida.")
+        cursors.add(cursor)
+        params["starting_after"] = cursor
+    raise BillingUnavailable("Reserva exige reconciliação operacional.")

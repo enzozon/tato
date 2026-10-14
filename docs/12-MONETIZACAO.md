@@ -219,3 +219,8 @@ Refer?ncia: https://docs.stripe.com/api/invoice-payment/list.
 A factory billing_engine exige BILLING_DATABASE_URL e papel efetivo
 tato_billing sem eleva??o ou heran?a. N?o reutiliza DATABASE_URL nem URL
 administrativa; cada transa??o de cobran?a revalida o papel antes de operar.
+
+Reservas sem ID remoto s?o pesquisadas por per?odo com pagina??o e v?nculo
+exato, nunca por nova cria??o. A busca tem teto expl?cito de 2.000 sess?es:
+exceder, duplicidade e cursor repetido exigem reconcilia??o operacional.
+N?o encontrar uma reserva pendente n?o comprova aus?ncia de efeito remoto.

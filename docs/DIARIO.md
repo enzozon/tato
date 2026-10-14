@@ -614,3 +614,7 @@ inv?lido. Corrigidos com tr?s regress?es simuladas; erros s?o sanitizados.
 Factory do papel de cobran?a comprovada com PostgreSQL real em tato_test,
 SET ROLE em conex?o pr?pria de teste e nenhuma rota??o global de senha.
 Papel comum tato_app ? rejeitado, assim como roles efetivos elevados.
+
+Busca de reserva remota perdida implementada somente com GET paginado;
+provas simuladas de duplicidade, pagina??o repetida, cliente divergente e live.
+O processo conserva a reserva local quando a aus?ncia remota ? inconclusiva.
