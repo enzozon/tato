@@ -600,6 +600,12 @@ TypeScript/SW aprovados. RAG real em cache offline preservou hit@5=0,975 e
 MRR=0,835417. Os 14 testes novos de acesso à cobrança provam identidade,
 retomada, portal e bloqueio de exclusão sem chamadas externas.
 
+### 13/10/2026 — contraste dos campos
+
+Revisão de acessibilidade identificou bordas com contraste 2,10:1 sobre branco.
+Reutilizamos `--muted` (6,21:1) para distinguir campos vazios sem criar outro token.
+A regressão mede cores computadas no login real, em desktop/mobile, sem alterar o DOM.
+
 Recuperação de senha em worktree isolado: solicitação genérica, retorno fixo,
 evento PASSWORD_RECOVERY observado antes da hidratação e formulário vinculado
 ao usuário da recuperação. Dashboard bloqueado até sair; sucesso exige novo
@@ -622,3 +628,8 @@ bloqueada e permite repetir a saída até voltar ao login, sem consultar dados.
 O SDK emite SIGNED_OUT mesmo após erro remoto; durante o cancelamento, esse
 evento não desmonta o formulário antes de ele apresentar o erro. Não se presume
 revogação remota a partir da remoção da sessão local.
+
+Após integrar a recuperação de senha da main em 14/10, os 84 testes Playwright
+desktop/mobile passaram, incluindo os dois cenários de contraste computado.
+`make check` manteve 389 testes Python/HTTP e 81,97% de cobertura; os históricos
+das duas correções foram preservados na resolução dos conflitos de documentação.
