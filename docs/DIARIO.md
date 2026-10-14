@@ -599,3 +599,10 @@ PostgreSQL/Redis/RLS sem skips, 58 Playwright desktop/mobile, build estático e
 TypeScript/SW aprovados. RAG real em cache offline preservou hit@5=0,975 e
 MRR=0,835417. Os 14 testes novos de acesso à cobrança provam identidade,
 retomada, portal e bloqueio de exclusão sem chamadas externas.
+
+### 14/10 ? resolu??o segura dos eventos Stripe
+
+Iniciada continua??o isolada de webhooks/limpeza, sem ativar cobran?a.
+Resolvidos v?nculos remotos por IDs validados; listas verificam modo teste por
+item. Testes HTTP simulados incluem disputa, lista amb?gua/live e expira??o.
+Nenhuma chamada real, nova migration ou altera??o de credenciais.

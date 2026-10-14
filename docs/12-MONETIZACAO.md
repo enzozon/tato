@@ -206,3 +206,12 @@ Valores são inteiros de 3.900 centavos. Reembolso parcial/total ou disputa
 produz `past_due`; contrato ausente ou divergente falha sem expor payload.
 Isso ainda precisa ser acionado pelos webhooks de reembolso/disputa.
 Contrato: https://docs.stripe.com/invoicing/partial-payments.
+
+## Webhook sandbox ? resolu??o de refer?ncias
+
+Listas Stripe n?o possuem livemode no envelope: cada item ? validado.
+Eventos de disputa/reembolso resolvem Charge ? PaymentIntent ? InvoicePayment
+? fatura ? assinatura atual, sem persistir corpos remotos. Ambiguidade de
+pagamento ou pagina??o incompleta impede conceder Pro. Checkout expirado sem
+assinatura continua identific?vel pela metadata e pelo client_reference_id.
+Refer?ncia: https://docs.stripe.com/api/invoice-payment/list.

@@ -87,7 +87,14 @@ class StripeSandbox:
             raise BillingUnavailable("Retorno do checkout inválido.") from None
 
     def request(
-        self, method: str, path: str, *, data: dict[str, str] | None = None, key: str | None = None
+        self,
+        method: str,
+        path: str,
+        *,
+        data: dict[str, str] | None = None,
+        key: str | None = None,
+        params: dict[str, str] | None = None,
+        list_response: bool = False,
     ) -> dict[str, Any]:
         headers = {"Authorization": f"Bearer {self.key}", "Stripe-Version": API_VERSION}
         if key is not None:
@@ -98,12 +105,27 @@ class StripeSandbox:
                 f"https://api.stripe.com/v1/{path}",
                 headers=headers,
                 data=data,
+                params=params,
                 timeout=10,
                 follow_redirects=False,
             )
             response.raise_for_status()
             payload = response.json()
-            if not isinstance(payload, dict) or payload.get("livemode") is not False:
+            if not isinstance(payload, dict):
+                raise BillingUnavailable("Contrato Stripe inválido.")
+            if list_response:
+                rows = payload.get("data")
+                if (
+                    payload.get("object") != "list"
+                    or not isinstance(rows, list)
+                    or type(payload.get("has_more")) is not bool
+                    or any(
+                        not isinstance(row, dict) or row.get("livemode") is not False
+                        for row in rows
+                    )
+                ):
+                    raise BillingUnavailable("Lista Stripe fora do modo de teste.")
+            elif payload.get("livemode") is not False:
                 raise BillingUnavailable("Objeto Stripe fora do modo de teste.")
             return payload
         except (httpx.HTTPError, ValueError):
