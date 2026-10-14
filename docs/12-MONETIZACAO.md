@@ -224,3 +224,9 @@ Reservas sem ID remoto s?o pesquisadas por per?odo com pagina??o e v?nculo
 exato, nunca por nova cria??o. A busca tem teto expl?cito de 2.000 sess?es:
 exceder, duplicidade e cursor repetido exigem reconcilia??o operacional.
 N?o encontrar uma reserva pendente n?o comprova aus?ncia de efeito remoto.
+
+O processador usa lock por usu?rio e transa??o ?nica para estado+evento.
+Repeti??es s?o idempotentes; falha remota n?o marca processamento. Ele nunca
+cria usu?rio e ignora exclus?o pendente. A reconsulta financeira ocorre sob
+lock, impedindo um snapshot anterior sobrescrever o resultado j? confirmado.
+Expira??o cancela somente a reserva, mesmo ap?s assinatura anterior cancelada.

@@ -618,3 +618,7 @@ Papel comum tato_app ? rejeitado, assim como roles efetivos elevados.
 Busca de reserva remota perdida implementada somente com GET paginado;
 provas simuladas de duplicidade, pagina??o repetida, cliente divergente e live.
 O processo conserva a reserva local quando a aus?ncia remota ? inconclusiva.
+
+Processador comprovado em tato_test: replay concorrente, isolamento, rollback,
+retry, snapshot antigo, v?nculo divergente e exclus?o pendente. Revis?o
+identificou renova??o expirada presa em pending; corrigida antes do commit.
