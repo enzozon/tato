@@ -691,3 +691,7 @@ Após integrar a recuperação de senha da main em 14/10, os 84 testes Playwrigh
 desktop/mobile passaram, incluindo os dois cenários de contraste computado.
 `make check` manteve 389 testes Python/HTTP e 81,97% de cobertura; os históricos
 das duas correções foram preservados na resolução dos conflitos de documentação.
+Validação independente do transporte do webhook: cinco testes ASGI locais
+comprovam interrupção de upload chunked acima de 64 KiB, sem Content-Length,
+antes da assinatura ou acesso ao banco. Falhas de permissão e SQL no bootstrap
+ou processamento retornam 503 genérico com no-store, sem detalhes privados.
