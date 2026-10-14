@@ -630,3 +630,9 @@ As provas persistentes de replay/isolamento/rollback usam PostgreSQL real.
 Comando administrativo de reconcilia??o implementado com opt-in antes de
 qualquer rede/banco; testes locais comprovam recusa sem confirma??o e erro
 sanitizado. N?o foi executado contra Stripe real.
+### 14/10 — helpers de limpeza Stripe
+
+Helpers isolados validam cliente vivo/tombstone e corrida ao expirar checkout;
+testes MockTransport recusam modo real, referência divergente e erro privado.
+Nenhuma chamada remota real ou alteração de referências SQL.
+

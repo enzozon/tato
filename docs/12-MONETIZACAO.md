@@ -241,3 +241,12 @@ Reconcilia??o manual: scripts/reconcile_billing.py exige --owner e
 --request-id UUID mais --confirm-sandbox. Usa o mesmo rec?lculo sob lock,
 sem fabricar evento Stripe nem criar nova cobran?a. Nunca execute sem revisar
 as chaves de teste e o papel de banco; sa?das n?o exp?em IDs ou payloads.
+### Remoção remota em sandbox
+
+O helper de cliente aceita tombstone somente com ID esperado, object=customer
+e deleted=true sob chave sk_test; clientes vivos exigem livemode=false antes
+da remoção. O contrato genérico Stripe permanece estrito. Expiração de checkout
+relê estado em corrida com pagamento e falha se continuar aberto.
+Contratos: https://docs.stripe.com/api/customers/delete e
+https://docs.stripe.com/api/checkout/sessions/expire.
+
