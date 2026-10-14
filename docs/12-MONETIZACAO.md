@@ -230,3 +230,9 @@ Repeti??es s?o idempotentes; falha remota n?o marca processamento. Ele nunca
 cria usu?rio e ignora exclus?o pendente. A reconsulta financeira ocorre sob
 lock, impedindo um snapshot anterior sobrescrever o resultado j? confirmado.
 Expira??o cancela somente a reserva, mesmo ap?s assinatura anterior cancelada.
+
+POST /billing/stripe/webhook verifica bytes originais antes de interpretar
+JSON, limita streaming a 64 KiB e aceita somente snapshot API
+2026-09-30.endive em modo teste. Tipos desconhecidos s?o ignorados; assinatura
+ou contrato inv?lido retorna 400, indisponibilidade retorna 503 para retry.
+Opera??es bloqueantes usam threadpool; n?o h? fila nem ativa??o autom?tica.

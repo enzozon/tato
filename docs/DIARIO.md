@@ -622,3 +622,7 @@ O processo conserva a reserva local quando a aus?ncia remota ? inconclusiva.
 Processador comprovado em tato_test: replay concorrente, isolamento, rollback,
 retry, snapshot antigo, v?nculo divergente e exclus?o pendente. Revis?o
 identificou renova??o expirada presa em pending; corrigida antes do commit.
+
+Endpoint Stripe autenticado pelos bytes originais comprovado por HTTP local:
+assinatura, replay vencido, live, vers?o, JSON, tamanho e falha recuper?vel.
+As provas persistentes de replay/isolamento/rollback usam PostgreSQL real.
