@@ -54,8 +54,9 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
   não afirmar suporte sem fixture e comparação. Sicoobcard visto apenas no app
   do iPhone não oferece, por si só, uma API/MCP acessível pelo Windows.
 - RESEND_FROM e entrega real precisam ser validados; opt-in na tela não envia.
-- Google real, confirmação de e-mail e recuperação de senha precisam de
-  configuração/fluxo e prova externa apropriados.
+- Fluxo local de recuperação de senha entregue e testado com Supabase simulado.
+  Allowlist/SMTP e entrega real ainda precisam de configuração e prova externa.
+  Google real e confirmação de e-mail também permanecem sem validação externa.
 - Exportação completa, Telegram, relatório PDF e Pluggy sandbox são etapa 12;
   não são pré-requisitos para iniciar ensaios controlados do MVP.
 
@@ -80,7 +81,7 @@ botões; preços e concessão de plano continuam sendo decisões do backend.
 O fluxo de pagamento permanece desativado até concluir seu ciclo de vida.
 
 Validação local atualizada em 13/10: 389 testes Python/HTTP, cobertura 81,97%,
-80 integrações PostgreSQL/Redis/RLS sem skips, 58 Playwright desktop/mobile,
+80 integrações PostgreSQL/Redis/RLS sem skips, 84 Playwright desktop/mobile,
 TypeScript/build estático e avaliação RAG real com baseline preservado
 (RRF hit@5=0,975/MRR=0,835417). Revisão em 320px não encontrou overflow nos
 fluxos inspecionados. Verificações externas/produção, instalação física,

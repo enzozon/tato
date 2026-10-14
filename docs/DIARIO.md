@@ -605,3 +605,31 @@ retomada, portal e bloqueio de exclusão sem chamadas externas.
 Revisão de acessibilidade identificou bordas com contraste 2,10:1 sobre branco.
 Reutilizamos `--muted` (6,21:1) para distinguir campos vazios sem criar outro token.
 A regressão mede cores computadas no login real, em desktop/mobile, sem alterar o DOM.
+
+Recuperação de senha em worktree isolado: solicitação genérica, retorno fixo,
+evento PASSWORD_RECOVERY observado antes da hidratação e formulário vinculado
+ao usuário da recuperação. Dashboard bloqueado até sair; sucesso exige novo
+login. Testes sintéticos cobrem confirmação, falha, renovação, troca de identidade
+e parâmetro sem autorização. Nenhum e-mail real ou ajuste remoto foi realizado.
+Validação local: 52 Playwright desktop/mobile (18 de recuperação), TypeScript,
+build estático e 341 testes Python/HTTP com cobertura de 82,02%. A confirmação
+de e-mail real e o funcionamento da allowlist continuam sem prova externa.
+
+Revisão de recuperação: credenciais do callback também são removidas após
+inicialização do SDK falhar, sem impedir que ele consuma o link primeiro.
+Regressões verificam link expirado, retorno malformado e falha transitória;
+nenhuma falha libera o formulário ou consulta registros financeiros.
+Na base main integrada: 80 Playwright desktop/mobile (22 de recuperação),
+389 testes Python/HTTP com 81,97% de cobertura e checks estáticos aprovados.
+
+Reproduzida falha de logout ocultada quando o link de recuperação era inválido.
+O erro de saída agora independe da validade do link; a interface continua
+bloqueada e permite repetir a saída até voltar ao login, sem consultar dados.
+O SDK emite SIGNED_OUT mesmo após erro remoto; durante o cancelamento, esse
+evento não desmonta o formulário antes de ele apresentar o erro. Não se presume
+revogação remota a partir da remoção da sessão local.
+
+Após integrar a recuperação de senha da main em 14/10, os 84 testes Playwright
+desktop/mobile passaram, incluindo os dois cenários de contraste computado.
+`make check` manteve 389 testes Python/HTTP e 81,97% de cobertura; os históricos
+das duas correções foram preservados na resolução dos conflitos de documentação.

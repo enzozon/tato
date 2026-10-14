@@ -5,6 +5,12 @@ const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 export const auth = url && key ? createClient(url, key, {
   auth: { persistSession: false, detectSessionInUrl: true },
 }) : null;
+let recoveredOwner: string | null = null;
+auth?.auth.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY') recoveredOwner ||= session?.user.id || null;
+  if (event === 'SIGNED_OUT') recoveredOwner = null;
+});
+export function recoveryIdentity() { return recoveredOwner; }
 export const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 export async function request<T>(path: string, token: string, init: RequestInit = {}): Promise<T> {
