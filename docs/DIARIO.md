@@ -610,3 +610,7 @@ Nenhuma chamada real, nova migration ou altera??o de credenciais.
 Revis?o independente do resolver apontou v?nculos de cliente n?o comparados
 na passagem fatura?assinatura, parent.type permissivo e UUID recebendo tipo
 inv?lido. Corrigidos com tr?s regress?es simuladas; erros s?o sanitizados.
+
+Factory do papel de cobran?a comprovada com PostgreSQL real em tato_test,
+SET ROLE em conex?o pr?pria de teste e nenhuma rota??o global de senha.
+Papel comum tato_app ? rejeitado, assim como roles efetivos elevados.

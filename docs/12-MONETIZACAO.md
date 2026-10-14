@@ -215,3 +215,7 @@ Eventos de disputa/reembolso resolvem Charge ? PaymentIntent ? InvoicePayment
 pagamento ou pagina??o incompleta impede conceder Pro. Checkout expirado sem
 assinatura continua identific?vel pela metadata e pelo client_reference_id.
 Refer?ncia: https://docs.stripe.com/api/invoice-payment/list.
+
+A factory billing_engine exige BILLING_DATABASE_URL e papel efetivo
+tato_billing sem eleva??o ou heran?a. N?o reutiliza DATABASE_URL nem URL
+administrativa; cada transa??o de cobran?a revalida o papel antes de operar.
