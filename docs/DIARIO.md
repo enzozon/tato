@@ -695,3 +695,10 @@ Validação independente do transporte do webhook: cinco testes ASGI locais
 comprovam interrupção de upload chunked acima de 64 KiB, sem Content-Length,
 antes da assinatura ou acesso ao banco. Falhas de permissão e SQL no bootstrap
 ou processamento retornam 503 genérico com no-store, sem detalhes privados.
+
+Recompra na interface: checkout pago deixava seu UUID preso após cancelamento
+da assinatura. O UUID terminal agora é descartado apenas após o backend
+confirmar ausência de pendente; falha ou estado desconhecido conserva o pedido.
+A regressão desktop/mobile cobre pagamento, cancelamento e renovação de token.
+Os 30 testes de cobrança também comprovam preservação do UUID após 503 ou
+pendência ausente e adoção do pedido pendente informado pelo serviço.
