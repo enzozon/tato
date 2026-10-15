@@ -31,7 +31,9 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
   expiração, reembolso/disputa e exclusão/limpeza de vínculos, em testes locais.
 - [x] Portal Stripe, rotas e interface de plano; preço aprovado de R$39 em teste,
   sem aceitar valores arbitrários do navegador. Recompra preserva o cliente.
-- [ ] Integração Pix: adapter sandbox existente ainda não concede plano.
+- [ ] Integração Pix: adapter sandbox consulta pedidos paginados e reconhece
+  reembolso; não concede plano. Falta contrato verificável de remoção/cancelamento
+  da cobrança transparente antes de ativar rotas (detalhes em `12-MONETIZACAO.md`).
 - [ ] Configurar chaves sandbox localmente, validar ensaios opt-in sem cobrança
   real e só depois habilitar `BILLING_ENABLED`.
 - [ ] Sentry/PostHog/Logfire: revisar limites oficiais e política de dados antes

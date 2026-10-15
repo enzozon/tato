@@ -713,3 +713,12 @@ TypeScript/SW e PWA offline também passaram. Docker foi retomado sem reset.
 Revisadas falhas, concorrência, recompra, replay, reembolso/disputa e exclusão.
 Chaves Stripe/Pix e RESEND_FROM continuam ausentes; cobrança permanece desligada.
 Sem chamadas Stripe reais, envio de e-mail, judge remoto ou deploy nesta parte.
+
+### 15/10/2026 — fronteira verificável do Pix
+
+Pesquisa oficial confirmou listagem PIX por referência com metadata e paginação,
+mas não encontrou cancelamento/remoção de cobrança transparente. Implementada
+consulta restrita do adapter com validação de dono, valor, modo dev, fuso,
+duplicidades e paginação; reembolso é reconhecido sem concessão de plano.
+Testes sintéticos cobrem falhas e ausência inconclusiva sem repetir POST.
+Pix continua indisponível para ativação; nenhuma API remota ou migration usada.
