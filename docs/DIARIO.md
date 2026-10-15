@@ -722,3 +722,6 @@ consulta restrita do adapter com validação de dono, valor, modo dev, fuso,
 duplicidades e paginação; reembolso é reconhecido sem concessão de plano.
 Testes sintéticos cobrem falhas e ausência inconclusiva sem repetir POST.
 Pix continua indisponível para ativação; nenhuma API remota ou migration usada.
+
+Revisão da paginação evitou pressupor prefixo PIX no cursor: o publicId retornado
+é opaco e passa por query params do HTTPX, com limite e rejeição de controles.

@@ -43,9 +43,9 @@ def test_lookup_checks_all_pages_without_creating_or_exposing_private_data():
         assert request.headers["Authorization"] == "Bearer dev_synthetic"
         if len(calls) == 1:
             return httpx.Response(
-                200, json=page([pix(owner, request_id)], hasMore=True, next="pix_char_cursor")
+                200, json=page([pix(owner, request_id)], hasMore=True, next="opaque:cursor/1+=")
             )
-        assert request.url.params["after"] == "pix_char_cursor"
+        assert request.url.params["after"] == "opaque:cursor/1+="
         return httpx.Response(200, json=page([]))
 
     with httpx.Client(transport=httpx.MockTransport(transport)) as client:
@@ -95,7 +95,10 @@ def test_lookup_refuses_untrusted_remote_binding(mutation):
         AbacateSandbox("dev_synthetic", client).find_pix(owner, request_id)
 
 
-@pytest.mark.parametrize("failure", ["duplicate", "cursor", "missing", "boolean", "exhausted"])
+@pytest.mark.parametrize(
+    "failure",
+    ["duplicate", "cursor", "missing", "boolean", "exhausted", "control", "unicode", "long"],
+)
 def test_lookup_refuses_ambiguous_or_incomplete_listing(failure):
     owner, request_id = uuid4(), uuid4()
     calls = []
@@ -108,6 +111,9 @@ def test_lookup_refuses_ambiguous_or_incomplete_listing(failure):
             payload = {"data": [], "success": True}
         elif failure == "boolean":
             payload = page([], hasMore=0)
+        elif failure in {"control", "unicode", "long"}:
+            cursor = {"control": "opaque\n", "unicode": "opacoç", "long": "x" * 257}[failure]
+            payload = page([], hasMore=True, next=cursor)
         else:
             cursor = "pix_char_repeated" if failure == "cursor" else f"pix_char_{len(calls)}"
             payload = page([], hasMore=True, next=cursor)
