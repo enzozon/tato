@@ -207,40 +207,41 @@ produz `past_due`; contrato ausente ou divergente falha sem expor payload.
 Isso ainda precisa ser acionado pelos webhooks de reembolso/disputa.
 Contrato: https://docs.stripe.com/invoicing/partial-payments.
 
-## Webhook sandbox ? resolu??o de refer?ncias
+## Webhook sandbox — resolução de referências
 
-Listas Stripe n?o possuem livemode no envelope: cada item ? validado.
-Eventos de disputa/reembolso resolvem Charge ? PaymentIntent ? InvoicePayment
-? fatura ? assinatura atual, sem persistir corpos remotos. Ambiguidade de
-pagamento ou pagina??o incompleta impede conceder Pro. Checkout expirado sem
-assinatura continua identific?vel pela metadata e pelo client_reference_id.
-Refer?ncia: https://docs.stripe.com/api/invoice-payment/list.
+Listas Stripe não possuem livemode no envelope: cada item é validado.
+Eventos de disputa/reembolso resolvem Charge → PaymentIntent → InvoicePayment
+→ fatura → assinatura atual, sem persistir corpos remotos. Ambiguidade de
+pagamento ou paginação incompleta impede conceder Pro. Checkout expirado sem
+assinatura continua identificável pela metadata e pelo client_reference_id.
+Referência: https://docs.stripe.com/api/invoice-payment/list.
 
 A factory billing_engine exige BILLING_DATABASE_URL e papel efetivo
-tato_billing sem eleva??o ou heran?a. N?o reutiliza DATABASE_URL nem URL
-administrativa; cada transa??o de cobran?a revalida o papel antes de operar.
+tato_billing sem elevação ou herança. Não reutiliza DATABASE_URL nem URL
+administrativa; cada transação de cobrança revalida o papel antes de operar.
 
-Reservas sem ID remoto s?o pesquisadas por per?odo com pagina??o e v?nculo
-exato, nunca por nova cria??o. A busca tem teto expl?cito de 2.000 sess?es:
-exceder, duplicidade e cursor repetido exigem reconcilia??o operacional.
-N?o encontrar uma reserva pendente n?o comprova aus?ncia de efeito remoto.
+Reservas sem ID remoto são pesquisadas por período com paginação e vínculo
+exato, nunca por nova criação. A busca tem teto explícito de 2.000 sessões:
+exceder, duplicidade e cursor repetido exigem reconciliação operacional.
+Não encontrar uma reserva pendente não comprova ausência de efeito remoto.
 
-O processador usa lock por usu?rio e transa??o ?nica para estado+evento.
-Repeti??es s?o idempotentes; falha remota n?o marca processamento. Ele nunca
-cria usu?rio e ignora exclus?o pendente. A reconsulta financeira ocorre sob
-lock, impedindo um snapshot anterior sobrescrever o resultado j? confirmado.
-Expira??o cancela somente a reserva, mesmo ap?s assinatura anterior cancelada.
+O processador usa lock por usuário e transação única para estado+evento.
+Repetições são idempotentes; falha remota não marca processamento. Ele nunca
+cria usuário e ignora exclusão pendente. A reconsulta financeira ocorre sob
+lock, impedindo um snapshot anterior sobrescrever o resultado já confirmado.
+Expiração cancela somente a reserva, mesmo após assinatura anterior cancelada.
 
 POST /billing/stripe/webhook verifica bytes originais antes de interpretar
 JSON, limita streaming a 64 KiB e aceita somente snapshot API
-2026-09-30.endive em modo teste. Tipos desconhecidos s?o ignorados; assinatura
-ou contrato inv?lido retorna 400, indisponibilidade retorna 503 para retry.
-Opera??es bloqueantes usam threadpool; n?o h? fila nem ativa??o autom?tica.
+2026-09-30.endive em modo teste. Tipos desconhecidos são ignorados; assinatura
+ou contrato inválido retorna 400, indisponibilidade retorna 503 para retry.
+Operações bloqueantes usam threadpool; não há fila nem ativação automática.
 
-Reconcilia??o manual: scripts/reconcile_billing.py exige --owner e
---request-id UUID mais --confirm-sandbox. Usa o mesmo rec?lculo sob lock,
-sem fabricar evento Stripe nem criar nova cobran?a. Nunca execute sem revisar
-as chaves de teste e o papel de banco; sa?das n?o exp?em IDs ou payloads.
+Reconciliação manual: scripts/reconcile_billing.py exige --owner e
+--request-id UUID mais --confirm-sandbox. Usa o mesmo recálculo sob lock,
+sem fabricar evento Stripe nem criar nova cobrança. Nunca execute sem revisar
+as chaves de teste e o papel de banco; saídas não expõem IDs ou payloads.
+
 ### Remoção remota em sandbox
 
 O helper de cliente aceita tombstone somente com ID esperado, object=customer
