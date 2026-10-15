@@ -600,6 +600,64 @@ TypeScript/SW aprovados. RAG real em cache offline preservou hit@5=0,975 e
 MRR=0,835417. Os 14 testes novos de acesso à cobrança provam identidade,
 retomada, portal e bloqueio de exclusão sem chamadas externas.
 
+### 14/10 — resolução segura dos eventos Stripe
+
+Iniciada continuação isolada de webhooks/limpeza, sem ativar cobrança.
+Resolvidos vínculos remotos por IDs validados; listas verificam modo teste por
+item. Testes HTTP simulados incluem disputa, lista ambígua/live e expiração.
+Nenhuma chamada real, nova migration ou alteração de credenciais.
+
+Revisão independente do resolver apontou vínculos de cliente não comparados
+na passagem fatura→assinatura, parent.type permissivo e UUID recebendo tipo
+inválido. Corrigidos com três regressões simuladas; erros são sanitizados.
+
+Factory do papel de cobrança comprovada com PostgreSQL real em tato_test,
+SET ROLE em conexão própria de teste e nenhuma rotação global de senha.
+Papel comum tato_app é rejeitado, assim como roles efetivos elevados.
+
+Busca de reserva remota perdida implementada somente com GET paginado;
+provas simuladas de duplicidade, paginação repetida, cliente divergente e live.
+O processo conserva a reserva local quando a ausência remota é inconclusiva.
+
+Processador comprovado em tato_test: replay concorrente, isolamento, rollback,
+retry, snapshot antigo, vínculo divergente e exclusão pendente. Revisão
+identificou renovação expirada presa em pending; corrigida antes do commit.
+
+Endpoint Stripe autenticado pelos bytes originais comprovado por HTTP local:
+assinatura, replay vencido, live, versão, JSON, tamanho e falha recuperável.
+As provas persistentes de replay/isolamento/rollback usam PostgreSQL real.
+
+Comando administrativo de reconciliação implementado com opt-in antes de
+qualquer rede/banco; testes locais comprovam recusa sem confirmação e erro
+sanitizado. Não foi executado contra Stripe real.
+### 14/10 — helpers de limpeza Stripe
+
+Helpers isolados validam cliente vivo/tombstone e corrida ao expirar checkout;
+testes MockTransport recusam modo real, referência divergente e erro privado.
+Nenhuma chamada remota real ou alteração de referências SQL.
+
+Limpeza de conta recebe Session existente, consulta vínculos apenas do dono,
+expira checkout aberto e deduplica clientes completos antes de removê-los.
+Reserva inconclusiva e vínculo remoto divergente bloqueiam a exclusão sem
+apagar referências locais. Testes simulam webhook ausente e retry tombstone;
+isolamento real de PostgreSQL continua coberto pela suíte específica, sem SQLite.
+Validação local: make check aprovado, 435 testes, cobertura 82,64%; 30 cenários
+de limpeza simulados. Integrações PostgreSQL não executadas nesta frente.
+Revisão incluiu clientes deixados por confirmação incompleta em checkout
+expirado; regressões cobrem sessão já expirada e sessão aberta expirada na limpeza,
+mantendo referências locais e sem criação remota.
+make check aprovado após correção: 437 testes, 82,66% de cobertura; 32 cenários
+simulados de limpeza, sem chamadas remotas reais.
+
+Limpeza integrada antes Supabase/cascade, reutilizando sessão existente.
+Provas PG/MockTransport: falha após remoção remota retoma por tombstone e
+webhook aguardando exclusão não recria usuário. Configuração comum extraída
+para reutilização real entre endpoint, CLI e limpeza, sem SDK novo.
+
+Recompra cancelada usa cliente existente, UUID novo e confirmação terminal
+remota, sem apagar histórico. O retorno do checkout continua sem conceder Pro.
+Docker retomado sem reset; oito integrações de exclusão, histórico e reembolsos
+passaram após a indisponibilidade inicial. Nenhuma chamada Stripe real.
 ### 13/10/2026 — contraste dos campos
 
 Revisão de acessibilidade identificou bordas com contraste 2,10:1 sobre branco.
@@ -633,3 +691,25 @@ Após integrar a recuperação de senha da main em 14/10, os 84 testes Playwrigh
 desktop/mobile passaram, incluindo os dois cenários de contraste computado.
 `make check` manteve 389 testes Python/HTTP e 81,97% de cobertura; os históricos
 das duas correções foram preservados na resolução dos conflitos de documentação.
+Validação independente do transporte do webhook: cinco testes ASGI locais
+comprovam interrupção de upload chunked acima de 64 KiB, sem Content-Length,
+antes da assinatura ou acesso ao banco. Falhas de permissão e SQL no bootstrap
+ou processamento retornam 503 genérico com no-store, sem detalhes privados.
+
+Recompra na interface: checkout pago deixava seu UUID preso após cancelamento
+da assinatura. O UUID terminal agora é descartado apenas após o backend
+confirmar ausência de pendente; falha ou estado desconhecido conserva o pedido.
+A regressão desktop/mobile cobre pagamento, cancelamento e renovação de token.
+Os 30 testes de cobrança também comprovam preservação do UUID após 503 ou
+pendência ausente e adoção do pedido pendente informado pelo serviço.
+
+### 15/10/2026 — consolidação do ciclo local de cobrança
+
+Integração da base com recuperação de senha e contraste preservou os históricos.
+Corrigida a interface que conservava UUID pago após cancelamento da assinatura.
+Provas finais: 460 testes Python/HTTP, 81,55% de cobertura, 100 integrações
+PostgreSQL/Redis/RLS e 98 Playwright desktop/mobile, todos sem skips. Build,
+TypeScript/SW e PWA offline também passaram. Docker foi retomado sem reset.
+Revisadas falhas, concorrência, recompra, replay, reembolso/disputa e exclusão.
+Chaves Stripe/Pix e RESEND_FROM continuam ausentes; cobrança permanece desligada.
+Sem chamadas Stripe reais, envio de e-mail, judge remoto ou deploy nesta parte.

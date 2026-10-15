@@ -118,19 +118,44 @@ test('checkout sem URL atualiza disponibilidade sem ativar Pro na interface', as
   await expect(page.getByRole('heading', { name: 'Plano free' })).toBeVisible();
 });
 
+test('checkout pago libera novo UUID após cancelar assinatura e confirmar ausência de pendente', async ({ page }) => {
+  await page.clock.install();
+  const ids: string[] = [];
+  let canceled = false;
+  await page.route('**/billing/status', route => route.fulfill({ json: { ...enabled,
+    can_checkout: ids.length === 0 || canceled } }));
+  await page.route('**/billing/stripe/checkout', route => {
+    const id = route.request().postDataJSON().request_id; ids.push(id);
+    return route.fulfill({ json: { request_id: id, status: 'paid', checkout_url: null } });
+  });
+  await settings(page);
+  const button = page.getByRole('button', { name: 'Simular assinatura Pro' });
+  await button.click();
+  await expect(page.getByText('Preparando ambiente de teste…')).not.toBeVisible();
+  await expect(button).toBeDisabled();
+  canceled = true;
+  const renewed = page.waitForRequest(r => r.url().endsWith('/billing/status') && r.headers().authorization === 'Bearer synthetic-token-2');
+  await page.clock.runFor(31000); await renewed;
+  await expect(button).toBeEnabled();
+  await button.click();
+  await expect.poll(() => ids.length).toBe(2);
+  expect(ids[1]).not.toBe(ids[0]);
+  expect(ids[1]).toMatch(/^[0-9a-f-]{36}$/);
+});
+
+for (const terminal of ['canceled', 'paid']) {
 for (const replacement of [null, pending]) {
-  test(`checkout cancelado usa ${replacement ? 'o novo pedido pendente' : 'um novo UUID'} após reconciliação`, async ({ page }) => {
+  test(`checkout ${terminal} usa ${replacement ? 'o novo pedido pendente' : 'um novo UUID'} após reconciliação`, async ({ page }) => {
     const ids: string[] = [];
     await page.route('**/billing/status', route => route.fulfill({ json: { ...enabled,
       pending_request_id: ids.length ? replacement : null } }));
     await page.route('**/billing/stripe/checkout', route => {
       const id = route.request().postDataJSON().request_id; ids.push(id);
-      return route.fulfill({ json: { request_id: id, status: 'canceled', checkout_url: null } });
+      return route.fulfill({ json: { request_id: id, status: terminal, checkout_url: null } });
     });
     await settings(page);
     const button = page.getByRole('button', { name: 'Simular assinatura Pro' });
     await button.click();
-    await expect(page.getByText('Checkout cancelado. Consulte novamente o estado da conta.')).toBeVisible();
     await expect(button).toBeEnabled();
     await button.click();
     await expect.poll(() => ids.length).toBe(2);
@@ -138,4 +163,25 @@ for (const replacement of [null, pending]) {
     if (replacement) expect(ids[1]).toBe(replacement);
     else expect(ids[1]).toMatch(/^[0-9a-f-]{36}$/);
   });
+}
+for (const failed of [true, false]) {
+  test(`checkout ${terminal} conserva UUID se estado ${failed ? 'falhar' : 'omitir pendência'}`, async ({ page }) => {
+    const ids: string[] = [];
+    await page.route('**/billing/status', route => route.fulfill(ids.length
+      ? failed ? { status: 503, json: {} } : { json: { ...enabled, pending_request_id: undefined } }
+      : { json: enabled }));
+    await page.route('**/billing/stripe/checkout', route => {
+      const id = route.request().postDataJSON().request_id; ids.push(id);
+      return route.fulfill({ json: { request_id: id, status: terminal, checkout_url: null } });
+    });
+    await settings(page);
+    const button = page.getByRole('button', { name: 'Simular assinatura Pro' });
+    await button.click();
+    if (failed) await expect(page.getByRole('region', { name: 'Cobrança de teste' }).getByRole('alert')).toContainText('mesmo pedido');
+    await expect(page.getByText('Preparando ambiente de teste…')).not.toBeVisible();
+    await expect(button).toBeEnabled(); await button.click();
+    await expect.poll(() => ids.length).toBe(2);
+    expect(ids[1]).toBe(ids[0]);
+  });
+}
 }

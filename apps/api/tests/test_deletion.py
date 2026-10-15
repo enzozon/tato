@@ -56,6 +56,7 @@ def test_marker_commits_before_external_call_and_retry(monkeypatch):
     user = User(id=owner)
     session = Mock()
     session.get.return_value = user
+    session.exec.return_value.first.return_value = None
     events = []
 
     @contextmanager

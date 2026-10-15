@@ -1,4 +1,4 @@
-# Plano de conclusão — revisão de 12/10/2026
+# Plano de conclusão — revisão de 15/10/2026
 
 Este é o plano da retomada solicitado pelo Enzo. As etapas 1–9 têm implementação
 local e CI anterior aprovado; isso não significa que todos os critérios de
@@ -15,7 +15,7 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
 | Conversa livre | Principal | Ampliação de regressões financeiras; filtro lexical permanece limitado |
 | Sessão e concorrência web | Agente frontend + revisão principal | Respostas antigas não sobrescrevem estado novo nem encerram outra identidade |
 | Preferência de e-mail | Agente frontend | Opt-in explícito; entrega real depende de configuração |
-| Stripe | Agente cobrança + revisão principal | Validação de destinos e identificadores; falta fechar processamento de eventos |
+| Stripe | Agente cobrança + revisão principal | Ciclo local de eventos, limpeza e recompra validado; falta ensaio remoto sandbox |
 | Pix | Agente cobrança | Adapter exclusivamente sandbox; sem concessão de plano ou rota ativa |
 | Consumo LLM | Agente cobrança + frontend | Totais mensais SQL isolados, com medições ausentes explícitas |
 | Prontidão | Principal | `/ready` confere conexão, papel restrito e tabela sem ler registros |
@@ -26,11 +26,12 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
 - [x] Aprovar papel restrito `tato_billing` e `BILLING_DATABASE_URL` antes da
   migration de permissões proposta em `12-MONETIZACAO.md`.
 - [x] Aplicar a migration no banco descartável e provar RLS/negação de acesso
-  a extratos. A escrita de assinaturas pelo webhook continua pendente.
-- [ ] Eventos persistentes, replay/idempotência, reconciliação de estado remoto,
-  expiração, reembolso/disputa e exclusão/limpeza de vínculos remotos.
-- [ ] Portal Stripe, integração Pix, rotas e interface de plano; preservar preço
-  aprovado de R$39 em teste, sem aceitar valores arbitrários do navegador.
+  a extratos. Escrita de assinaturas validada com papel efetivo restrito.
+- [x] Eventos persistentes, replay/idempotência, reconciliação de estado remoto,
+  expiração, reembolso/disputa e exclusão/limpeza de vínculos, em testes locais.
+- [x] Portal Stripe, rotas e interface de plano; preço aprovado de R$39 em teste,
+  sem aceitar valores arbitrários do navegador. Recompra preserva o cliente.
+- [ ] Integração Pix: adapter sandbox existente ainda não concede plano.
 - [ ] Configurar chaves sandbox localmente, validar ensaios opt-in sem cobrança
   real e só depois habilitar `BILLING_ENABLED`.
 - [ ] Sentry/PostHog/Logfire: revisar limites oficiais e política de dados antes
@@ -67,7 +68,7 @@ parte. Antes de merge: CI do SHA exato, integrações Postgres/Redis, avaliaçã
 RAG e testes web pertinentes. Nenhum teste ignorado conta como aprovado.
 PR19 e PR20 foram integradas com os checks dos respectivos SHAs aprovados,
 no escopo de preparação de monetização e empacotamento. A continuação da
-etapa 10 usa `codex/etapa-10-cobranca-segura`. Migration 0009 aplicada somente
+etapa 10 usa `codex/etapa-10-webhooks`. Migration 0009 aplicada somente
 localmente; nenhuma cobrança ou publicação foi realizada.
 
 ### Status e portal autenticados
@@ -80,9 +81,17 @@ e bloqueio de exclusão pendente. Configuração desativada/inválida não liber
 botões; preços e concessão de plano continuam sendo decisões do backend.
 O fluxo de pagamento permanece desativado até concluir seu ciclo de vida.
 
-Validação local atualizada em 13/10: 389 testes Python/HTTP, cobertura 81,97%,
-80 integrações PostgreSQL/Redis/RLS sem skips, 84 Playwright desktop/mobile,
-TypeScript/build estático e avaliação RAG real com baseline preservado
-(RRF hit@5=0,975/MRR=0,835417). Revisão em 320px não encontrou overflow nos
+Validação local atualizada em 15/10: 460 testes Python/HTTP, cobertura 81,55%,
+100 integrações PostgreSQL/Redis/RLS sem skips; 98 Playwright desktop/mobile,
+build estático, TypeScript/SW e um teste PWA offline aprovados.
+A última avaliação RAG real
+preservou o baseline (RRF hit@5=0,975/MRR=0,835417); esta mudança não altera RAG.
+Revisão anterior em 320px não encontrou overflow nos
 fluxos inspecionados. Verificações externas/produção, instalação física,
 auditoria WCAG completa e judge remoto não foram realizados nesta retomada.
+
+O webhook só confirma após transação, reconsulta a assinatura atual e não cria
+usuários. Eventos antigos não substituem uma assinatura nova; reembolso antigo
+não derruba o mês atual quitado. Limpeza precede Supabase na mesma sessão de
+exclusão; falhas conservam referências para retomar. Reserva sem ID cuja ausência
+remota seja inconclusiva exige intervenção operacional, sem recriação automática.

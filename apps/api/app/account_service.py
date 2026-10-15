@@ -9,6 +9,8 @@ from sqlalchemy import Engine, text
 from sqlmodel import Session
 
 from app.auth import Identity, delete_identity
+from app.billing_cleanup import cleanup_configured
+from app.billing_stripe import BillingUnavailable
 from app.database import tenant_session
 from app.llm_cache import clear_configured_cache
 from app.models import User
@@ -79,6 +81,12 @@ def finish_deletion(engine: Engine, owner: UUID) -> None:
             return
         if user.deletion_requested_at is None:
             raise ValueError("Conta não solicitou exclusão.")
+        try:
+            cleanup_configured(session, owner)
+        except BillingUnavailable:
+            raise HTTPException(
+                503, "Limpeza de cobrança pendente; tente excluir novamente."
+            ) from None
         delete_identity(owner)
         clear_rate(owner)
         clear_configured_cache(owner)

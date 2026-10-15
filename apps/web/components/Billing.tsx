@@ -53,7 +53,7 @@ export function Billing({ token }: { token: string }) {
           const current = await request<Status>('/billing/status', token);
           if (version === generation.current) {
             if (current.pending_request_id) checkoutId.current = current.pending_request_id;
-            else if (result.status === 'canceled' && current.pending_request_id === null) checkoutId.current = null;
+            else if ((result.status === 'canceled' || result.status === 'paid') && current.pending_request_id === null) checkoutId.current = null;
             setStatus(current);
           }
         }

@@ -206,3 +206,70 @@ Valores são inteiros de 3.900 centavos. Reembolso parcial/total ou disputa
 produz `past_due`; contrato ausente ou divergente falha sem expor payload.
 Isso ainda precisa ser acionado pelos webhooks de reembolso/disputa.
 Contrato: https://docs.stripe.com/invoicing/partial-payments.
+
+## Webhook sandbox — resolução de referências
+
+Listas Stripe não possuem livemode no envelope: cada item é validado.
+Eventos de disputa/reembolso resolvem Charge → PaymentIntent → InvoicePayment
+→ fatura → assinatura atual, sem persistir corpos remotos. Ambiguidade de
+pagamento ou paginação incompleta impede conceder Pro. Checkout expirado sem
+assinatura continua identificável pela metadata e pelo client_reference_id.
+Referência: https://docs.stripe.com/api/invoice-payment/list.
+
+A factory billing_engine exige BILLING_DATABASE_URL e papel efetivo
+tato_billing sem elevação ou herança. Não reutiliza DATABASE_URL nem URL
+administrativa; cada transação de cobrança revalida o papel antes de operar.
+
+Reservas sem ID remoto são pesquisadas por período com paginação e vínculo
+exato, nunca por nova criação. A busca tem teto explícito de 2.000 sessões:
+exceder, duplicidade e cursor repetido exigem reconciliação operacional.
+Não encontrar uma reserva pendente não comprova ausência de efeito remoto.
+
+O processador usa lock por usuário e transação única para estado+evento.
+Repetições são idempotentes; falha remota não marca processamento. Ele nunca
+cria usuário e ignora exclusão pendente. A reconsulta financeira ocorre sob
+lock, impedindo um snapshot anterior sobrescrever o resultado já confirmado.
+Expiração cancela somente a reserva, mesmo após assinatura anterior cancelada.
+
+POST /billing/stripe/webhook verifica bytes originais antes de interpretar
+JSON, limita streaming a 64 KiB e aceita somente snapshot API
+2026-09-30.endive em modo teste. Tipos desconhecidos são ignorados; assinatura
+ou contrato inválido retorna 400, indisponibilidade retorna 503 para retry.
+Operações bloqueantes usam threadpool; não há fila nem ativação automática.
+
+Reconciliação manual: scripts/reconcile_billing.py exige --owner e
+--request-id UUID mais --confirm-sandbox. Usa o mesmo recálculo sob lock,
+sem fabricar evento Stripe nem criar nova cobrança. Nunca execute sem revisar
+as chaves de teste e o papel de banco; saídas não expõem IDs ou payloads.
+
+### Remoção remota em sandbox
+
+O helper de cliente aceita tombstone somente com ID esperado, object=customer
+e deleted=true sob chave sk_test; clientes vivos exigem livemode=false antes
+da remoção. O contrato genérico Stripe permanece estrito. Expiração de checkout
+relê estado em corrida com pagamento e falha se continuar aberto.
+Contratos: https://docs.stripe.com/api/customers/delete e
+https://docs.stripe.com/api/checkout/sessions/expire.
+
+`billing_cleanup.cleanup` reutiliza a transação de conta e lê somente os vínculos
+do dono. Valida e expira checkouts antes de remover clientes únicos; checkout
+completo sem webhook também fornece o vínculo. Assinatura local exige o par
+cliente/assinatura confirmado no checkout. Reserva sem ID não localizada
+bloqueia a exclusão para reconciliação. Nenhuma referência SQL é removida pelo
+helper: falha mantém a retomada possível, inclusive após DELETE remoto efetivo.
+Clientes já associados a checkouts expirados também são removidos: a confirmação
+incompleta pode criar cliente antes de completar a sessão. O vínculo local de
+assinatura continua exigindo checkout completo validado.
+
+A exclusão agora executa `cleanup_configured` na sessão já bloqueada, antes do
+Supabase e cascade. Sem vínculos externos, não precisa configuração Stripe.
+Falha de limpeza retorna 503 sanitizado e mantém marcador/referências; um
+retry aceita cliente já removido sem repetir DELETE. Nenhum segundo lock é
+aberto. `BILLING_ENABLED` desligado não impede limpar referências existentes.
+
+Recompra usa novo `request_id` somente após assinatura local cancelada e
+confirmação remota terminal (`canceled`/`incomplete_expired`), sob o mesmo lock.
+O checkout reutiliza o cliente persistido e mantém o vínculo anterior até
+pagamento validado. Repetir o UUID antigo conserva seu resultado; uma reserva
+pendente bloqueia outra compra. `can_checkout` indica elegibilidade local,
+mas a criação sempre reconfirma o estado remoto antes de qualquer POST.
