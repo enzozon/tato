@@ -116,3 +116,48 @@ a importação remove a prévia confirmada e informa que os registros foram salv
 
 Instalação consome o evento `beforeinstallprompt` uma única vez. Rejeições do
 prompt ou da escolha do navegador apresentam orientação, sem erro não capturado.
+
+Campos de formulário usam `--muted` na borda: contraste de 6,21:1 sobre branco,
+acima do mínimo 3:1 do [WCAG 1.4.11](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html).
+A borda anterior atingia 2,10:1 e não distinguia campos vazios do painel branco.
+Playwright calcula o contraste das cores computadas dos campos de login contra
+as superfícies interna e externa em desktop/mobile; isso não é auditoria completa.
+
+## Recuperação de senha
+
+`Login` solicita `resetPasswordForEmail` com retorno fixo no mesmo site,
+`/app/?recovery=1`. A resposta da interface é igual para sucesso e conta ausente;
+limite de frequência e indisponibilidade mostram erro genérico, sem texto bruto
+do provedor. Isso não comprova proteção contra enumeração na API do Supabase.
+
+O parâmetro apenas abre a tela de recuperação: não autoriza trocar a senha.
+Somente `PASSWORD_RECOVERY`, emitido pelo SDK após validar a sessão, vincula o
+formulário a um usuário, removendo o fragmento de autenticação da URL após a
+validação. O observador em `lib/client.ts` registra esse evento
+antes da hidratação; sem ele, o componente pode receber só `INITIAL_SESSION`.
+Enquanto recupera, a interface não chama `/me` nem `/dashboard`. O formulário
+confere confirmação e identidade atual antes de `updateUser`, rejeita respostas
+de outro usuário e preserva rascunho na renovação da mesma sessão. Sucesso pede
+novo login; cancelar encerra a sessão local e remove o parâmetro de retorno.
+
+Após `auth.initialize()` concluir, callbacks inválidos, expirados ou com falha
+transitória também têm credenciais removidas da URL. A limpeza aguarda o SDK
+consumir o retorno, não altera outra navegação e não libera a recuperação.
+Falha ao sair também aparece para links inválidos, mantém o dashboard fechado
+e permite repetir o cancelamento.
+O SDK pode remover a sessão local antes de devolver erro remoto; nesse caso,
+o gate preserva o aviso, sem afirmar que a revogação remota foi confirmada.
+
+Para validar externamente, o responsável precisa autorizar a URL exata de
+retorno em Supabase → Authentication → URL Configuration e configurar envio
+de e-mail/SMTP e limites gratuitos. Em desenvolvimento, a URL usada nos testes
+é `http://127.0.0.1:3000/app/?recovery=1`; produção depende do domínio HTTPS
+aprovado. Nenhuma allowlist, configuração remota ou serviço de e-mail foi alterado.
+Os testes desktop/mobile usam somente respostas e tokens sintéticos; não provam
+entrega, validade de link real ou revogação de outras sessões.
+
+Referências oficiais consultadas em 13/10/2026:
+[solicitar recuperação](https://supabase.com/docs/reference/javascript/auth-resetpasswordforemail),
+[alterar senha](https://supabase.com/docs/reference/javascript/auth-updateuser),
+[eventos de autenticação](https://supabase.com/docs/reference/javascript/auth-onauthstatechange) e
+[URLs permitidas](https://supabase.com/docs/guides/auth/redirect-urls).
