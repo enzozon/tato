@@ -308,3 +308,22 @@ Webhooks Pix futuros devem validar o segredo privado `webhookSecret` da URL
 além do HMAC sobre bytes originais; a chave HMAC publicada não autentica
 sozinha. O contrato lista `transparent.completed/refunded/disputed/lost`.
 Nenhum endpoint foi registrado ou chamado nesta implementação.
+### Telemetria explícita — contratos locais (15/10/2026)
+
+`telemetry.Destinations` envia somente eventos técnicos validados, usando HTTPX
+existente. PostHog recebe `distinct_id=tato-api` e perfis pessoais desligados:
+isso mede operações agregadas, nunca usuários, MAU ou retenção de pessoas.
+Sentry recebe apenas a mensagem fixa `storage_unavailable`, sem exceção original,
+stack, locals, usuário, URL, cabeçalhos ou corpo da requisição financeira.
+Não há SDK de captura automática, replay nem instrumentação de banco/LLM.
+Flags `POSTHOG_ENABLED` e `SENTRY_ENABLED` exigem `true` explícito; chaves sozinhas
+não habilitam envio. Destinos são restritos aos hosts Cloud regionais permitidos.
+Respostas não são lidas; timeout é um segundo, sem redirecionamento nem retry.
+
+Contratos: [PostHog capture](https://posthog.com/docs/api/capture) e
+[envelope Sentry regional](https://sentry.zendesk.com/hc/en-us/articles/47024658837915-Why-Am-I-Getting-a-403-event-submission-rejected-with-reason-ProjectId-When-Using-the-Envelope-Endpoint).
+Limites oficiais foram revalidados em 15/10/2026 em `docs/09`; não são medições.
+Ativação exige conferir plano gratuito sem cartão/overage no painel. Dezessete
+testes MockTransport verificaram contratos/privacidade; nenhuma ingestão real.
+Logfire permanece pendente: transporte OTLP será delegado a SDK após revisão de
+captura automática e atributos de recurso, evitando protocolo manual próprio.

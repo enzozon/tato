@@ -23,7 +23,9 @@ pago, recarga automática nem modelo pago como fallback.
 | [Vercel Hobby](https://vercel.com/docs/plans/hobby) | Restrito a uso pessoal não comercial | Não provisionado | Não usar para operação comercial gratuita |
 | [Supabase Auth](https://supabase.com/docs/guides/auth/auth-smtp) | SMTP padrão limitado a destinatários da equipe | Não provisionado | Google OAuth; SMTP próprio com domínio verificado |
 | [Resend](https://resend.com/docs/knowledge-base/403-error-resend-dev-domain) | Domínio de teste não envia livremente para terceiros | Não provisionado | Avisos in-app; domínio próprio para envio público |
-| Sentry, PostHog, Logfire | Conferir planos e limites na etapa 10 | Não provisionados | Amostragem/limite de eventos e logs locais sem dados pessoais |
+| [Sentry Developer](https://sentry.io/pricing/) | 5 mil erros/mês; plano gratuito sem Pay-as-you-go | Ingestão não exercitada | Descartar eventos; logs técnicos locais |
+| [PostHog Free](https://posthog.com/pricing) | 1 milhão de eventos/mês; sem cartão, excedentes descartados | Ingestão não exercitada | Descartar eventos; contador SQL local |
+| [Logfire Personal](https://pydantic.dev/docs/logfire/manage/logfire-costs/) | 10 milhões de logs/spans/métricas combinados/mês; sem overage pago | Integração pendente | Restringe visualização e depois descarta ingestão; logs locais |
 | GitHub Actions | Repositório público, runner Ubuntu padrão; conferir política antes de alterar recursos | Tempos abaixo | Cache, reduzir builds redundantes, nunca pular checks obrigatórios |
 
 ## Medição inicial: 19/09/2026
