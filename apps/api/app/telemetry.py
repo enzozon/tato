@@ -11,6 +11,7 @@ import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.llm import Attempt, ProviderName
+from app.telemetry_trace import encode_trace
 
 
 class TechnicalEvent(BaseModel):
@@ -40,6 +41,8 @@ class Destinations:
     posthog_host: str = "https://us.i.posthog.com"
     sentry_url: str = ""
     sentry_key: str = ""
+    logfire_token: str = ""
+    logfire_url: str = ""
 
     @classmethod
     def configured(cls) -> "Destinations":
@@ -63,10 +66,33 @@ class Destinations:
             if match:
                 sentry_key, hostname, project = match.groups()
                 sentry_url = f"https://{hostname}/api/{project}/envelope/"
-        return cls(posthog_key, host, sentry_url, sentry_key)
+        logfire_token = logfire_url = ""
+        region = os.environ.get("LOGFIRE_REGION", "us")
+        if os.environ.get("LOGFIRE_ENABLED") == "true" and region in {"us", "eu"}:
+            token = os.environ.get("LOGFIRE_TOKEN", "")
+            if re.fullmatch(r"[A-Za-z0-9_.-]{16,512}", token):
+                logfire_token = token
+                logfire_url = f"https://logfire-{region}.pydantic.dev/v1/traces"
+        return cls(posthog_key, host, sentry_url, sentry_key, logfire_token, logfire_url)
 
     def send(self, client: httpx.Client, event: TechnicalEvent) -> None:
         properties = event.model_dump(exclude_none=True, exclude={"event"})
+        if self.logfire_token and event.event == "llm_attempt":
+            with (
+                suppress(httpx.HTTPError),
+                client.stream(
+                    "POST",
+                    self.logfire_url,
+                    content=encode_trace(event),
+                    headers={
+                        "Authorization": self.logfire_token,
+                        "Content-Type": "application/x-protobuf",
+                    },
+                    timeout=1,
+                    follow_redirects=False,
+                ),
+            ):
+                pass
         if self.posthog_key:
             payload = {
                 "api_key": self.posthog_key,

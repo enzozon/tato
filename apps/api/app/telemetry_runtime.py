@@ -21,9 +21,16 @@ class Telemetry:
         self.worker: Thread | None = None
 
     def enqueue(self, event: TechnicalEvent) -> None:
-        if not self.destinations.posthog_key and not self.destinations.sentry_url:
+        if not (
+            self.destinations.posthog_key
+            or self.destinations.sentry_url
+            or self.destinations.logfire_token
+        ):
             return
-        if event.event == "llm_attempt" and (not self.destinations.posthog_key or random() >= 0.1):
+        if event.event == "llm_attempt" and (
+            not (self.destinations.posthog_key or self.destinations.logfire_token)
+            or random() >= 0.1
+        ):
             return
         with self.lock:
             month = datetime.now(UTC).strftime("%Y-%m")
