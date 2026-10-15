@@ -327,3 +327,17 @@ Ativação exige conferir plano gratuito sem cartão/overage no painel. Dezesset
 testes MockTransport verificaram contratos/privacidade; nenhuma ingestão real.
 Logfire permanece pendente: transporte OTLP será delegado a SDK após revisão de
 captura automática e atributos de recurso, evitando protocolo manual próprio.
+
+O runtime usa uma fila de 32 eventos e um worker daemon por processo. Enfileirar
+nunca espera rede; fila cheia, erro de contrato ou rede descarta telemetria.
+Tentativas LLM têm amostragem de 10% e teto de 1.000 eventos/mês UTC por processo.
+Falhas de armazenamento têm orçamento independente de 1.000: LLM não esgota esse
+orçamento, embora fila cheia possa descartar qualquer tipo. Reiniciar o processo
+reinicia contadores; múltiplos workers multiplicam o teto. Isso não é quota global
+nem garantia financeira: a conta deve permanecer Free sem overage. Eventos em
+memória podem se perder ao encerrar; não há retry, flush obrigatório ou promessa
+de entrega. Contadores SQL locais continuam sendo a fonte de consumo confiável.
+As flags são lidas uma vez ao primeiro uso: alteração exige reiniciar a API.
+Tokens ausentes são omitidos (desconhecidos); zero conhecido permanece zero.
+O hook SQL recebe só evento fixo; o hook LLM recebe somente `Attempt`, nunca texto.
+Nenhum evento do navegador é coletado. Logfire remoto ainda não foi implementado.

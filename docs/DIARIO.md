@@ -725,3 +725,12 @@ Pix continua indisponível para ativação; nenhuma API remota ou migration usad
 
 Revisão da paginação evitou pressupor prefixo PIX no cursor: o publicId retornado
 é opaco e passa por query params do HTTPX, com limite e rejeição de controles.
+### 15/10/2026 — observabilidade técnica sem captura pessoal
+
+HTTPX existente atende Sentry e PostHog sem SDK de captura automática. Contratos
+aceitam apenas nomes fixos, provedor, resultado, tokens e latência; não recebem
+requisições, exceções brutas, IDs de usuário ou conteúdo financeiro. Fila limitada,
+amostragem e orçamento por tipo descartam excessos sem bloquear o negócio.
+Planos gratuitos revalidados; limites locais reiniciáveis não garantem quota global.
+MockTransport cobre privacidade, hosts, falha de rede, amostra, fila e orçamento.
+Nenhum envio remoto/ativação de conta; Logfire aguarda revisão de SDK e recursos.

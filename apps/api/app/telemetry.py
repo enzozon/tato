@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from contextlib import suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Literal
@@ -56,7 +57,7 @@ class Destinations:
             dsn = os.environ.get("SENTRY_DSN", "")
             # Aceita somente o contrato Cloud: sem URL arbitrária nem credencial no caminho.
             match = re.fullmatch(
-                r"https://([a-f0-9]{32})@(o[0-9]+\.ingest\.(?:us|de)\.sentry\.io)/([0-9]+)",
+                r"https://([a-f0-9]{32})@(o[0-9]+\.ingest(?:\.(?:us|de))?\.sentry\.io)/([0-9]+)",
                 dsn,
             )
             if match:
@@ -73,12 +74,15 @@ class Destinations:
                 "distinct_id": "tato-api",
                 "properties": {**properties, "$process_person_profile": False, "$ip": None},
             }
-            with client.stream(
-                "POST",
-                self.posthog_host + "/capture/",
-                json=payload,
-                timeout=1,
-                follow_redirects=False,
+            with (
+                suppress(httpx.HTTPError),
+                client.stream(
+                    "POST",
+                    self.posthog_host + "/i/v0/e/",
+                    json=payload,
+                    timeout=1,
+                    follow_redirects=False,
+                ),
             ):
                 pass
         if self.sentry_url and event.event == "storage_unavailable":
@@ -101,12 +105,15 @@ class Destinations:
                 "Content-Type": "application/x-sentry-envelope",
                 "X-Sentry-Auth": f"Sentry sentry_version=7, sentry_key={self.sentry_key}",
             }
-            with client.stream(
-                "POST",
-                self.sentry_url,
-                content=envelope.encode(),
-                headers=headers,
-                timeout=1,
-                follow_redirects=False,
+            with (
+                suppress(httpx.HTTPError),
+                client.stream(
+                    "POST",
+                    self.sentry_url,
+                    content=envelope.encode(),
+                    headers=headers,
+                    timeout=1,
+                    follow_redirects=False,
+                ),
             ):
                 pass
