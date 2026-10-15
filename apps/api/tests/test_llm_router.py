@@ -25,6 +25,20 @@ def completion(amount=4200):
     )
 
 
+def test_attempt_hook_receives_only_technical_attempt(monkeypatch):
+    events = []
+    monkeypatch.setattr("app.llm_router.record_attempt", events.append)
+    result = Router([provider("groq", completion())]).generate(REQUEST, MoneyAnswer, lambda _: True)
+    assert events == list(result.attempts)
+    assert set(vars(events[0])) == {
+        "provider",
+        "outcome",
+        "input_tokens",
+        "output_tokens",
+        "elapsed_ms",
+    }
+
+
 def test_429_fallback_circuit_and_exact_financial_guard():
     groq = provider("groq", ProviderError("http_429", cooldown=120))
     gemini = provider("gemini", [completion(9999), completion()])

@@ -49,6 +49,7 @@ def test_payload_allowlist_without_private_context(monkeypatch):
         destinations.send(client, TechnicalEvent.attempt(Attempt("groq", "ok", 0, None, 25)))
         destinations.send(client, TechnicalEvent(event="storage_unavailable"))
     assert len(requests) == 3
+    assert requests[0].url.path == "/i/v0/e/"
     llm = json.loads(requests[0].content)
     assert llm == {
         "api_key": "phc_" + "a" * 20,
@@ -102,3 +103,9 @@ def test_event_rejects_nontechnical_fields(extra):
 
 def test_repr_never_includes_credentials():
     assert "secret" not in repr(Destinations(posthog_key="secret", sentry_key="secret"))
+
+
+def test_legacy_cloud_dsn_remains_valid(monkeypatch):
+    monkeypatch.setenv("SENTRY_ENABLED", "true")
+    monkeypatch.setenv("SENTRY_DSN", "https://" + "a" * 32 + "@o1.ingest.sentry.io/2")
+    assert Destinations.configured().sentry_url == "https://o1.ingest.sentry.io/api/2/envelope/"

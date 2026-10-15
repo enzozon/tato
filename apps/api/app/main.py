@@ -16,6 +16,7 @@ from app.dashboard import router as dashboard_router
 from app.import_routes import router as import_router
 from app.import_setup import router as setup_router
 from app.rag.routes import router as rag_router
+from app.telemetry_runtime import record_storage_failure
 from app.upload_limit import UploadLimit
 from app.usage import router as usage_router
 
@@ -43,6 +44,7 @@ app.add_middleware(
 @app.exception_handler(SQLAlchemyError)
 @app.exception_handler(PermissionError)
 async def storage_unavailable(request: Request, error: Exception) -> JSONResponse:
+    record_storage_failure()
     return JSONResponse(
         status_code=503,
         content={"detail": "Armazenamento temporariamente indisponível."},

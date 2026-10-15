@@ -11,6 +11,7 @@ from pydantic import BaseModel, ValidationError
 
 from app.llm import Attempt, Generation, LLMProvider, LLMUnavailable, ProviderError
 from app.llm_policy import personal_allowed
+from app.telemetry_runtime import record_attempt
 
 usage_logger = logging.getLogger("tato.llm_usage")
 
@@ -40,6 +41,7 @@ class Router:
 
         def record(attempt: Attempt) -> None:
             attempts.append(attempt)
+            record_attempt(attempt)
             if os.environ.get("LLM_LOG_USAGE") == "true":
                 # Falha de telemetria não pode interromper a operação financeira.
                 with suppress(Exception):
