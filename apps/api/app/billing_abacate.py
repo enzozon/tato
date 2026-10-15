@@ -119,7 +119,9 @@ class AbacateSandbox:
                 if (
                     pagination.get("hasMore") is not True
                     or not isinstance(cursor, str)
-                    or not fullmatch(r"pix_char_[A-Za-z0-9_]{1,128}", cursor)
+                    or not 1 <= len(cursor) <= 256
+                    or not cursor.isascii()
+                    or any(ord(char) < 32 or ord(char) == 127 for char in cursor)
                     or cursor in cursors
                 ):
                     raise ValueError
