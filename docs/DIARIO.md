@@ -653,3 +653,8 @@ Limpeza integrada antes Supabase/cascade, reutilizando sessão existente.
 Provas PG/MockTransport: falha após remoção remota retoma por tombstone e
 webhook aguardando exclusão não recria usuário. Configuração comum extraída
 para reutilização real entre endpoint, CLI e limpeza, sem SDK novo.
+
+Recompra cancelada usa cliente existente, UUID novo e confirmação terminal
+remota, sem apagar histórico. O retorno do checkout continua sem conceder Pro.
+Docker retomado sem reset; oito integrações de exclusão, histórico e reembolsos
+passaram após a indisponibilidade inicial. Nenhuma chamada Stripe real.

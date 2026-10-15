@@ -131,7 +131,11 @@ class StripeSandbox:
         except (httpx.HTTPError, ValueError):
             raise BillingUnavailable("Stripe de teste indisponível.") from None
 
-    def checkout(self, owner: UUID, request_id: UUID) -> StripeCheckout:
+    def checkout(
+        self, owner: UUID, request_id: UUID, customer_id: str | None = None
+    ) -> StripeCheckout:
+        if customer_id is not None and not fullmatch(r"cus_[A-Za-z0-9_]+", customer_id):
+            raise BillingUnavailable("Referência de cliente inválida.")
         price = self.request("GET", f"prices/{self.price_id}")
         recurring = price.get("recurring")
         if (
@@ -163,9 +167,12 @@ class StripeSandbox:
                 "cancel_url": self.return_url,
                 "payment_method_types[0]": "card",
                 "locale": "pt-BR",
+                **({"customer": customer_id} if customer_id is not None else {}),
             },
         )
         result = self.validate_checkout(payload, owner, request_id)
+        if customer_id is not None and result.customer != customer_id:
+            raise BillingUnavailable("Cliente do checkout divergente.")
         hosted_url(result.url)
         return result
 

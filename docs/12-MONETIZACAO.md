@@ -265,3 +265,10 @@ Supabase e cascade. Sem vínculos externos, não precisa configuração Stripe.
 Falha de limpeza retorna 503 sanitizado e mantém marcador/referências; um
 retry aceita cliente já removido sem repetir DELETE. Nenhum segundo lock é
 aberto. `BILLING_ENABLED` desligado não impede limpar referências existentes.
+
+Recompra usa novo `request_id` somente após assinatura local cancelada e
+confirmação remota terminal (`canceled`/`incomplete_expired`), sob o mesmo lock.
+O checkout reutiliza o cliente persistido e mantém o vínculo anterior até
+pagamento validado. Repetir o UUID antigo conserva seu resultado; uma reserva
+pendente bloqueia outra compra. `can_checkout` indica elegibilidade local,
+mas a criação sempre reconfirma o estado remoto antes de qualquer POST.

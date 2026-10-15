@@ -46,7 +46,14 @@ def status(engine: Engine, owner: UUID, enabled: bool) -> BillingStatus:
             enabled=enabled,
             can_checkout=enabled
             and plan.name != "pro"
-            and not linked
+            and (
+                not linked
+                or (
+                    subscription is not None
+                    and subscription.billing_provider == "stripe"
+                    and subscription.status == "canceled"
+                )
+            )
             and (pending is None or pending.provider == "stripe"),
             can_portal=enabled
             and subscription is not None

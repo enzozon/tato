@@ -7,7 +7,8 @@ import pytest
 from app.billing_stripe import API_VERSION, BillingUnavailable, StripeSandbox, hosted_url
 
 
-def test_checkout_is_test_only_idempotent_and_bound_to_owner():
+@pytest.mark.parametrize("customer", [None, "cus_existing"])
+def test_checkout_is_test_only_idempotent_and_bound_to_owner(customer):
     owner, request_id = uuid4(), uuid4()
     calls = []
 
@@ -31,6 +32,7 @@ def test_checkout_is_test_only_idempotent_and_bound_to_owner():
         assert data["subscription_data[metadata][request_id]"] == [str(request_id)]
         assert data["line_items[0][quantity]"] == ["1"]
         assert "email" not in str(data)
+        assert data.get("customer") == ([customer] if customer else None)
         return httpx.Response(
             200,
             json={
@@ -43,14 +45,15 @@ def test_checkout_is_test_only_idempotent_and_bound_to_owner():
                 "metadata": {"user_id": str(owner), "request_id": str(request_id)},
                 "status": "open",
                 "payment_status": "unpaid",
+                "customer": customer,
                 "url": "https://checkout.stripe.com/c/pay/cs_test_demo#fragment",
             },
         )
 
     with httpx.Client(transport=httpx.MockTransport(transport)) as client:
         provider = StripeSandbox("sk_test_demo", "price_test", client, "http://127.0.0.1:3000/app/")
-        first = provider.checkout(owner, request_id)
-        provider.checkout(owner, request_id)
+        first = provider.checkout(owner, request_id, customer)
+        provider.checkout(owner, request_id, customer)
     assert first.amount_total == 3900
     assert calls[1].headers["Idempotency-Key"] == calls[3].headers["Idempotency-Key"]
     assert "sk_test_demo" not in repr(provider)
