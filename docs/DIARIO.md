@@ -648,3 +648,8 @@ expirado; regressões cobrem sessão já expirada e sessão aberta expirada na l
 mantendo referências locais e sem criação remota.
 make check aprovado após correção: 437 testes, 82,66% de cobertura; 32 cenários
 simulados de limpeza, sem chamadas remotas reais.
+
+Limpeza integrada antes Supabase/cascade, reutilizando sessão existente.
+Provas PG/MockTransport: falha após remoção remota retoma por tombstone e
+webhook aguardando exclusão não recria usuário. Configuração comum extraída
+para reutilização real entre endpoint, CLI e limpeza, sem SDK novo.

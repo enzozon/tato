@@ -259,3 +259,9 @@ helper: falha mantém a retomada possível, inclusive após DELETE remoto efetiv
 Clientes já associados a checkouts expirados também são removidos: a confirmação
 incompleta pode criar cliente antes de completar a sessão. O vínculo local de
 assinatura continua exigindo checkout completo validado.
+
+A exclusão agora executa `cleanup_configured` na sessão já bloqueada, antes do
+Supabase e cascade. Sem vínculos externos, não precisa configuração Stripe.
+Falha de limpeza retorna 503 sanitizado e mantém marcador/referências; um
+retry aceita cliente já removido sem repetir DELETE. Nenhum segundo lock é
+aberto. `BILLING_ENABLED` desligado não impede limpar referências existentes.

@@ -6,9 +6,9 @@ from uuid import UUID
 import httpx
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.billing_config import provider_for
 from app.billing_database import billing_engine
 from app.billing_events import reconcile
-from app.billing_routes import provider_for
 from app.billing_stripe import BillingUnavailable
 
 
@@ -25,7 +25,7 @@ def main(argv: list[str] | None = None) -> None:
             reconcile(billing_engine(), provider_for(client), args.owner, args.request_id)
     except (BillingUnavailable, PermissionError, SQLAlchemyError):
         raise SystemExit("Reconciliação não concluída; referências locais preservadas.") from None
-    print("Reconciliação de teste concluída.")
+    print("Estado da reserva de teste verificado.")
 
 
 if __name__ == "__main__":

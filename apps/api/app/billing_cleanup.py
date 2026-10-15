@@ -3,8 +3,9 @@ from typing import Any
 from uuid import UUID
 
 import httpx
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
+from app.billing_config import provider_for
 from app.billing_resolution import find_reserved_checkout
 from app.billing_stripe import API_VERSION, BillingUnavailable, StripeCheckout, StripeSandbox
 from app.models import BillingCheckout, Subscription
@@ -103,3 +104,20 @@ def cleanup(session: Session, owner: UUID, provider: StripeSandbox) -> None:
     for customer_id in sorted(customers):
         if not customer_request(provider, "GET", customer_id):
             customer_request(provider, "DELETE", customer_id)
+
+
+def cleanup_configured(session: Session, owner: UUID) -> None:
+    linked = session.exec(
+        select(Subscription).where(
+            Subscription.user_id == owner,
+            col(Subscription.billing_provider).is_not(None),
+        )
+    ).first()
+    checkout = session.exec(
+        select(BillingCheckout.id).where(BillingCheckout.user_id == owner)
+    ).first()
+    if linked is None and checkout is None:
+        return
+    # Exclusão precisa limpar referências mesmo se novas cobranças estiverem desligadas.
+    with httpx.Client(trust_env=False) as client:
+        cleanup(session, owner, provider_for(client))

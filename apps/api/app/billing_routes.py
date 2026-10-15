@@ -12,12 +12,13 @@ from starlette.concurrency import run_in_threadpool
 from app.account_routes import EngineDep, IdentityDep
 from app.agent_routes import handled, no_store
 from app.billing_access import BillingStatus, PortalResult, portal, status
+from app.billing_config import provider_for
 from app.billing_database import billing_engine
 from app.billing_events import process_event
 from app.billing_resolution import EVENT_TYPES
 from app.billing_service import CheckoutResult, checkout
 from app.billing_signatures import stripe_signature
-from app.billing_stripe import API_VERSION, BillingUnavailable, StripeSandbox
+from app.billing_stripe import API_VERSION, BillingUnavailable
 
 router = APIRouter(prefix="/billing", tags=["cobrança de teste"], dependencies=[Depends(no_store)])
 
@@ -25,15 +26,6 @@ router = APIRouter(prefix="/billing", tags=["cobrança de teste"], dependencies=
 class CheckoutInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     request_id: UUID
-
-
-def provider_for(client: httpx.Client) -> StripeSandbox:
-    return StripeSandbox(
-        os.environ.get("STRIPE_SECRET_KEY", ""),
-        os.environ.get("STRIPE_PRICE_ID", ""),
-        client,
-        os.environ.get("BILLING_RETURN_URL", ""),
-    )
 
 
 @router.get("/status", response_model=BillingStatus)
