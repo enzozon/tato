@@ -325,8 +325,7 @@ Contratos: [PostHog capture](https://posthog.com/docs/api/capture) e
 Limites oficiais foram revalidados em 15/10/2026 em `docs/09`; não são medições.
 Ativação exige conferir plano gratuito sem cartão/overage no painel. Dezessete
 testes MockTransport verificaram contratos/privacidade; nenhuma ingestão real.
-Logfire permanece pendente: transporte OTLP será delegado a SDK após revisão de
-captura automática e atributos de recurso, evitando protocolo manual próprio.
+Logfire usa os tipos Protobuf oficiais descritos abaixo, sem SDK de captura.
 
 O runtime usa uma fila de 32 eventos e um worker daemon por processo. Enfileirar
 nunca espera rede; fila cheia, erro de contrato ou rede descarta telemetria.
@@ -340,4 +339,31 @@ de entrega. Contadores SQL locais continuam sendo a fonte de consumo confiável.
 As flags são lidas uma vez ao primeiro uso: alteração exige reiniciar a API.
 Tokens ausentes são omitidos (desconhecidos); zero conhecido permanece zero.
 O hook SQL recebe só evento fixo; o hook LLM recebe somente `Attempt`, nunca texto.
-Nenhum evento do navegador é coletado. Logfire remoto ainda não foi implementado.
+Nenhum evento do navegador é coletado. Nenhuma ingestão remota foi exercitada.
+
+### Logfire por schema oficial OTLP
+
+`opentelemetry-proto` fornece classes Protobuf geradas e serialização oficial;
+substitui escrever encoder binário próprio ou importar SDK com captura automática.
+É a única nova dependência direta (wheel 72,5 kB; requer protobuf já presente no
+lockfile). O adapter monta `ExportTraceServiceRequest` com recurso fixo
+`service.name=tato-api`, scope `tato.technical` e atributos da mesma allowlist.
+Não consulta hostname, ambiente OTEL, arquivos `.logfire`, contexto distribuído,
+frames, exceções ou configuração de conta. Não instala instrumentation/exporter.
+IDs de trace/span são efêmeros e independentes; não correlacionam usuários.
+A duração reproduz `elapsed_ms`; o timestamp final corresponde à exportação,
+não permite reconstruir o horário exato da tentativa original.
+
+`LOGFIRE_ENABLED=true` exige token explícito e região `us`/`eu`; o destino é
+fechado em `https://logfire-{região}.pydantic.dev/v1/traces`. HTTPX envia Protobuf
+com `Authorization` e `application/x-protobuf`, timeout de um segundo e sem retry.
+Compartilha fila, amostra de 10% e teto de 1.000 tentativas LLM/mês/processo; não
+cria outro contador/worker. Só tentativas LLM são encaminhadas ao Logfire.
+São spans técnicos independentes, sem trace completo de requisição ou árvore de ferramentas.
+Testes decodificam o Protobuf e conferem recursos/atributos, tokens desconhecidos,
+canários OTEL, hostname proibido, regiões, cota e falha independente de rede.
+
+Contratos oficiais conferidos em 15/10/2026:
+[Logfire OTLP Python](https://pydantic.dev/docs/logfire/guides/alternative-clients/),
+[schema e transporte OTLP](https://opentelemetry.io/docs/specs/otlp/),
+[pacote gerado oficial](https://pypi.org/project/opentelemetry-proto/).

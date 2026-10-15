@@ -733,4 +733,8 @@ requisições, exceções brutas, IDs de usuário ou conteúdo financeiro. Fila 
 amostragem e orçamento por tipo descartam excessos sem bloquear o negócio.
 Planos gratuitos revalidados; limites locais reiniciáveis não garantem quota global.
 MockTransport cobre privacidade, hosts, falha de rede, amostra, fila e orçamento.
-Nenhum envio remoto/ativação de conta; Logfire aguarda revisão de SDK e recursos.
+Nenhum envio remoto/ativação de conta nesta implementação.
+
+Logfire foi concluído localmente com o pacote de tipos Protobuf oficiais, evitando
+os recursos automáticos do SDK. O transporte HTTPX permanece explícito e limitado;
+testes decodificam o payload e demonstram ausência de metadados do host/ambiente.

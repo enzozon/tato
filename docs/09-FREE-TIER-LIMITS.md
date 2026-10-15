@@ -25,7 +25,7 @@ pago, recarga automática nem modelo pago como fallback.
 | [Resend](https://resend.com/docs/knowledge-base/403-error-resend-dev-domain) | Domínio de teste não envia livremente para terceiros | Não provisionado | Avisos in-app; domínio próprio para envio público |
 | [Sentry Developer](https://sentry.io/pricing/) | 5 mil erros/mês; plano gratuito sem Pay-as-you-go | Ingestão não exercitada | Descartar eventos; logs técnicos locais |
 | [PostHog Free](https://posthog.com/pricing) | 1 milhão de eventos/mês; sem cartão, excedentes descartados | Ingestão não exercitada | Descartar eventos; contador SQL local |
-| [Logfire Personal](https://pydantic.dev/docs/logfire/manage/logfire-costs/) | 10 milhões de logs/spans/métricas combinados/mês; sem overage pago | Integração pendente | Restringe visualização e depois descarta ingestão; logs locais |
+| [Logfire Personal](https://pydantic.dev/docs/logfire/manage/logfire-costs/) | 10 milhões de logs/spans/métricas combinados/mês; sem overage pago | Não medido; integração desligada | Restringe visualização e depois descarta ingestão; logs locais |
 | GitHub Actions | Repositório público, runner Ubuntu padrão; conferir política antes de alterar recursos | Tempos abaixo | Cache, reduzir builds redundantes, nunca pular checks obrigatórios |
 
 ## Medição inicial: 19/09/2026
