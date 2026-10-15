@@ -273,3 +273,38 @@ O checkout reutiliza o cliente persistido e mantém o vínculo anterior até
 pagamento validado. Repetir o UUID antigo conserva seu resultado; uma reserva
 pendente bloqueia outra compra. `can_checkout` indica elegibilidade local,
 mas a criação sempre reconfirma o estado remoto antes de qualquer POST.
+
+### Pix — consulta local e limite de ativação (15/10/2026)
+
+`AbacateSandbox.find_pix` consulta `/v2/transparents/list` por `externalId`
+e método PIX. Cada resultado deve ter metadata do dono/pedido, modo dev
+booleano verdadeiro, valor inteiro de 3.900 centavos e data com fuso. A consulta
+percorre as páginas para detectar duplicidade; cursor repetido, contrato
+incompleto ou teto de 2.000 registros falham sem expor corpos remotos.
+`REFUNDED` é reconhecido, mas nenhum estado do adapter concede Pro.
+`None` significa apenas que essa listagem não encontrou o pedido: jamais
+autoriza repetir a criação. Timeout de POST continua exigindo reconciliação.
+
+O contrato oficial atual oferece criação, listagem por ID/referência,
+consulta resumida e reembolso integral. Não documenta cancelamento, expiração
+forçada ou remoção de cobrança PIX transparente/metadata. Deletar cliente é
+outro recurso e não comprova remoção de uma cobrança. Portanto ainda não há
+rota Pix ativável nem limpeza remota implementada: antes de liberar esse canal,
+é necessário provar uma estratégia de exclusão compatível com os vínculos
+persistidos e com a promessa de deleção total do produto.
+
+A página de criação mostra `success` como objeto num exemplo, enquanto a
+referência e a listagem usam booleano. O adapter mantém `success is True`:
+divergência falha com segurança; não flexibilizar sem confirmação sandbox.
+Fontes oficiais consultadas nesta data:
+[criação](https://docs.abacatepay.com/pages/transparents/create),
+[referência](https://docs.abacatepay.com/pages/transparents/reference),
+[listagem](https://docs.abacatepay.com/pages/transparents/list),
+[consulta](https://docs.abacatepay.com/pages/transparents/check),
+[reembolso](https://docs.abacatepay.com/pages/transparents/refund) e
+[índice completo](https://docs.abacatepay.com/llms.txt).
+
+Webhooks Pix futuros devem validar o segredo privado `webhookSecret` da URL
+além do HMAC sobre bytes originais; a chave HMAC publicada não autentica
+sozinha. O contrato lista `transparent.completed/refunded/disputed/lost`.
+Nenhum endpoint foi registrado ou chamado nesta implementação.
