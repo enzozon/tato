@@ -44,6 +44,10 @@ seed:
 llm-smoke:
 	uv run --locked --env-file .env python scripts/smoke_llm.py
 
+.PHONY: telemetry-smoke
+telemetry-smoke:
+	uv run --locked --env-file .env python scripts/smoke_telemetry.py $(SERVICE) $(ARGS)
+
 rag-index:
 	uv run --locked --env-file .env python scripts/index_knowledge.py
 

@@ -746,3 +746,14 @@ Validação local: 520 testes Python/HTTP, 82,43% de cobertura e 100 integraçõ
 PostgreSQL/Redis/RLS sem skips. Nenhum código web foi alterado; CI verifica os
 fluxos web/PWA e o baseline RAG. Pix segue preparatório por falta de contrato
 verificável de remoção/cancelamento; nenhum plano foi concedido por esse canal.
+
+### 15/10/2026 — prova HTTP da telemetria
+
+PostHog e Logfire aceitaram um evento sintético cada com HTTP 200; nenhum dado
+pessoal ou pedido LLM foi enviado. Sentry ficou bloqueado antes da rede porque
+o valor informado não era um DSN HTTPS completo. A orientação foi copiar o DSN
+do projeto, sem compartilhar seu valor na conversa. As flags não foram ativadas.
+
+O novo ensaio opt-in reutiliza os transportes existentes e informa somente
+aceitação HTTP. Não confundir essa evidência com confirmação de ingestão no
+painel ou garantia de plano gratuito; essas verificações continuam separadas.
