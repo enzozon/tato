@@ -738,3 +738,11 @@ Nenhum envio remoto/ativação de conta nesta implementação.
 Logfire foi concluído localmente com o pacote de tipos Protobuf oficiais, evitando
 os recursos automáticos do SDK. O transporte HTTPX permanece explícito e limitado;
 testes decodificam o payload e demonstram ausência de metadados do host/ambiente.
+
+Consolidação: auditoria de configuração distingue desativação, formato inválido
+e formato válido sem imprimir credenciais ou fingir teste remoto. O exportador
+web permanece restrito às três variáveis públicas da sessão/API.
+Validação local: 520 testes Python/HTTP, 82,43% de cobertura e 100 integrações
+PostgreSQL/Redis/RLS sem skips. Nenhum código web foi alterado; CI verifica os
+fluxos web/PWA e o baseline RAG. Pix segue preparatório por falta de contrato
+verificável de remoção/cancelamento; nenhum plano foi concedido por esse canal.

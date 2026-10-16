@@ -36,8 +36,10 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
   da cobrança transparente antes de ativar rotas (detalhes em `12-MONETIZACAO.md`).
 - [ ] Configurar chaves sandbox localmente, validar ensaios opt-in sem cobrança
   real e só depois habilitar `BILLING_ENABLED`.
-- [ ] Sentry/PostHog/Logfire: revisar limites oficiais e política de dados antes
-  de conectar. Logging técnico local existente não é integração desses serviços.
+- [x] Transportes Sentry/PostHog/Logfire com allowlist técnica, fila limitada,
+  amostragem e testes locais; limites oficiais registrados em `09-FREE-TIER-LIMITS.md`.
+- [ ] Confirmar planos gratuitos e credenciais no painel e provar recepção remota
+  com dados sintéticos. Quota por processo não é garantia de limite global.
 
 ## Etapa 11 — publicação e experimento
 
@@ -70,7 +72,7 @@ parte. Antes de merge: CI do SHA exato, integrações Postgres/Redis, avaliaçã
 RAG e testes web pertinentes. Nenhum teste ignorado conta como aprovado.
 PR19 e PR20 foram integradas com os checks dos respectivos SHAs aprovados,
 no escopo de preparação de monetização e empacotamento. A continuação da
-etapa 10 usa `codex/etapa-10-webhooks`. Migration 0009 aplicada somente
+etapa 10 usa `codex/etapa-10-telemetria-pix`. Migration 0009 aplicada somente
 localmente; nenhuma cobrança ou publicação foi realizada.
 
 ### Status e portal autenticados
@@ -83,7 +85,7 @@ e bloqueio de exclusão pendente. Configuração desativada/inválida não liber
 botões; preços e concessão de plano continuam sendo decisões do backend.
 O fluxo de pagamento permanece desativado até concluir seu ciclo de vida.
 
-Validação local atualizada em 15/10: 460 testes Python/HTTP, cobertura 81,55%,
+Validação local atualizada em 15/10: 520 testes Python/HTTP, cobertura 82,43%,
 100 integrações PostgreSQL/Redis/RLS sem skips; 98 Playwright desktop/mobile,
 build estático, TypeScript/SW e um teste PWA offline aprovados.
 A última avaliação RAG real
@@ -97,3 +99,8 @@ usuários. Eventos antigos não substituem uma assinatura nova; reembolso antigo
 não derruba o mês atual quitado. Limpeza precede Supabase na mesma sessão de
 exclusão; falhas conservam referências para retomar. Reserva sem ID cuja ausência
 remota seja inconclusiva exige intervenção operacional, sem recriação automática.
+
+Telemetria externa permanece desativada. PostHog conta operações agregadas,
+Sentry recebe um evento fixo de armazenamento e Logfire recebe tentativas LLM
+sem contexto pessoal. Eventos pendentes podem ser perdidos ao encerrar a API;
+contadores SQL continuam sendo a fonte confiável de consumo individual.
