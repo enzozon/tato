@@ -422,7 +422,7 @@ Após corrigir o DSN, Sentry também respondeu HTTP 200 ao evento sintético em
    selecionar o mesmo sandbox. Encaminhar eventos à API local:
 
    ```powershell
-   stripe listen --forward-to http://127.0.0.1:8000/billing/stripe/webhook
+   stripe.cmd listen --all-snapshot --forward-to http://127.0.0.1:8000/billing/stripe/webhook
    ```
 
    Copiar o segredo de assinatura do listener para `STRIPE_WEBHOOK_SECRET`.
@@ -432,6 +432,8 @@ Após corrigir o DSN, Sentry também respondeu HTTP 200 ao evento sintético em
 Neste Windows, Stripe CLI 1.53.1 foi instalada pelo pacote oficial `@stripe/cli`
 global, fora das dependências do app. Usar `stripe.cmd login` e `stripe.cmd listen`
 no PowerShell evita depender da política de execução de scripts `.ps1`.
+A CLI 1.53.1 exige seleção explícita ao encaminhar: `--all-snapshot` acima
+seleciona eventos snapshot; não usar `--all-thin` para o contrato atual do Tato.
 
 As flags de cobrança permanecem desativadas enquanto se prepara a configuração.
 Não enviar valores na conversa ou colocá-los no frontend. Referências oficiais:

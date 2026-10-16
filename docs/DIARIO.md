@@ -795,3 +795,9 @@ correção e passou depois. Build, tipagem e teste de versão do service worker
 passaram, assim como 100 testes Playwright desktop/mobile; o ensaio PWA
 confirmou shell offline sem dados financeiros no cache.
 Não houve acesso a extratos, contas reais ou alteração de configuração remota.
+
+### 16/10/2026 — listener Stripe na versão instalada
+
+A CLI1.53.1 exige seleção explícita de eventos ao encaminhar. O comando foi
+corrigido com --all-snapshot após conferir o help local; a referência web ainda
+mostrava o exemplo legado. Sem listener ou pagamento real nesta correção.
