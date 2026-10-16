@@ -48,6 +48,10 @@ llm-smoke:
 telemetry-smoke:
 	uv run --locked --env-file .env python scripts/smoke_telemetry.py $(SERVICE) $(ARGS)
 
+.PHONY: stripe-smoke
+stripe-smoke:
+	uv run --locked --env-file .env python scripts/smoke_stripe.py $(ARGS)
+
 rag-index:
 	uv run --locked --env-file .env python scripts/index_knowledge.py
 

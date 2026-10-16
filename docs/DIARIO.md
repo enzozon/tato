@@ -770,3 +770,17 @@ Preflight e persistência compartilham as validações de espaço e identidade.
 104 integrações PostgreSQL/Redis/RLS passaram, incluindo exclusão durante inferência,
 renomeação de categoria, nova regra e reimportação sem nova chamada. O provedor foi
 simulado: não houve envio de descrições reais. O limite é por pedido, não mensal.
+
+### 15/10/2026 — Sentry aceito e preço sandbox verificável
+
+DSN corrigido pelo Enzo: Sentry respondeu HTTP 200 ao evento sintético. O CI de
+main após a PR27 também passou. Painel/ingestão e plano contratado não foram
+conferidos; flags de telemetria permanecem desativadas.
+
+Stripe ainda não está configurado. Preparado um ensaio opt-in somente leitura
+do preço, reutilizando as mesmas validações do checkout e HTTPX existente.
+O motivo é validar chave/preço antes de criar objetos de demonstração; esse teste
+não comprova pagamento ou webhook. Nenhuma dependência, migration ou cobrança.
+Validação: 573 testes Python/HTTP, cobertura de 82,81%, lint e tipagem aprovados;
+58 testes focados cobrem adapter e ensaio. Stripe CLI 1.53.1 instalada globalmente,
+sem login, configuração de conta ou inclusão de dependência no app.

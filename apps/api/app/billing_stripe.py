@@ -131,11 +131,7 @@ class StripeSandbox:
         except (httpx.HTTPError, ValueError):
             raise BillingUnavailable("Stripe de teste indisponível.") from None
 
-    def checkout(
-        self, owner: UUID, request_id: UUID, customer_id: str | None = None
-    ) -> StripeCheckout:
-        if customer_id is not None and not fullmatch(r"cus_[A-Za-z0-9_]+", customer_id):
-            raise BillingUnavailable("Referência de cliente inválida.")
+    def require_price(self) -> None:
         price = self.request("GET", f"prices/{self.price_id}")
         recurring = price.get("recurring")
         if (
@@ -150,6 +146,13 @@ class StripeSandbox:
             or recurring.get("interval_count") != 1
         ):
             raise BillingUnavailable("Preço de demonstração inválido.")
+
+    def checkout(
+        self, owner: UUID, request_id: UUID, customer_id: str | None = None
+    ) -> StripeCheckout:
+        if customer_id is not None and not fullmatch(r"cus_[A-Za-z0-9_]+", customer_id):
+            raise BillingUnavailable("Referência de cliente inválida.")
+        self.require_price()
         payload = self.request(
             "POST",
             "checkout/sessions",
