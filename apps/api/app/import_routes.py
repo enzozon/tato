@@ -41,7 +41,12 @@ def upload(
             if not receipt:
                 raise HTTPException(422, "Revise a prévia antes de confirmar.")
             preview_import(engine, identity.id, account_id, content, kind, columns, receipt)
-        result = store_import(engine, identity.id, account_id, content, filename, kind, columns)
+        if request.url.path.endswith("/confirm"):
+            result = store_import(
+                engine, identity.id, account_id, content, filename, kind, columns, categorize=True
+            )
+        else:
+            result = store_import(engine, identity.id, account_id, content, filename, kind, columns)
     except ImportErrorDetail as error:
         raise HTTPException(422, str(error)) from None
     except ValidationError:

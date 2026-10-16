@@ -761,3 +761,12 @@ painel ou garantia de plano gratuito; essas verificações continuam separadas.
 ### 15/10/2026 — validação de sugestões de categoria
 
 Helper isolado limita sugestões ao usuário e libera o lock antes da IA; preflight reutiliza validação de espaço e identidade. Exclusão concorrente impede inferência. Integração com confirmação será entregue no próximo commit.
+
+### 15/10/2026 — categorização na confirmação
+
+A confirmação da prévia agora tenta um lote limitado por IA para itens sem regra.
+Regras e categorias atuais prevalecem na gravação; valores e datas são dos parsers.
+Preflight e persistência compartilham as validações de espaço e identidade.
+104 integrações PostgreSQL/Redis/RLS passaram, incluindo exclusão durante inferência,
+renomeação de categoria, nova regra e reimportação sem nova chamada. O provedor foi
+simulado: não houve envio de descrições reais. O limite é por pedido, não mensal.

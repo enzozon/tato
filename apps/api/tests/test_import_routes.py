@@ -82,3 +82,24 @@ def test_confirmation_requires_receipt_before_persistence(client, monkeypatch):
         files={"file": ("x.csv", b"synthetic")},
     )
     assert response.status_code == 422
+
+
+def test_ai_only_after_validated_confirmation(client, monkeypatch):
+    calls = []
+    monkeypatch.setattr(routes, "preview_import", lambda *args: calls.append("preview"))
+
+    def store(*args, **kwargs):
+        calls.append(kwargs)
+        return ImportResult(document_id=uuid4(), inserted=1, duplicates=0, uncategorized=1)
+
+    monkeypatch.setattr(routes, "store_import", store)
+    payload = {"account_id": str(uuid4()), "kind": "csv", "receipt": "signed"}
+    response = client.post("/import/confirm", data=payload, files={"file": ("x.csv", b"synthetic")})
+    assert response.status_code == 200
+    assert calls == ["preview", {"categorize": True}]
+    calls.clear()
+    assert (
+        client.post("/import", data=payload, files={"file": ("x.csv", b"synthetic")}).status_code
+        == 200
+    )
+    assert calls == [{}]

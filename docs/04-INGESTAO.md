@@ -58,8 +58,40 @@ ambíguos são recusados, indicando CSV/OFX como alternativa.
 Regras habilitadas do próprio usuário são carregadas uma vez por importação,
 decifradas com contexto e aplicadas em ordem de prioridade/UUID. Correspondência
 literal ignora caixa/acentos; não executa regex do usuário. Sem regra, o lançamento
-fica sem categoria. O fallback LLM será conectado à camada de provedores da etapa 5;
-esta etapa não declara categorização por IA implementada nem transmite extratos.
+fica sem categoria quando não há uma sugestão validada no fluxo de confirmação.
+
+### Sugestão de categoria na confirmação
+
+`POST /import/preview` continua local e mostra valores do parser para revisão.
+Somente `POST /import/confirm`, depois de validar o recibo, pode sugerir categorias
+por IA. O endpoint legado `POST /import` permanece determinístico. A prévia avisa
+que a confirmação pode categorizar automaticamente; não aprova sugestões individuais.
+
+Regras são aplicadas primeiro. Limites de fontes/espaço e identidades já gravadas
+com data/valor divergentes são conferidos antes da inferência e na gravação.
+Um snapshot isolado por usuário seleciona somente
+itens novos não resolvidos; libera o lock antes de `llm_service.generate`. A IA
+recebe descrição, índice e categorias permitidas, sem campos de data, valor ou
+arquivo completo. Descrições podem conter números/texto pessoal: a política exige
+Groq, ZDR e as flags pessoais já autorizadas; Gemini/OpenRouter não são alternativas.
+
+Há no máximo um lote de 20 itens por pedido, descrições completas de até 500
+caracteres, 50 categorias e 16 mil caracteres de payload. Descrições maiores não
+são cortadas silenciosamente: ficam sem sugestão. A saída tem até 2048 tokens;
+timeouts, retries limitados e cache cifrado por usuário são os existentes do router.
+Isso é limite por pedido, **não quota mensal/global**. A quota de chat não é consumida
+por imports. As tentativas são contabilizadas em `llm_usage` sem conteúdo pessoal.
+
+Pydantic e o guard rejeitam campos extras, índices desconhecidos/duplicados e IDs
+fora da lista do usuário; qualquer violação invalida o lote inteiro. Instruções
+maliciosas continuam sendo dados: o prompt não substitui esses controles.
+Indisponibilidade da IA deixa os itens sem categoria e preserva a importação.
+
+Na transação final, o usuário e a conta são revalidados, regras atuais prevalecem
+e sugestões só valem se ID e nome da categoria permanecerem iguais. Categorias
+apagadas/renomeadas durante a inferência são descartadas. Deduplicação e limites
+de persistência são novamente conferidos; valores, datas e identidade bancária
+nunca vêm do modelo. Reimportar o mesmo documento não chama o provedor.
 
 ## Persistência
 
