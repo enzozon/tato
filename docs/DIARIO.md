@@ -784,3 +784,14 @@ não comprova pagamento ou webhook. Nenhuma dependência, migration ou cobrança
 Validação: 573 testes Python/HTTP, cobertura de 82,81%, lint e tipagem aprovados;
 58 testes focados cobrem adapter e ensaio. Stripe CLI 1.53.1 instalada globalmente,
 sem login, configuração de conta ou inclusão de dependência no app.
+
+### 16/10/2026 — revisão da interface e quebra de mensagens longas
+
+Revisados login, recuperação, conversa, importação, agentes, conta e cobrança
+com respostas sintéticas. Uma pergunta de 500 caracteres sem espaços causava
+rolagem horizontal no desktop e no celular; uma declaração CSS resolveu a
+quebra, preservando o conteúdo. A regressão falhou nos dois projetos antes da
+correção e passou depois. Build, tipagem e teste de versão do service worker
+passaram, assim como 100 testes Playwright desktop/mobile; o ensaio PWA
+confirmou shell offline sem dados financeiros no cache.
+Não houve acesso a extratos, contas reais ou alteração de configuração remota.
