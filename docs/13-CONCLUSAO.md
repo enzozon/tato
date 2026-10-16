@@ -40,6 +40,8 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
   amostragem e testes locais; limites oficiais registrados em `09-FREE-TIER-LIMITS.md`.
 - [ ] Confirmar planos gratuitos e credenciais no painel e provar recepção remota
   com dados sintéticos. Quota por processo não é garantia de limite global.
+  Em 15/10, PostHog e Logfire retornaram HTTP 200 a eventos sintéticos;
+  visibilidade nos painéis não conferida. Sentry aguarda correção do DSN completo.
 
 ## Etapa 11 — publicação e experimento
 

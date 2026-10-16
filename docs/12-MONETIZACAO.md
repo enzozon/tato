@@ -339,7 +339,7 @@ de entrega. Contadores SQL locais continuam sendo a fonte de consumo confiável.
 As flags são lidas uma vez ao primeiro uso: alteração exige reiniciar a API.
 Tokens ausentes são omitidos (desconhecidos); zero conhecido permanece zero.
 O hook SQL recebe só evento fixo; o hook LLM recebe somente `Attempt`, nunca texto.
-Nenhum evento do navegador é coletado. Nenhuma ingestão remota foi exercitada.
+Nenhum evento do navegador é coletado. A prova remota está delimitada abaixo.
 
 ### Logfire por schema oficial OTLP
 
@@ -384,3 +384,24 @@ As flags continuam `false` no exemplo. Antes de habilitar, conferir o plano Free
 sem cobrança excedente e testar dados sintéticos. Após mudar o ambiente, reiniciar
 a API. `make web-config` exporta apenas a allowlist pública existente; nenhuma
 credencial de observabilidade pertence a `NEXT_PUBLIC_*`.
+
+### Ensaio remoto sintético
+
+`make telemetry-smoke SERVICE=posthog ARGS=--confirm-free-tier` envia somente um
+evento técnico sintético ao serviço selecionado (`sentry`, `posthog` ou `logfire`).
+O comando exige confirmação explícita do plano gratuito, reaproveita o parser e
+os transportes da API e não altera `.env` nem flags persistentes. Sem confirmação
+ou configuração válida, não abre cliente HTTP. Não aciona LLM nem usa extratos.
+
+O resultado contém apenas serviço, status HTTP e diagnóstico fixo. Não lê corpos,
+não segue redirects e não repete pedidos. Falha/configuração inválida retorna
+código diferente de zero. Um 2xx significa apenas aceitação HTTP: não valida o
+corpo de resposta, ingestão completa, visibilidade no painel ou plano contratado.
+O ensaio usa envio direto; a amostragem da fila não deve esconder a tentativa.
+
+Em 15/10/2026, um evento sintético por serviço recebeu HTTP 200 no PostHog e no
+Logfire. Sentry não recebeu pedido: o valor local não era um DSN HTTPS completo.
+Para corrigir, copiar a URL inteira em Project Settings → Client Keys (DSN),
+conforme a [documentação oficial](https://github.com/getsentry/sentry-docs/blob/master/docs/concepts/key-terms/dsn-explainer.mdx).
+A exibição dos eventos nos painéis ainda precisa ser conferida; flags permanecem
+desativadas. Segredos e identificadores dos projetos não fazem parte do registro.
