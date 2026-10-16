@@ -156,6 +156,11 @@ aprovado. Nenhuma allowlist, configuração remota ou serviço de e-mail foi alt
 Os testes desktop/mobile usam somente respostas e tokens sintéticos; não provam
 entrega, validade de link real ou revogação de outras sessões.
 
+Na conversa, perguntas também permitem quebra de palavras longas, como já
+acontece nas respostas. Sem isso, uma mensagem válida de 500 caracteres sem
+espaços alargava a página no computador e no celular. O teste de regressão
+envia essa mensagem sintética e verifica a largura real do documento.
+
 Referências oficiais consultadas em 13/10/2026:
 [solicitar recuperação](https://supabase.com/docs/reference/javascript/auth-resetpasswordforemail),
 [alterar senha](https://supabase.com/docs/reference/javascript/auth-updateuser),

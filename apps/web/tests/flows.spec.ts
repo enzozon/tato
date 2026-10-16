@@ -38,6 +38,17 @@ test('landing responsiva e login com valores exatos',async({page})=>{
   await expect(page.getByText('Conta sintética',{exact:true})).toHaveCount(0);
 });
 
+test('mensagem sem espaços cabe na conversa sem rolagem horizontal',async({page})=>{
+  await signIn(page);
+  const question='x'.repeat(500);
+  await page.route('**/chat/stream',route=>route.fulfill({contentType:'text/event-stream',body:`event: reply\ndata: ${JSON.stringify({turn_id:owner,message:'Resposta sintética.',mood:'calmo',sources:[]})}\n\n`}));
+  await page.getByRole('button',{name:'Conversa',exact:true}).click();
+  await page.getByLabel('Sua mensagem').fill(question);
+  await page.getByRole('button',{name:'Enviar mensagem'}).click();
+  await expect(page.locator('.question')).toHaveText(question);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
 test('renovação e navegação preservam rascunhos, sair limpa o espaço',async({page})=>{
   await page.clock.install();
   await signIn(page,120);
