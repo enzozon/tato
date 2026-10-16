@@ -4,6 +4,7 @@ import argparse
 import base64
 import json
 import os
+import sys
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -64,6 +65,29 @@ def audit() -> dict[str, bool]:
     return result
 
 
+def audit_telemetry() -> dict[str, str]:
+    # Reutiliza o parser da API também ao executar este script diretamente.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "apps" / "api"))
+    from app.telemetry import Destinations
+
+    destinations = Destinations.configured()
+    ready = {
+        "SENTRY": bool(destinations.sentry_url),
+        "POSTHOG": bool(destinations.posthog_key),
+        "LOGFIRE": bool(destinations.logfire_token),
+    }
+    return {
+        name: (
+            "desativado"
+            if os.environ.get(name + "_ENABLED") != "true"
+            else "formato válido; ensaio remoto pendente"
+            if valid
+            else "pendente ou inválido"
+        )
+        for name, valid in ready.items()
+    }
+
+
 def write_web() -> None:
     config = audit()
     api = os.environ.get("WEB_API_URL", "http://127.0.0.1:8000")
@@ -90,6 +114,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     for name, ready in audit().items():
         print(f"{name}: {'configurado' if ready else 'pendente ou inválido'}")
+    for name, status in audit_telemetry().items():
+        print(f"{name}: {status}")
     if args.write_web:
         try:
             write_web()

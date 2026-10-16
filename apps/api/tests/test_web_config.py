@@ -34,6 +34,8 @@ def test_web_export_is_an_allowlist(monkeypatch, tmp_path):
         config.write_web()
     monkeypatch.setenv("SUPABASE_PUBLISHABLE_KEY", jwt("anon"))
     monkeypatch.setenv("SUPABASE_SECRET_KEY", "never-copy-this")
+    for name in ("SENTRY_DSN", "POSTHOG_API_KEY", "LOGFIRE_TOKEN"):
+        monkeypatch.setenv(name, "never-copy-this")
     config.write_web()
     value = (tmp_path / "apps/web/.env.local").read_text()
     assert "never-copy-this" not in value and "NEXT_PUBLIC_SUPABASE_URL=" in value
@@ -54,3 +56,24 @@ def test_web_export_is_an_allowlist(monkeypatch, tmp_path):
 )
 def test_public_url_rejects_malformed_or_normalized_values(url):
     assert not config.safe_url(url, local=True)
+
+
+def test_telemetry_audit_distinguishes_disabled_invalid_and_local_format(monkeypatch):
+    names = ("SENTRY", "POSTHOG", "LOGFIRE")
+    for name in names:
+        monkeypatch.setenv(name + "_ENABLED", "false")
+    assert config.audit_telemetry() == dict.fromkeys(names, "desativado")
+    for name in names:
+        monkeypatch.setenv(name + "_ENABLED", "true")
+    monkeypatch.setenv("SENTRY_DSN", "private-invalid-dsn")
+    monkeypatch.setenv("POSTHOG_API_KEY", "private-invalid-key")
+    monkeypatch.setenv("LOGFIRE_TOKEN", "private\ninvalid-token")
+    assert config.audit_telemetry() == dict.fromkeys(names, "pendente ou inválido")
+    monkeypatch.setenv("SENTRY_DSN", "https://" + "0" * 32 + "@o1.ingest.us.sentry.io/2")
+    monkeypatch.setenv("POSTHOG_HOST", "https://us.i.posthog.com")
+    monkeypatch.setenv("POSTHOG_API_KEY", "phc_" + "synthetic" * 3)
+    monkeypatch.setenv("LOGFIRE_REGION", "us")
+    monkeypatch.setenv("LOGFIRE_TOKEN", "synthetic-write-token")
+    assert config.audit_telemetry() == dict.fromkeys(
+        names, "formato válido; ensaio remoto pendente"
+    )

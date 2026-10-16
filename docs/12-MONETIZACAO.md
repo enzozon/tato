@@ -367,3 +367,20 @@ Contratos oficiais conferidos em 15/10/2026:
 [Logfire OTLP Python](https://pydantic.dev/docs/logfire/guides/alternative-clients/),
 [schema e transporte OTLP](https://opentelemetry.io/docs/specs/otlp/),
 [pacote gerado oficial](https://pypi.org/project/opentelemetry-proto/).
+
+### Configuração e auditoria local
+
+`make config-check` distingue integração desativada, configuração ausente/inválida
+e formato local válido. A última condição não comprova autenticação, plano Free
+ou recepção remota. O comando não envia eventos nem imprime valores.
+
+| Serviço | Variáveis privadas da API | Origem no projeto do provedor |
+| --- | --- | --- |
+| Sentry | `SENTRY_ENABLED`, `SENTRY_DSN` | DSN de ingestão do projeto |
+| PostHog | `POSTHOG_ENABLED`, `POSTHOG_API_KEY`, `POSTHOG_HOST` | Chave de captura `phc_` e região do projeto; não chave pessoal |
+| Logfire | `LOGFIRE_ENABLED`, `LOGFIRE_TOKEN`, `LOGFIRE_REGION` | Write token do projeto e sua região `us`/`eu` |
+
+As flags continuam `false` no exemplo. Antes de habilitar, conferir o plano Free
+sem cobrança excedente e testar dados sintéticos. Após mudar o ambiente, reiniciar
+a API. `make web-config` exporta apenas a allowlist pública existente; nenhuma
+credencial de observabilidade pertence a `NEXT_PUBLIC_*`.
