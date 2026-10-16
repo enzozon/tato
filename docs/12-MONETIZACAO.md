@@ -400,8 +400,51 @@ corpo de resposta, ingestão completa, visibilidade no painel ou plano contratad
 O ensaio usa envio direto; a amostragem da fila não deve esconder a tentativa.
 
 Em 15/10/2026, um evento sintético por serviço recebeu HTTP 200 no PostHog e no
-Logfire. Sentry não recebeu pedido: o valor local não era um DSN HTTPS completo.
+Logfire. No ensaio inicial, Sentry não recebeu pedido: o valor local não era um DSN HTTPS completo.
 Para corrigir, copiar a URL inteira em Project Settings → Client Keys (DSN),
 conforme a [documentação oficial](https://github.com/getsentry/sentry-docs/blob/master/docs/concepts/key-terms/dsn-explainer.mdx).
 A exibição dos eventos nos painéis ainda precisa ser conferida; flags permanecem
 desativadas. Segredos e identificadores dos projetos não fazem parte do registro.
+
+Após corrigir o DSN, Sentry também respondeu HTTP 200 ao evento sintético em
+15/10/2026. A aceitação HTTP não comprova visibilidade no painel ou plano Free.
+
+### Preparar o sandbox Stripe
+
+1. Criar a conta no [Stripe](https://dashboard.stripe.com/register) e selecionar
+   um Sandbox; usar os objetos e chaves desse mesmo ambiente.
+2. Em Developers/Workbench → API keys, copiar a chave secreta `sk_test_...` para
+   `STRIPE_SECRET_KEY`. A chave publicável não serve para a API do Tato.
+3. Em Product catalog, criar Tato Pro: preço fixo BRL 39,00, recorrente mensal.
+   Copiar o identificador do preço `price_...` para `STRIPE_PRICE_ID`.
+4. Definir `BILLING_RETURN_URL=http://127.0.0.1:3000/app/` para o frontend local.
+5. Instalar a [Stripe CLI](https://docs.stripe.com/cli), fazer `stripe login` e
+   selecionar o mesmo sandbox. Encaminhar eventos à API local:
+
+   ```powershell
+   stripe listen --forward-to http://127.0.0.1:8000/billing/stripe/webhook
+   ```
+
+   Copiar o segredo de assinatura do listener para `STRIPE_WEBHOOK_SECRET`.
+   O segredo do listener local é distinto do segredo de um endpoint do Dashboard;
+   manter o listener aberto durante o teste e conferir o segredo ao reiniciá-lo.
+
+Neste Windows, Stripe CLI 1.53.1 foi instalada pelo pacote oficial `@stripe/cli`
+global, fora das dependências do app. Usar `stripe.cmd login` e `stripe.cmd listen`
+no PowerShell evita depender da política de execução de scripts `.ps1`.
+
+As flags de cobrança permanecem desativadas enquanto se prepara a configuração.
+Não enviar valores na conversa ou colocá-los no frontend. Referências oficiais:
+[chaves e ambientes](https://docs.stripe.com/keys),
+[produtos/preços](https://docs.stripe.com/products-prices/manage-prices),
+[webhooks locais](https://docs.stripe.com/webhooks).
+
+`make stripe-smoke ARGS=--confirm-test-mode` consulta somente o preço configurado
+e reutiliza a validação do checkout: modo de teste, preço ativo, BRL 3900 centavos,
+recorrência mensal de um intervalo. Exige chave, preço e retorno local válidos;
+não cria cliente, checkout ou assinatura, não altera planos ou flags, não faz
+retry nem segue redirects. Não exige segredo de webhook porque não o exercita.
+A saída é fixa e não imprime chave, identificadores ou corpo de erro do provedor.
+Sucesso comprova somente acesso ao preço compatível; pagamento, portal, entrega
+de webhook e assinatura do webhook ainda exigem ensaio separado. Sem credenciais,
+o teste remoto permanece pendente, mesmo com MockTransport aprovado.

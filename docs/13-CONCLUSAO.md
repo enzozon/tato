@@ -36,12 +36,14 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
   da cobrança transparente antes de ativar rotas (detalhes em `12-MONETIZACAO.md`).
 - [ ] Configurar chaves sandbox localmente, validar ensaios opt-in sem cobrança
   real e só depois habilitar `BILLING_ENABLED`.
+  Ensaio somente leitura `make stripe-smoke ARGS=--confirm-test-mode` preparado;
+  credenciais Stripe ainda ausentes na conferência de 15/10.
 - [x] Transportes Sentry/PostHog/Logfire com allowlist técnica, fila limitada,
   amostragem e testes locais; limites oficiais registrados em `09-FREE-TIER-LIMITS.md`.
 - [ ] Confirmar planos gratuitos e credenciais no painel e provar recepção remota
   com dados sintéticos. Quota por processo não é garantia de limite global.
-  Em 15/10, PostHog e Logfire retornaram HTTP 200 a eventos sintéticos;
-  visibilidade nos painéis não conferida. Sentry aguarda correção do DSN completo.
+  Em 15/10, Sentry, PostHog e Logfire retornaram HTTP 200 a eventos sintéticos;
+  visibilidade nos painéis e planos gratuitos ainda não conferidos.
 
 ## Etapa 11 — publicação e experimento
 
@@ -88,7 +90,7 @@ e bloqueio de exclusão pendente. Configuração desativada/inválida não liber
 botões; preços e concessão de plano continuam sendo decisões do backend.
 O fluxo de pagamento permanece desativado até concluir seu ciclo de vida.
 
-Validação local atualizada em 15/10: 520 testes Python/HTTP, cobertura 82,43%,
+Validação da PR25 em 15/10: 520 testes Python/HTTP, cobertura 82,43%,
 100 integrações PostgreSQL/Redis/RLS sem skips; 98 Playwright desktop/mobile,
 build estático, TypeScript/SW e um teste PWA offline aprovados.
 A última avaliação RAG real
