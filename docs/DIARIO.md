@@ -757,3 +757,7 @@ do projeto, sem compartilhar seu valor na conversa. As flags não foram ativadas
 O novo ensaio opt-in reutiliza os transportes existentes e informa somente
 aceitação HTTP. Não confundir essa evidência com confirmação de ingestão no
 painel ou garantia de plano gratuito; essas verificações continuam separadas.
+
+### 15/10/2026 — validação de sugestões de categoria
+
+Helper isolado limita sugestões ao usuário e libera o lock antes da IA; preflight reutiliza validação de espaço e identidade. Exclusão concorrente impede inferência. Integração com confirmação será entregue no próximo commit.
