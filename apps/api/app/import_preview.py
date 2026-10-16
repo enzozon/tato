@@ -41,6 +41,8 @@ class ImportPreview(BaseModel):
     warning: str = (
         "Prévia bruta: duplicatas e limites serão conferidos na confirmação. "
         "Revise sinais, datas e descrições. Arquivos diferentes sem ID bancário podem se sobrepor."
+        " Na confirmação, categorias podem ser sugeridas automaticamente por IA quando habilitada; "
+        "valores e datas permanecem os do arquivo."
     )
 
 

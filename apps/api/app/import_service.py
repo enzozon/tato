@@ -4,15 +4,17 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from pydantic import BaseModel
-from sqlalchemy import Engine, func
+from sqlalchemy import Engine
 from sqlmodel import Session, col, select
 
 from app.account_service import account_session
 from app.bank_pdf import bank_layout, parse_bank_statement
 from app.categorization import load_rules, match_category
+from app.categorization_llm import suggest_categories
 from app.crypto import dedup_key, encrypt_text, load_key
 from app.import_parsers import CsvMapping, ParsedEntry, decode_file, parse_csv
-from app.models import Account, Document, Transaction, User
+from app.import_validation import require_document_space, validate_existing
+from app.models import Account, Category, Document, Transaction, User
 from app.ofx_parser import parse_ofx
 from app.pdf_extract import extract_pdf
 from app.pdf_parser import parse_invoice
@@ -70,6 +72,8 @@ def store_import(
     filename: str,
     kind: ImportKind,
     mapping: CsvMapping | None = None,
+    *,
+    categorize: bool = False,
 ) -> ImportResult:
     authorize_import(engine, owner, account_id, kind)
     text, entries = parse_upload(content, kind, mapping)
@@ -77,6 +81,14 @@ def store_import(
     digest = dedup_key(
         identity_key, owner, account_id, f"document:{kind}:" + hashlib.sha256(content).hexdigest()
     )
+    suggestions: dict[int, tuple[UUID, str]] = {}
+    if categorize:
+        with account_session(engine, owner) as session:
+            active_account(session, owner, account_id)
+            validate_pdf_account(session, account_id, kind, text)
+        suggestions = suggest_categories(
+            engine, owner, account_id, entries, digest, len(text.encode())
+        )
     warning = (
         "Sem ID bancário: arquivos diferentes podem sobrepor lançamentos; revise os períodos."
         if any(e.source_identity.startswith(("csv:", "pdf:")) for e in entries)
@@ -103,13 +115,7 @@ def store_import(
         ).all()
         if account_id not in sources:
             require_capacity(user_plan(session, owner), "import_sources", len(sources))
-        stored = session.scalar(
-            select(
-                func.coalesce(func.sum(func.octet_length(col(Document.content_ciphertext))), 0)
-            ).where(Document.user_id == owner)
-        )
-        if int(stored or 0) + len(text.encode()) + 28 > 20 * 1024 * 1024:
-            raise HTTPException(413, "Limite técnico de 20 MiB de documentos por usuário atingido.")
+        require_document_space(session, owner, len(text.encode()))
         document = Document(
             user_id=owner,
             account_id=account_id,
@@ -132,21 +138,33 @@ def store_import(
             ).all()
         }
         rules = load_rules(session, owner, cipher_key)
+        categories = (
+            {
+                row.id: row.name
+                for row in session.exec(
+                    select(Category).where(
+                        Category.user_id == owner,
+                        col(Category.id).in_([value[0] for value in suggestions.values()]),
+                    )
+                )
+            }
+            if suggestions
+            else {}
+        )
         inserted = duplicates = uncategorized = 0
-        for entry, key in zip(entries, keys, strict=True):
+        for index, (entry, key) in enumerate(zip(entries, keys, strict=True)):
             entry_kind = entry.kind or ("expense" if entry.amount_cents < 0 else "income")
             if old := existing.get(key):
-                if (old.amount_cents, old.booked_on, old.kind) != (
-                    entry.amount_cents,
-                    entry.booked_on,
-                    entry_kind,
-                ):
-                    raise HTTPException(
-                        409, "Identidade bancária existente com data ou valor divergente."
-                    )
+                validate_existing(entry, old)
                 duplicates += 1
                 continue
             category = match_category(entry.description, rules)
+            if (
+                category is None
+                and (suggested := suggestions.get(index))
+                and categories.get(suggested[0]) == suggested[1]
+            ):
+                category = suggested[0]
             data = TransactionInput(
                 account_id=account_id,
                 category_id=category,

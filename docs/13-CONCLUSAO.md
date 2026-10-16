@@ -56,7 +56,8 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
 
 ## Pendências funcionais e externas
 
-- Categorização atual é por regras; fallback LLM para itens restantes ainda falta.
+- Categorização usa regras e sugestão LLM limitada na confirmação, quando a política
+  pessoal Groq/ZDR está habilitada; prova remota com dados bancários não foi realizada.
 - Faturas PicPay/Banestes e conta/cartão Sicoob dependem de exemplos compatíveis;
   não afirmar suporte sem fixture e comparação. Sicoobcard visto apenas no app
   do iPhone não oferece, por si só, uma API/MCP acessível pelo Windows.
