@@ -107,12 +107,18 @@ class MeuPluggy:
         return accounts
 
     def export(self, account: dict[str, Any], start: date, end: date) -> tuple[bytes, int]:
-        if start > end or (end - start).days > 366 or start == date.min or end == date.max:
+        if (
+            start > end
+            or (end - start).days > 366
+            or start == date.min
+            or end > date.max - timedelta(days=2)
+        ):
             raise PluggyError("Período inválido; use até 366 dias.")
         params = {
             "accountId": text(account.get("id")),
             "dateFrom": str(start - timedelta(days=1)),
-            "dateTo": str(end + timedelta(days=1)),
+            # A API não documenta o corte de dateTo; +2 cobre o último dia brasileiro inteiro.
+            "dateTo": str(end + timedelta(days=2)),
         }
         output = io.StringIO(newline="")
         writer = csv.writer(output, delimiter=";")

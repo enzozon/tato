@@ -26,6 +26,7 @@ def test_opt_in_configuration_and_period_before_network(monkeypatch, capsys):
     monkeypatch.setattr(cli.httpx, "Client", lambda **_: pytest.fail("Sem rede"))
     assert cli.main(ARGS) == 2
     assert cli.main(["--confirm-personal-use", "--from", "2026-10-11", "--to", "2026-10-10"]) == 1
+    assert cli.main(["--confirm-personal-use", "--from", "9999-12-29", "--to", "9999-12-30"]) == 1
     monkeypatch.delenv(cli.VARIABLES[0])
     assert cli.main([*ARGS, "--confirm-personal-use"]) == 1
     assert "private-canary" not in capsys.readouterr().out
