@@ -801,3 +801,12 @@ Não houve acesso a extratos, contas reais ou alteração de configuração remo
 A CLI1.53.1 exige seleção explícita de eventos ao encaminhar. O comando foi
 corrigido com --all-snapshot após conferir o help local; a referência web ainda
 mostrava o exemplo legado. Sem listener ou pagamento real nesta correção.
+
+### 16/10/2026 — exportação pessoal em validação
+
+Implementado endpoint isolado com JSON completo, campos permitidos e centavos
+como strings; sem migration ou serviços novos. make check passou com601testes
+(83,24%). A fixture PostgreSQL repetia um IDStripe entre usuários sintéticos;
+foi corrigida com sufixo do titular e os4testesnovos passaram. Ainda falta repetir
+make check após essa correção, executar108integrações juntas e integrar o download
+na interface. Código segue no worktree de segurança, semcommit/PRdeexport.
