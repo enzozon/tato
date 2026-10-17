@@ -4,6 +4,7 @@
 LLM e RAG, limitado a serviços gratuitos. Em construção; use dados sintéticos.
 
 Roteiro completo: [rodar, testar e publicar](docs/14-PRIMEIRO-USO.md).
+Avaliação funcional: [telas e casos de teste local](docs/15-TESTES-LOCAIS.md).
 
 ## Executar localmente
 

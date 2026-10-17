@@ -47,6 +47,9 @@ e flag pública próprios. [Referência](https://supabase.com/docs/guides/auth/r
 
 ## O que testar primeiro
 
+Para avaliar todas as telas e funções, siga a [matriz de testes locais](15-TESTES-LOCAIS.md),
+que separa interface, API e serviços externos ainda pendentes.
+
 1. Criar conta, confirmar e-mail, entrar e concluir onboarding sem CPF.
 2. No Resumo, adicionar uma conta sintética com saldo inicial zero e primeiro
    dia do período em 17/10/2026.
