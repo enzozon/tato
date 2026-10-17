@@ -13,7 +13,7 @@ auth?.auth.onAuthStateChange((event, session) => {
 export function recoveryIdentity() { return recoveredOwner; }
 export const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
-export async function request<T>(path: string, token: string, init: RequestInit = {}): Promise<T> {
+export async function requestResponse(path: string, token: string, init: RequestInit = {}): Promise<Response> {
   const response = await fetch(`${apiUrl}${path}`, {
     ...init, cache: 'no-store', credentials: 'omit',
     headers: { ...(init.body instanceof FormData ? {} : {'Content-Type': 'application/json'}),
@@ -28,6 +28,10 @@ export async function request<T>(path: string, token: string, init: RequestInit 
     };
     throw new Error(messages[response.status] || 'Serviço indisponível. Tente novamente em instantes.');
   }
+  return response;
+}
+export async function request<T>(path: string, token: string, init: RequestInit = {}): Promise<T> {
+  const response = await requestResponse(path, token, init);
   return response.status === 204 ? undefined as T : response.json();
 }
 export function money(value: string | number) {

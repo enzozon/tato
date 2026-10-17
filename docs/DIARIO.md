@@ -816,3 +816,10 @@ na interface. Código segue no worktree de segurança, semcommit/PRdeexport.
 A rota autenticada materializa o JSON sob lock, preserva RLS e bloqueia exclusão
 pendente. Campos explícitos evitam vazamentos; limites recusam o arquivo inteiro,
 sem truncamento. Testes HTTP cobrem download, erros sanitizados e limites.
+
+### 17/10/2026 — download pessoal na interface
+
+Reutilizado o transporte autenticado para baixar JSON sem converter centavos
+int64 para Number. Cancelamento e trocas de sessão descartam respostas antigas;
+URLs Blob são liberadas e erros remotos não aparecem na tela. 120 testes web,
+check/build e PWA offline passaram com fixtures; falta a prova física no iPhone.

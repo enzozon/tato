@@ -166,3 +166,12 @@ Referências oficiais consultadas em 13/10/2026:
 [alterar senha](https://supabase.com/docs/reference/javascript/auth-updateuser),
 [eventos de autenticação](https://supabase.com/docs/reference/javascript/auth-onauthstatechange) e
 [URLs permitidas](https://supabase.com/docs/guides/auth/redirect-urls).
+
+## Exportação pessoal
+
+Configurações oferece download de tato-dados.json por GET /me/export autenticado.
+O navegador preserva bytes do JSON e centavos int64 em strings. Cancelamento,
+renovação/saída e desmontagem abortam o pedido; a identidade é conferida novamente
+antes do download. O Blob não entra no service worker e sua URL é revogada.
+A tela informa que o arquivo contém dados pessoais legíveis. A prova Playwright
+é Chromium desktop/mobile; Safari e iPhone físico ainda precisam de validação.
