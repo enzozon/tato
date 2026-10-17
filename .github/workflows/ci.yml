@@ -133,6 +133,9 @@ jobs:
       - run: npm exec --workspace=tato-web -- playwright install --with-deps chromium
       - name: Validar interface com Postgres real
         run: npm exec --workspace=tato-web -- playwright test --config=playwright.integration.config.ts
+      - name: Preservar diagnóstico do Postgres em falhas
+        if: failure()
+        run: docker compose logs --no-color postgres
       - name: Encerrar ambiente descartável do CI
         if: always()
         run: docker compose down -v

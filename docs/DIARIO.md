@@ -850,3 +850,12 @@ não houve checkout, pagamento ou webhook. Chave, preço, segredo de webhook e
 URL de retorno estão presentes localmente. `BILLING_ENABLED=false`, flags de
 telemetria desligadas, `RESEND_FROM` pendente e chaves Pix ausentes.
 O ciclo remoto de cobrança e a entrega de e-mails continuam sem comprovação.
+
+### 17/10/2026 — diagnóstico de deadlock no CI
+
+No SHA b8822b1, 108 integrações e avaliação RAG passaram, mas o downgrade
+falhou com deadlock em `DROP INDEX ix_knowledge_search` (migration 0005).
+O job paralelo de infraestrutura passou no mesmo SHA. Sem logs do servidor,
+a contraparte do lock e a causa não são identificáveis; não atribuir ao teardown.
+O CI agora preserva logs do Postgres sintético antes de apagar o ambiente em
+caso de falha, sem alterar migrations, inserir retry ou ocultar o erro.
