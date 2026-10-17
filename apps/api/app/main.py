@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.account_export import router as export_router
 from app.account_routes import EngineDep, router
 from app.agent_routes import router as agent_router
 from app.billing_routes import router as billing_router
@@ -22,6 +23,7 @@ from app.usage import router as usage_router
 
 app = FastAPI(title="API financeira", version="0.1.0")
 app.include_router(router)
+app.include_router(export_router)
 app.include_router(agent_router)
 app.include_router(import_router)
 app.include_router(setup_router)

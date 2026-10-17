@@ -36,3 +36,36 @@ Confirmações de onboarding e exclusão exigem o booleano JSON `true`: o númer
 números, texto, falso e nulo antes de qualquer operação.
 
 O filtro de conversa passou a reconhecer centenas, bilhões, patrimônio e sugestões de aquisição. As regressões mostram falhas concretas corrigidas; a lista lexical continua sem provar ausência de toda afirmação financeira.
+
+## Exportação pessoal autenticada
+
+`GET /me/export` entrega `tato-dados.json` sem armazenar uma cópia no servidor.
+Exige sessão válida, aplica RLS e limite por minuto, e bloqueia contas ausentes
+ou com exclusão pendente. O JSON inclui perfil, contas, categorias, transações,
+regras, metas, documentos, chunks textuais, conversas, agentes, avisos,
+assinatura, compras e medições individuais de IA. Textos cifrados são
+restaurados apenas para o titular; valores em centavos são strings decimais,
+sem arredondamento por JavaScript. O arquivo contém dados pessoais em claro.
+
+O formato tem `version=1`, `exported_at`, `user` e uma lista por tipo de registro.
+UUIDs locais preservam vínculos; datas usam ISO. Conversas e avisos mantêm o
+texto armazenado, sem nova geração por IA. Documentos contêm o texto extraído:
+o Tato não armazena nem recupera o PDF original. Não inclui o cadastro externo
+do Supabase ou registros mantidos pelos provedores de cobrança.
+
+Campos cifrados, hashes de deduplicação, embeddings, cache, eventos técnicos,
+IDs internos dos provedores e a base pública de conhecimento ficam fora do
+arquivo. A exportação não altera dados, assinaturas nem preferências.
+
+A leitura mantém o mesmo lock por usuário usado pelas escritas do app; o
+arquivo é materializado e o lock liberado antes de transmitir a resposta.
+Consultas percorrem lotes de 128 registros. O limite técnico é 64 MiB de JSON
+UTF-8 e 100 mil registros: excedê-lo retorna 409, sem arquivo parcial nem
+truncamento. Contas acima desse limite exigem exportação operacional. O JSON
+em memória pode ocupar temporariamente mais que o tamanho final; não há job
+assíncrono nem paginação que misture momentos diferentes da conta.
+
+Respostas usam `Cache-Control: no-store` e nome fixo de download. Falhas de
+chave ou integridade retornam erro genérico, sem texto privado ou exportação
+parcial. A fronteira tem testes HTTP e integração PostgreSQL A/B, incluindo
+exclusão pendente e concorrência com o lock de exportação.
