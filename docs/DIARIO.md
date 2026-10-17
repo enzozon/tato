@@ -884,3 +884,16 @@ Sem alteração de schema, provider, dados ou configuração de cobrança.
 A revisão do catálogo corrigiu o aviso sintético de Fôlego: o runtime emite
 alerta quando a projeção supera o saldo, sem emitir mensagem de cobertura positiva.
 A captura agora usa a mensagem real e fatos compatíveis com essa condição.
+
+### 17/10/2026 — Pesquisa de conexões bancárias e MCP
+
+- Consultadas fontes oficiais do Pierre, Banco Central, Pluggy, Belvo e MCP.
+  Os termos do Pierre citam REST/MCP, sem documentação pública suficiente para
+  validar endpoint e autenticação; não atribuímos um agregador ao seu backend.
+- Diferenciadas leitura de movimentações Pix, iniciação de pagamento e uso de
+  MCP. O protocolo não cria autorização bancária nem acesso ao app do iPhone.
+- Identificada oferta Meu Pluggy gratuita para uso pessoal limitado, distinta
+  do SaaS comercial. Cobertura genérica de PicPay/Sicoob não comprova o cartão
+  exato; Banestes permanece sem cobertura de fornecedor validada.
+- Nenhuma conta foi conectada, credencial lida, dependência instalada ou mudança
+  de provedor/schema executada. Experimento pessoal ainda depende de checkpoint.

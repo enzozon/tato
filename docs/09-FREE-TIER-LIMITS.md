@@ -158,3 +158,21 @@ com o banco local parado; sua identidade também foi removida antes do novo ensa
 LLM e envio de e-mail ficaram desligados. Não medimos o consumo total das contas
 nem o limite de usuários/requests desses serviços; conexão aprovada não é teste
 de capacidade. Google e envio Resend permanecem pendentes.
+
+## Open Finance pessoal — pesquisa em 17/10/2026
+
+A premissa inicial de que nenhum acesso real gratuito estava disponível precisa
+ser limitada ao produto comercial. O [guia oficial Meu Pluggy](https://docs.pluggy.ai/en/docs/guides/meu-pluggy-personal-use)
+anuncia acesso às próprias contas por API: até cinco conexões, atualização a cada
+24 horas, uso exclusivamente pessoal e não comercial, sem expirar com o trial.
+Isso é oferta publicada, não consumo ou conexão medidos pelo Tato.
+
+O [FAQ de preços](https://www.pluggy.ai/precos) admite possibilidade técnica do
+proxy MeuPluggy, mas isso não estabelece autorização de SaaS gratuito. A mesma
+página direciona produtos comerciais ao plano Dados, a partir de R$ 2.500/mês;
+o teste de produção de 15 dias não é solução gratuita permanente.
+
+O Free do Tato mantém sua definição atual. Um experimento pessoal separado exige
+checkpoint de provedor e prova da cobertura de cada conta/cartão. Nenhum cadastro,
+consentimento, trial ou gasto foi realizado nesta pesquisa. Limites e alternativas
+estão detalhados em `16-CONEXOES-MCP.md`.
