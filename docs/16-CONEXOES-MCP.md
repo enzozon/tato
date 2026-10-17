@@ -1,8 +1,9 @@
 # Conexões bancárias, Pierre e MCP
 
 Pesquisa pública em **17/10/2026**. Nenhum cadastro, consentimento, conector ou
-pagamento foi executado. Isto é uma proposta; o Tato continua usando importação
-de arquivos e lançamentos confirmados. Nenhum novo provedor foi aprovado.
+pagamento foi executado na pesquisa. Depois, Enzo autorizou o experimento pessoal
+separado Meu Pluggy, descrito em `17-MEU-PLUGGY-PESSOAL.md`, ainda sem prova real.
+O SaaS continua usando importação de arquivos e lançamentos confirmados.
 
 ## Como o Pierre conecta
 
@@ -112,8 +113,8 @@ qualquer divergência precisa ser esclarecida com o fornecedor antes de adotá-l
 A [Belvo](https://belvo.com/plans-and-pricing/) também distingue sandbox gratuito
 de produção paga. Não habilitaremos trial com contas reais como solução permanente.
 
-Recomendação: manter arquivos e prévia no MVP; considerar um experimento pessoal
-Meu Pluggy separado; só depois avaliar conexão comercial. Um servidor MCP do
+Recomendação: manter arquivos e prévia no MVP; testar a CLI pessoal Meu Pluggy
+separada descrita em `17-MEU-PLUGGY-PESSOAL.md`; só depois avaliar conexão comercial. Um servidor MCP do
 Tato pode reutilizar as consultas existentes, mas não elimina o custo de obter
-dados bancários. Nenhum endpoint, variável de ambiente ou botão de conexão será
-apresentado como funcional antes dessa decisão e dos testes reais.
+dados bancários. O experimento local não é um botão de conexão do SaaS nem uma
+integração bancária comprovada; depende de consentimento e testes reais.

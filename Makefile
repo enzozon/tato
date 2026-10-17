@@ -76,3 +76,7 @@ web-config:
 .PHONY: web-live-smoke
 web-live-smoke:
 	uv run --locked --env-file .env python scripts/smoke_web_live.py --confirm-free-tier
+
+.PHONY: meu-pluggy
+meu-pluggy:
+	uv run --locked --env-file .env python scripts/meu_pluggy.py $(ARGS)
