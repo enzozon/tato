@@ -880,3 +880,7 @@ Sem alteração de schema, provider, dados ou configuração de cobrança.
   intenções do chat aparecem separadas, respeitando o roteamento da aplicação.
 - A página de orientação offline aparece por visita direta; entrega sem rede,
   provedores reais e iPhone físico não fazem parte desta galeria.
+
+A revisão do catálogo corrigiu o aviso sintético de Fôlego: o runtime emite
+alerta quando a projeção supera o saldo, sem emitir mensagem de cobertura positiva.
+A captura agora usa a mensagem real e fatos compatíveis com essa condição.
