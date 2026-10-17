@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 
 test('interface importa no Postgres e consulta o valor pelo chat',async({page})=>{
   const live=process.env.TATO_LIVE_WEB==='true';
@@ -42,6 +43,18 @@ test('interface importa no Postgres e consulta o valor pelo chat',async({page})=
   await expect(usage.getByText('1 usados · 199 restantes de 200')).toBeVisible();
   await expect(usage.getByText('1 usados · 0 restantes de 1')).toBeVisible();
   await expect(usage.getByText('0 usados · 1 restantes de 1')).toBeVisible();
+  const pending=page.waitForEvent('download');
+  await page.getByRole('button',{name:'Baixar meus dados'}).click();
+  const download=await pending;
+  expect(download.suggestedFilename()).toBe('tato-dados.json');
+  const exported=JSON.parse(await readFile((await download.path())!,'utf8'));
+  expect(exported.version).toBe(1);
+  expect(exported.accounts).toHaveLength(1);
+  expect(exported.accounts[0].name).toBe('Conta de teste completo');
+  expect(exported.transactions).toHaveLength(1);
+  expect(exported.transactions[0].amount_cents).toBe('-1234');
+  expect(exported.transactions[0].account_id).toBe(exported.accounts[0].id);
+  expect(exported.chat_turns).toHaveLength(1);
   if(live) {
     console.log('LIVE_STAGE=chat_dashboard');
     await page.getByText('Excluir minha conta',{exact:true}).click();

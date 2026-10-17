@@ -67,7 +67,11 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
 - Fluxo local de recuperação de senha entregue e testado com Supabase simulado.
   Allowlist/SMTP e entrega real ainda precisam de configuração e prova externa.
   Google real e confirmação de e-mail também permanecem sem validação externa.
-- Exportação completa, Telegram, relatório PDF e Pluggy sandbox são etapa 12;
+- Exportação pessoal JSON implementada em `GET /me/export` e na tela Conta:
+  dados decifrados, valores em centavos como strings, sem vetores ou IDs externos.
+  O arquivo é completo ou recusado pelos limites, nunca truncado; PDFs originais
+  não são armazenados pelo Tato e não fazem parte da exportação.
+- Telegram, relatório PDF e Pluggy sandbox continuam como extensões da etapa 12;
   não são pré-requisitos para iniciar ensaios controlados do MVP.
 
 ## Evidência e regra de merge
