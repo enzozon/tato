@@ -867,3 +867,16 @@ casos identificados e expectativas monetárias do CSV sintético de 17/10/2026.
 A matriz distingue UI, API e dependências externas; não equivale a execução
 manual completa nem declara suporte a bancos sem exemplos ou PWA física.
 Sem alteração de schema, provider, dados ou configuração de cobrança.
+
+### 17/10/2026 — Galeria local para avaliação de todas as telas
+
+- Criado comando Playwright dedicado que percorre a interface real com mocks
+  exclusivamente sintéticos e bloqueio de rede externa, sem modo demo no produto.
+- Foram aprovados os dois percursos: 25 estados em desktop e 25 em celular,
+  com checagem de conteúdo, erros JavaScript e largura do documento.
+- O índice HTML e imagens ficam ignorados, separados dos traces. Execuções
+  parciais são identificadas e a próxima geração remove a galeria anterior.
+- Recuperação de senha inclui solicitação e formulário de nova senha. As quatro
+  intenções do chat aparecem separadas, respeitando o roteamento da aplicação.
+- A página de orientação offline aparece por visita direta; entrega sem rede,
+  provedores reais e iPhone físico não fazem parte desta galeria.
