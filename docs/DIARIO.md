@@ -859,3 +859,11 @@ O job paralelo de infraestrutura passou no mesmo SHA. Sem logs do servidor,
 a contraparte do lock e a causa não são identificáveis; não atribuir ao teardown.
 O CI agora preserva logs do Postgres sintético antes de apagar o ambiente em
 caso de falha, sem alterar migrations, inserir retry ou ocultar o erro.
+
+## Avaliação funcional local — 17/10/2026
+
+Inventário de telas, expansões, estados e rotas em `15-TESTES-LOCAIS.md`, com
+casos identificados e expectativas monetárias do CSV sintético de 17/10/2026.
+A matriz distingue UI, API e dependências externas; não equivale a execução
+manual completa nem declara suporte a bancos sem exemplos ou PWA física.
+Sem alteração de schema, provider, dados ou configuração de cobrança.
