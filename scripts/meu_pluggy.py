@@ -21,7 +21,7 @@ VARIABLES = (
 )
 
 
-def save_csv(content: bytes) -> None:
+def save_csv(content: bytes) -> Path:
     if not OUTPUT.resolve().is_relative_to(ROOT):
         raise PluggyError("Diretório de saída não pode apontar para fora do projeto.")
     OUTPUT.mkdir(parents=True, exist_ok=True)
@@ -32,10 +32,12 @@ def save_csv(content: bytes) -> None:
             temporary.write(content)
             temporary.flush()
             os.fsync(temporary.fileno())
-        os.link(temporary_path, OUTPUT / f"conta-{uuid4().hex}.csv")
+        destination = OUTPUT / f"conta-{uuid4().hex}.csv"
+        os.link(temporary_path, destination)
     finally:
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)
+    return destination
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -48,10 +50,9 @@ def main(argv: list[str] | None = None) -> int:
         print("Não executado: use --confirm-personal-use somente para suas próprias contas.")
         return 2
     configuration = [os.environ.get(key, "").strip() for key in VARIABLES]
-    if not all(configuration):
-        print(
-            "Configure as quatro variáveis MEU_PLUGGY_* descritas em docs/17-MEU-PLUGGY-PESSOAL.md."
-        )
+    missing = [key for key, value in zip(VARIABLES, configuration, strict=True) if not value]
+    if missing:
+        print("Configure no .env: " + ", ".join(missing) + ".")
         return 1
     if (
         args.start > args.end
@@ -70,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
                 raise PluggyError("Conta configurada não pertence ao item; nenhum arquivo criado.")
             print(f"Conta selecionada: {selected['type']} / BRL.")
             content, pending = service.export(selected, args.start, args.end)
-            save_csv(content)
+            destination = save_csv(content)
     except PluggyError as error:
         print(str(error))
         return 1
@@ -79,7 +80,7 @@ def main(argv: list[str] | None = None) -> int:
             "Leitura/exportação não concluída; confira configuração, período, quota e permissões."
         )
         return 1
-    print(f"CSV local em test-results/meu-pluggy. Pendentes excluídos: {pending}.")
+    print(f"CSV local: {destination.relative_to(ROOT)}. Pendentes excluídos: {pending}.")
     print("Arquivo financeiro em claro: revise no Tato antes de confirmar. Não abra em planilha.")
     print("Não misture fontes/períodos já importados; pagamento de fatura pode duplicar compras.")
     return 0

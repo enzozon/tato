@@ -42,8 +42,22 @@ class MeuPluggy:
                 **kwargs,
             ) as response:
                 if response.status_code != 200:
+                    if response.status_code == 429:
+                        raise PluggyError(
+                            "Limite do provedor (HTTP 429); aguarde antes de repetir."
+                        )
+                    if response.status_code >= 500:
+                        raise PluggyError(
+                            f"Provedor indisponível (HTTP {response.status_code}); "
+                            "tente mais tarde."
+                        )
+                    configuration = {
+                        "/auth": "MEU_PLUGGY_CLIENT_ID e MEU_PLUGGY_CLIENT_SECRET da aplicação",
+                        "/accounts": "MEU_PLUGGY_ITEM_ID e as permissões da conexão",
+                        "/v2/transactions": "MEU_PLUGGY_ACCOUNT_ID e as permissões da conta",
+                    }.get(path, "a configuração da aplicação")
                     raise PluggyError(
-                        f"Leitura recusada (HTTP {response.status_code}); confira configuração."
+                        f"Leitura recusada (HTTP {response.status_code}); confira {configuration}."
                     )
                 body = bytearray()
                 for chunk in response.iter_bytes():

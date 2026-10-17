@@ -921,3 +921,12 @@ Não houve conexão real, consentimento bancário, gasto ou habilitação comerc
 A revisão das bordas encontrou uma ambiguidade em `dateTo`: ampliamos dois dias
 no fim para não perder a noite brasileira se a API cortar na meia-noite UTC.
 Uma regressão simula esse corte e prova o último minuto local sem incluir o dia seguinte.
+
+### Validação real do coletor pessoal — 17/10/2026
+
+A autenticação, o vínculo item/conta e a coleta BANK/BRL funcionaram com a configuração
+local. O CSV foi validado sem expor linhas, descrições ou valores; a repetição manteve
+os mesmos registros. Nenhum movimento foi gravado no ledger durante essa verificação.
+O CLI agora mostra o caminho do arquivo e orienta por etapa quando há recusa HTTP;
+limite e indisponibilidade não são apresentados como prova de credencial incorreta.
+O guia inclui prévia, comparação SQL e reimportação para verificar deduplicação.
