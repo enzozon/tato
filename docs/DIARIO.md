@@ -823,3 +823,11 @@ Reutilizado o transporte autenticado para baixar JSON sem converter centavos
 int64 para Number. Cancelamento e trocas de sessão descartam respostas antigas;
 URLs Blob são liberadas e erros remotos não aparecem na tela. 120 testes web,
 check/build e PWA offline passaram com fixtures; falta a prova física no iPhone.
+
+### 17/10/2026 — exportação integrada ao fluxo completo
+
+Consolidados backend e interface após revisão independente sem P1/P2 encontrado.
+601 testes Python/HTTP (83,24%) e 108 integrações Postgres/Redis/RLS passaram.
+O navegador importou CSV, consultou o gasto e baixou o JSON pela API real local;
+o teste confere conta, vínculo e centavos exportados. A identidade é sintética,
+sem login remoto ou dados bancários reais. Safari/iPhone continua pendente.
