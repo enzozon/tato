@@ -176,3 +176,8 @@ O Free do Tato mantém sua definição atual. Um experimento pessoal separado ex
 checkpoint de provedor e prova da cobertura de cada conta/cartão. Nenhum cadastro,
 consentimento, trial ou gasto foi realizado nesta pesquisa. Limites e alternativas
 estão detalhados em `16-CONEXOES-MCP.md`.
+
+Enzo aprovou o experimento pessoal separado em 17/10. A CLI de
+`17-MEU-PLUGGY-PESSOAL.md` limita cada execução a 20 páginas/5.000 movimentos/
+2 MiB e falha integralmente, sem tentar refresh do item nem retry automático.
+Validação é sintética; consumo remoto e cobertura das contas ainda não medidos.

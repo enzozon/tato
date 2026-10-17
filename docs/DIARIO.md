@@ -909,3 +909,12 @@ A captura agora usa a mensagem real e fatos compatíveis com essa condição.
   Foco do importador e região acessível tiveram regressões posteriores específicas.
 - Integração real passou no banco descartável: importar, consultar por SQL, atualizar
   resumo/quota e baixar JSON. Não comprova login remoto, bancos ou iPhone físico.
+
+## Experimento pessoal Meu Pluggy — 17/10/2026
+
+Após checkpoint do provedor, adicionamos leitura local separada do SaaS: conta
+explicitamente vinculada ao item, CSV revisável e nenhuma escrita automática.
+O cursor v2 substitui o endpoint de páginas legado; valores usam Decimal antes
+da normalização e datas usam São Paulo. Testes sintéticos cobrem sinais de
+cartão/conta, paginação, limites, isolamento do item e falhas sem CSV parcial.
+Não houve conexão real, consentimento bancário, gasto ou habilitação comercial.
