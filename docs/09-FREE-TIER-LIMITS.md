@@ -28,6 +28,17 @@ pago, recarga automática nem modelo pago como fallback.
 | [Logfire Personal](https://pydantic.dev/docs/logfire/manage/logfire-costs/) | 10 milhões de logs/spans/métricas combinados/mês; sem overage pago | Não medido; integração desligada | Restringe visualização e depois descarta ingestão; logs locais |
 | GitHub Actions | Repositório público, runner Ubuntu padrão; conferir política antes de alterar recursos | Tempos abaixo | Cache, reduzir builds redundantes, nunca pular checks obrigatórios |
 
+## Medição local de recursos — 17/10/2026
+
+`make rag-measure` com modelos em cache, CPU Windows e conteúdo público mediu
+pico de 769,61 MiB no encoder e 864,99 MiB com reranker carregado. Consulta
+aquecida: 0,004 s; reranking de 20 candidatos: 0,246 s. São amostras de um
+processo, sem exportação concorrente, carga ou comprovação Linux.
+O pico observado excede 512 MiB: não considerar esse tamanho de host aprovado
+para o RAG completo. O limite de 64 MiB do arquivo de exportação também não é
+teto de memória do processo. Host e medição da imagem continuam pendentes;
+nenhuma contratação ou publicação foi realizada nesta medição.
+
 ## Medição inicial: 19/09/2026
 
 Fonte: timestamps de jobs da API do GitHub, não estimativa do tempo de CPU.

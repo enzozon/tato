@@ -3,6 +3,8 @@
 **Seu dinheiro, em uma conversa.** Experimento de SaaS financeiro com Python,
 LLM e RAG, limitado a serviços gratuitos. Em construção; use dados sintéticos.
 
+Roteiro completo: [rodar, testar e publicar](docs/14-PRIMEIRO-USO.md).
+
 ## Executar localmente
 
 Pré-requisitos: Git, uv e GNU Make. O uv instala o Python 3.12 indicado no projeto.
@@ -30,8 +32,8 @@ execute as receitas do Makefile diretamente no PowerShell, uma por vez.
 
 ## Serviços locais
 
-Instale Docker com Compose v2. Copie `.env.example` para `.env` (no PowerShell:
-`Copy-Item .env.example .env`) e ajuste a senha apenas localmente. Execute
+Instale Docker com Compose v2. Somente se ainda não existir `.env`, use o exemplo
+como base; preserve as chaves e senhas de um ambiente já preparado. Execute
 `make infra-up` para PostgreSQL 17 com pgvector disponível e Redis 8.10.
 As portas 5432 e 6379 ficam vinculadas somente a `127.0.0.1`.
 
@@ -41,7 +43,7 @@ esse comando apagaria o banco. Alterar a senha no `.env` não muda a senha de
 um banco já inicializado no volume.
 
 A API de saúde e `make check` independem desses serviços. A camada de dados
-inclui sete migrations revisadas, pgvector e RLS.
+inclui migrations revisadas, pgvector e RLS.
 
 ## Preparar o banco de desenvolvimento
 

@@ -831,3 +831,10 @@ Consolidados backend e interface após revisão independente sem P1/P2 encontrad
 O navegador importou CSV, consultou o gasto e baixou o JSON pela API real local;
 o teste confere conta, vínculo e centavos exportados. A identidade é sintética,
 sem login remoto ou dados bancários reais. Safari/iPhone continua pendente.
+
+### 17/10/2026 — roteiro de uso e publicação
+
+Documentados comandos reais do monorepo, duas janelas de execução e roteiro
+manual com CSV sintético de R$ 70. Publicar frontend não publica API local.
+Host continua pendente: RAG medido em 865 MiB e HF Docker exige plano pago;
+nenhum serviço foi contratado ou publicado para contornar essa limitação.
