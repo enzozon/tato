@@ -202,6 +202,7 @@ O gerador navega na aplicação existente; não há modo demonstrativo no produt
 
 Todos os registros, tokens, respostas de IA e cobranças são simulados. A rede
 externa é bloqueada e apenas os hosts sintéticos têm respostas interceptadas.
+O cenário de saldo usa R$ 100 de abertura menos R$ 70 de despesas: R$ 30.
 As asserções verificam conteúdo, ausência de erro JavaScript e de transbordamento
 horizontal. O teste não envia e-mail, não paga, não exclui conta real e não baixa
 exportação pessoal. A página offline é visitada diretamente; testar sua entrega

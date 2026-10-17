@@ -32,10 +32,10 @@ test('catálogo das telas principais com dados sintéticos',async({page},info)=>
     if(route.request().method()==='OPTIONS')return route.fulfill({headers,status:200});
     const responses:Record<string,unknown>={
       '/me':{onboarding_completed:completed,plan:{name:'free',agents:1,messages_per_month:200}},
-      '/dashboard':{as_of:'2026-10-17',balance_cents:'93000',expense_cents:'7000',categories:[{name:'Alimentação',amount_cents:'7000'}],accounts:[{id:account,name:'Conta sintética',kind:'checking',opening_date:'2026-10-01',balance_cents:'93000'}]},
+      '/dashboard':{as_of:'2026-10-17',balance_cents:'3000',expense_cents:'7000',projected_balance_cents:'-2765',categories:[{name:'Alimentação',amount_cents:'7000'}],accounts:[{id:account,name:'Conta sintética',kind:'checking',opening_date:'2026-10-01',balance_cents:'3000'}]},
       '/chat':[], '/goals':[{id:owner,description:'Reserva sintética',target_cents:500000}],
       '/agents':[{kind:'runway',account_id:account,goal_id:null,enabled:true,email_enabled:false}],
-      '/insights':[{id:owner,read_at:null,signal:{message:'Seu saldo registrado cobre a projeção sintética.',kind:'runway',as_of:'2026-10-17',facts:{balance_cents:93000,projected_expense_cents:12000,remaining_days:14}}}],
+      '/insights':[{id:owner,read_at:null,signal:{message:'A projeção linear de despesas supera o saldo registrado. Revise o mês.',kind:'runway',as_of:'2026-10-17',facts:{balance_cents:3000,spent_cents:7000,projected_expense_cents:5765,remaining_days:14}}}],
       '/me/usage':{period_end:'2026-11-01T00:00:00Z',messages:{used:4,limit:200,remaining:196},import_sources:{used:1,limit:1,remaining:0},agents:{used:1,limit:1,remaining:0}},
       '/me/llm-usage':{period_start:'2026-10-01',period_end:'2026-11-01',attempts:4,input_tokens:600,output_tokens:120,elapsed_ms:1200,unknown_input_attempts:0,unknown_output_attempts:0},
       '/billing/status':{enabled:billing,mode:'test',can_checkout:billing,can_portal:billing,pending_request_id:null},
@@ -87,7 +87,7 @@ test('catálogo das telas principais com dados sintéticos',async({page},info)=>
   await page.getByLabel('Extrato ou fatura').filter({visible:true}).setInputFiles({name:'movimentos-sinteticos.csv',mimeType:'text/csv',buffer:Buffer.from('date,title,amount\n2026-10-17,Mercado sintetico,42.00\n2026-10-17,Delivery sintetico,28.00')});
   await tab('Revisar prévia');await expect(page.getByRole('heading',{name:'Confira antes de salvar'})).toBeVisible();await capture('14-previa-importacao');
   await tab('Confirmar importação');await expect(page.getByRole('status')).toContainText('2 lançamentos importados');await capture('15-importacao-concluida');
-  await tab('Agentes');await expect(page.getByRole('heading',{name:'Seu saldo registrado cobre a projeção sintética.'})).toBeVisible();await capture('16-agentes-avisos');
+  await tab('Agentes');await expect(page.getByRole('heading',{name:'A projeção linear de despesas supera o saldo registrado. Revise o mês.'})).toBeVisible();await capture('16-agentes-avisos');
   await page.getByText('Configurar um agente',{exact:true}).click();await page.getByRole('combobox',{name:/^Agente/}).selectOption('goal');await page.getByText('Criar uma meta',{exact:true}).click();await capture('17-agente-meta-email');
   await tab('Conta');await expect(page.getByText('4 usados · 196 restantes de 200')).toBeVisible();await capture('18-conta-exportacao-cobranca-desligada');
   await page.getByText('Excluir minha conta',{exact:true}).click();await capture('19-exclusao-confirmacao');
