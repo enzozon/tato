@@ -1,3 +1,4 @@
+import { navigate } from '../tests/navigation';
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
@@ -13,12 +14,13 @@ test('interface importa no Postgres e consulta o valor pelo chat',async({page})=
   await page.getByRole('button',{name:'Entrar',exact:true}).click();
   await page.getByRole('button',{name:'Entendi, vamos lá'}).click();
   if(live) console.log('LIVE_STAGE=login_onboarding');
+  await navigate(page,'Resumo');
   await page.getByLabel('Nome',{exact:true}).fill('Conta de teste completo');
   await page.getByLabel('Primeiro dia do período').fill(first);
   await page.getByLabel('Saldo de abertura (R$)').fill('100,00');
   await page.getByRole('button',{name:'Salvar conta',exact:true}).click();
-  await expect(page.getByText('Conta de teste completo',{exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Importar',exact:true}).click();
+  await expect(page.getByText('Conta de teste completo',{exact:true}).filter({visible:true})).toBeVisible();
+  await navigate(page,'Importar');
   await page.getByLabel('Extrato ou fatura').setInputFiles({name:'synthetic.csv',mimeType:'text/csv',buffer:Buffer.from(`data;descricao;valor;id\n${bankDate};Mercado sintético;12.34;synthetic-001`)});
   await page.getByText('Mapear colunas de CSV personalizado').click();
   await page.getByLabel('Coluna da data').fill('data');
@@ -32,13 +34,13 @@ test('interface importa no Postgres e consulta o valor pelo chat',async({page})=
   await page.getByRole('button',{name:'Confirmar importação'}).click();
   await expect(page.getByRole('status')).toContainText('1 lançamentos importados');
   if(live) console.log('LIVE_STAGE=import');
-  await page.getByRole('button',{name:'Conversa',exact:true}).click();
+  await navigate(page,'Conversa');
   await page.getByLabel('Sua mensagem').fill('quanto gastei este mês');
   await page.getByRole('button',{name:'Enviar mensagem'}).click();
   await expect(page.locator('.answer strong')).toHaveText('R$ 12,34');
-  await page.getByRole('button',{name:'Resumo',exact:true}).click();
+  await navigate(page,'Resumo');
   await expect(page.locator('.metrics article').filter({hasText:'Saldo das contas'}).getByRole('heading')).toHaveText('R$ 87,66');
-  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  await navigate(page,'Conta');
   const usage=page.getByRole('region',{name:'Consumo do plano'});
   await expect(usage.getByText('1 usados · 199 restantes de 200')).toBeVisible();
   await expect(usage.getByText('1 usados · 0 restantes de 1')).toBeVisible();

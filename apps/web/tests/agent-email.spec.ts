@@ -1,3 +1,4 @@
+import { navigate } from './navigation';
 import { test, expect } from '@playwright/test';
 
 test('e-mail exige opt-in explícito e preserva preferência ao renovar ou pausar',async({page})=>{
@@ -32,7 +33,7 @@ test('e-mail exige opt-in explícito e preserva preferência ao renovar ou pausa
   await page.getByLabel('E-mail',{exact:true}).fill(user.email);
   await page.getByLabel('Senha',{exact:true}).fill('synthetic-password');
   await page.getByRole('button',{name:'Entrar',exact:true}).click();
-  await page.getByRole('button',{name:'Agentes',exact:true}).click();
+  await navigate(page,'Agentes');
   await expect(page.getByText('E-mail: desligado',{exact:true})).toBeVisible();
   await page.getByText('Configurar um agente',{exact:true}).click();
   const checkbox=page.getByRole('checkbox',{name:'Autorizar avisos por e-mail'});

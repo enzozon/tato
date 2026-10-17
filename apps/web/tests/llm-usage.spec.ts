@@ -1,3 +1,4 @@
+import { navigate } from './navigation';
 import { test, expect, type Page } from '@playwright/test';
 
 const measurement={period_start:'2026-10-01T00:00:00Z',period_end:'2026-11-01T00:00:00Z',
@@ -22,7 +23,7 @@ async function openSettings(page:Page) {
   await page.getByLabel('E-mail',{exact:true}).fill(user.email);
   await page.getByLabel('Senha',{exact:true}).fill('synthetic-password');
   await page.getByRole('button',{name:'Entrar',exact:true}).click();
-  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  await navigate(page,'Conta');
 }
 
 test('medições distinguem tokens desconhecidos de zero conhecido',async({page})=>{

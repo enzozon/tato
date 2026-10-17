@@ -897,3 +897,15 @@ A captura agora usa a mensagem real e fatos compatíveis com essa condição.
   exato; Banestes permanece sem cobertura de fornecedor validada.
 - Nenhuma conta foi conectada, credencial lida, dependência instalada ou mudança
   de provedor/schema executada. Experimento pessoal ainda depende de checkpoint.
+
+### Conversa com compositor (17/10/2026)
+
+- Interface de conversa mantém importação com prévia, conta selecionada, fontes
+  SQL/RAG, repetição do mesmo pedido e confirmação explícita antes de gravar.
+- Sugestões preenchem o campo sem chamada à IA; Enter envia e Shift + Enter
+  quebra a linha. Cores e movimentos continuam no pacote do mascote.
+- Validação: 601 testes Python/HTTP (83,24%), 128 testes web, quatro verificações
+  extras de viewport/importação/fontes, 56 capturas, build estático e PWA offline.
+  Foco do importador e região acessível tiveram regressões posteriores específicas.
+- Integração real passou no banco descartável: importar, consultar por SQL, atualizar
+  resumo/quota e baixar JSON. Não comprova login remoto, bancos ou iPhone físico.

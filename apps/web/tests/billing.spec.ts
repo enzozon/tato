@@ -1,3 +1,4 @@
+import { navigate } from './navigation';
 import { test, expect, type Page } from '@playwright/test';
 
 const pending = '00000000-0000-4000-8000-000000000003';
@@ -20,7 +21,7 @@ async function settings(page: Page) {
   await page.getByLabel('E-mail', { exact: true }).fill(user.email);
   await page.getByLabel('Senha', { exact: true }).fill('synthetic-password');
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
-  await page.getByRole('button', { name: 'Conta', exact: true }).click();
+  await navigate(page,'Conta');
 }
 
 test('cobrança desligada não permite ações nem concede plano pelo retorno', async ({ page }) => {
