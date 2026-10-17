@@ -1,4 +1,4 @@
-# Plano de conclusão — revisão de 15/10/2026
+# Plano de conclusão — revisão de 17/10/2026
 
 Este é o plano da retomada solicitado pelo Enzo. As etapas 1–9 têm implementação
 local e CI anterior aprovado; isso não significa que todos os critérios de
@@ -15,7 +15,7 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
 | Conversa livre | Principal | Ampliação de regressões financeiras; filtro lexical permanece limitado |
 | Sessão e concorrência web | Agente frontend + revisão principal | Respostas antigas não sobrescrevem estado novo nem encerram outra identidade |
 | Preferência de e-mail | Agente frontend | Opt-in explícito; entrega real depende de configuração |
-| Stripe | Agente cobrança + revisão principal | Ciclo local de eventos, limpeza e recompra validado; falta ensaio remoto sandbox |
+| Stripe | Agente cobrança + revisão principal | Ciclo local validado; preço sandbox consultado; falta ciclo remoto de checkout/webhook |
 | Pix | Agente cobrança | Adapter exclusivamente sandbox; sem concessão de plano ou rota ativa |
 | Consumo LLM | Agente cobrança + frontend | Totais mensais SQL isolados, com medições ausentes explícitas |
 | Prontidão | Principal | `/ready` confere conexão, papel restrito e tabela sem ler registros |
@@ -34,10 +34,12 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
 - [ ] Integração Pix: adapter sandbox consulta pedidos paginados e reconhece
   reembolso; não concede plano. Falta contrato verificável de remoção/cancelamento
   da cobrança transparente antes de ativar rotas (detalhes em `12-MONETIZACAO.md`).
-- [ ] Configurar chaves sandbox localmente, validar ensaios opt-in sem cobrança
-  real e só depois habilitar `BILLING_ENABLED`.
-  Ensaio somente leitura `make stripe-smoke ARGS=--confirm-test-mode` preparado;
-  credenciais Stripe ainda ausentes na conferência de 15/10.
+  Chaves Pix ainda ausentes na conferência local de 17/10.
+- [x] Configurar chave, preço, segredo de webhook e URL de retorno Stripe locais.
+  Em 17/10, `make stripe-smoke ARGS=--confirm-test-mode` validou via GET o preço
+  sandbox de R$ 39/mês. Não criou checkout, pagamento nem recebeu webhook.
+- [ ] Validar ciclo remoto sandbox de checkout, webhook, portal e exclusão antes
+  de habilitar `BILLING_ENABLED`, que permanece `false`.
 - [x] Transportes Sentry/PostHog/Logfire com allowlist técnica, fila limitada,
   amostragem e testes locais; limites oficiais registrados em `09-FREE-TIER-LIMITS.md`.
 - [ ] Confirmar planos gratuitos e credenciais no painel e provar recepção remota
@@ -63,7 +65,8 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
 - Faturas PicPay/Banestes e conta/cartão Sicoob dependem de exemplos compatíveis;
   não afirmar suporte sem fixture e comparação. Sicoobcard visto apenas no app
   do iPhone não oferece, por si só, uma API/MCP acessível pelo Windows.
-- RESEND_FROM e entrega real precisam ser validados; opt-in na tela não envia.
+- `RESEND_FROM` ausente na conferência de 17/10; entrega real ainda precisa ser
+  configurada e validada. Opt-in na tela não comprova envio.
 - Fluxo local de recuperação de senha entregue e testado com Supabase simulado.
   Allowlist/SMTP e entrega real ainda precisam de configuração e prova externa.
   Google real e confirmação de e-mail também permanecem sem validação externa.
