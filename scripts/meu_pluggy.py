@@ -3,7 +3,7 @@
 import argparse
 import os
 import tempfile
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from uuid import uuid4
 
@@ -57,7 +57,7 @@ def main(argv: list[str] | None = None) -> int:
         args.start > args.end
         or (args.end - args.start).days > 366
         or args.start == date.min
-        or args.end == date.max
+        or args.end > date.max - timedelta(days=2)
     ):
         print("Período inválido; use até 366 dias.")
         return 1

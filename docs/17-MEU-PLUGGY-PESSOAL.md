@@ -49,7 +49,9 @@ continua limitado a uma fonte; testes de várias contas usam Pro sintético loca
   timeout, duplicatas, resposta incompleta e precisão maior que centavos falham.
 - Datas com fuso viram `America/Sao_Paulo` usando `tzdata` já instalado no Windows.
   Datas sem horário ou timestamps sem fuso são recusados.
-  A consulta amplia um dia nas bordas e filtra pelo dia local solicitado.
+  A consulta amplia um dia no início e dois no fim, pois o corte UTC de `dateTo`
+  não está documentado, e filtra pelo dia local solicitado. Isso cobre também
+  21h–23h59 do último dia, sem incluir o dia local seguinte no CSV.
 - Só `POSTED` é exportado. `PENDING`, inclusive fatura aberta/parcela futura,
   fica fora e tem contagem informada. Não é previsão completa de fatura.
 - Em cartão, despesas positivas na API viram valores negativos no CSV; pagamentos

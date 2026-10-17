@@ -918,3 +918,6 @@ O cursor v2 substitui o endpoint de páginas legado; valores usam Decimal antes
 da normalização e datas usam São Paulo. Testes sintéticos cobrem sinais de
 cartão/conta, paginação, limites, isolamento do item e falhas sem CSV parcial.
 Não houve conexão real, consentimento bancário, gasto ou habilitação comercial.
+A revisão das bordas encontrou uma ambiguidade em `dateTo`: ampliamos dois dias
+no fim para não perder a noite brasileira se a API cortar na meia-noite UTC.
+Uma regressão simula esse corte e prova o último minuto local sem incluir o dia seguinte.

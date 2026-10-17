@@ -47,7 +47,7 @@ def test_auth_accounts_and_cursor_roundtrip():
             return httpx.Response(200, json={"results": [ACCOUNT], "total": 1, "totalPages": 1})
         assert request.url.path == "/v2/transactions"
         assert request.url.params["dateFrom"] == "2026-10-09"
-        assert request.url.params["dateTo"] == "2026-10-11"
+        assert request.url.params["dateTo"] == "2026-10-12"
         if "after" not in request.url.params:
             return httpx.Response(
                 200, json={"results": [ROW], "next": "?accountId=account-private&after=a%2Bb"}
@@ -269,3 +269,26 @@ def test_unknown_subtype_is_rejected(subtype):
     )
     with pytest.raises(PluggyError, match="Subtipo"):
         service.accounts("client", "secret", "item-private")
+
+
+def test_utc_midnight_cutoff_preserves_last_local_minute():
+    from datetime import datetime
+
+    def respond(request):
+        cutoff = datetime.fromisoformat(request.url.params["dateTo"] + "T00:00:00Z")
+        rows = [
+            {**ROW, "id": "late", "date": "2026-10-11T02:59:59Z"},
+            {**ROW, "id": "next-day", "date": "2026-10-11T03:00:00Z"},
+        ]
+        return httpx.Response(
+            200,
+            json={
+                "results": [row for row in rows if datetime.fromisoformat(row["date"]) < cutoff],
+                "next": None,
+            },
+        )
+
+    content, _ = client(respond).export(ACCOUNT, DAY, DAY)
+    entries = parse_csv(content)
+    assert len(entries) == 1 and entries[0].booked_on == DAY
+    assert entries[0].amount_cents == -1234
