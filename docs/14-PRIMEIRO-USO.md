@@ -60,8 +60,8 @@ e flag pública próprios. [Referência](https://supabase.com/docs/guides/auth/r
    `make rag-index` uma vez no banco local preparado: usa conexão administrativa
    e indexa somente o corpus público, não seus uploads privados.
 8. Ativar um agente Free e conferir limites; alertas exigem dados suficientes.
-9. Conferir consumo, saída/login e recuperação de senha. Quando a exportação
-   estiver integrada, baixar o JSON e conferir valores e descrições.
+9. Em Conta → Baixar meus dados, salvar o JSON e conferir valores e descrições.
+   Conferir também consumo, saída/login e recuperação de senha.
 10. Excluir somente uma conta descartável; a exclusão remove seus registros.
 
 O Free permite uma fonte importada e um agente. Várias instituições exigem o
@@ -135,7 +135,7 @@ Finalizar com usuário externo, PWA física, rollback, carga e quotas observadas
 
 ## Próxima implementação
 
-Concluir exportação e download; validar auth/e-mails e sandbox Stripe; aprovar
+Validar auth/e-mails e o ciclo completo sandbox Stripe; aprovar
 host compatível com R$ 0; implementar deploy/smoke/rollback/quotas; validar
 bancos pendentes e iPhone. Pix aguarda contrato de cleanup. Telegram, relatório
 PDF e Pluggy sandbox vêm depois do MVP.

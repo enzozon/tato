@@ -841,3 +841,12 @@ nenhum serviço foi contratado ou publicado para contornar essa limitação.
 
 Revisão do roteiro explicita a instalação do Chromium para o Playwright, a
 data obrigatória da conta sintética e a seleção de Node 24 no build do Pages.
+
+### 17/10/2026 — exportação disponível e conferência sandbox
+
+PR32 integrada: roteiro agora inclui o download pessoal na tela Conta.
+O ensaio Stripe somente leitura validou preço sandbox de R$ 39/mês via GET;
+não houve checkout, pagamento ou webhook. Chave, preço, segredo de webhook e
+URL de retorno estão presentes localmente. `BILLING_ENABLED=false`, flags de
+telemetria desligadas, `RESEND_FROM` pendente e chaves Pix ausentes.
+O ciclo remoto de cobrança e a entrega de e-mails continuam sem comprovação.
