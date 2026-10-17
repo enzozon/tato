@@ -5,8 +5,8 @@ onboarding, contas e resumo; prévia de importação; chat e fontes; agentes;
 PWA sem cache financeiro; testes de navegador e CI. Sem novo schema previsto.
 A branch parte da etapa 8. PR 17 já integrado; o PR desta etapa aponta para main.
 
-Direção visual: papel claro, verde profundo e terracota, tipografia de leitura,
-mascote geométrico autoral. Formulários usam HTML semântico e foco visível.
+Direção visual atual: Obsidiana, grafite e menta com cobre do mascote autoral.
+Formulários usam HTML semântico e foco visível.
 Next/React substituem roteamento e renderização próprios; Supabase JS cuida da
 sessão; Playwright valida comportamento real no navegador. CSS local nesta
 primeira entrega evita gerar uma biblioteca de componentes sem usos definidos.

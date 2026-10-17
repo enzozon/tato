@@ -22,9 +22,9 @@
     "recorded": "Lançamento registrado na conta selecionada."
   },
   "palette": {
-    "ink": "#173e35",
-    "paper": "#faf8f1",
-    "accent": "#a8492a"
+    "ink": "#f1f3ee",
+    "paper": "#0c0e10",
+    "accent": "#b7e2cf"
   },
   "mood_messages": {
     "calmo": "Um passo de cada vez.",

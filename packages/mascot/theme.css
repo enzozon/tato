@@ -1,5 +1,44 @@
-:root{--ink:#173e35;--paper:#faf8f1;--muted:#52655e;--accent:#a8492a;--line:#d6dfd5;--wash:#edf2e9;font-family:Arial,sans-serif;color:var(--ink);background:var(--paper)}
-.breath{transform-origin:center;animation:breathe 4s ease-in-out infinite}.eye{animation:blink 6s infinite}@keyframes breathe{50%{transform:translateY(-3px)}}@keyframes blink{0%,46%,50%,100%{opacity:1}48%{opacity:0}}@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
-:root{--chat-ink:#f4f4ee;--chat-paper:#151918;--chat-muted:#b4bdb8;--chat-line:#77897e;--chat-wash:#242c28;--chat-accent:#f4bd8d;--chat-shadow:#0003;--chat-error-ink:#ffd7cf;--chat-error-paper:#542d27}
-.mood-atento .breath{animation:attend 2s ease-in-out infinite}.mood-comemorando .breath{animation:celebrate 1.8s ease-in-out 1}.mood-alerta .breath{animation:curl-in .5s ease-out both}.mood-dormindo .breath{animation-duration:7s}
-@keyframes attend{50%{transform:translateY(-4px) rotate(-2deg)}}@keyframes celebrate{25%,75%{transform:translateY(-7px)}50%{transform:rotate(3deg)}}@keyframes curl-in{from{transform:scale(.85) rotate(-12deg);opacity:.5}to{transform:scale(1);opacity:1}}
+:root {
+  color-scheme: dark;
+  --ink: #f1f3ee;
+  --paper: #0c0e10;
+  --accent: #b7e2cf;
+  --accent-ink: #15271f;
+  --muted: #adb6bc;
+  --copper: #e8ab83;
+  --line: #343d43;
+  --control: #77868e;
+  --wash: #20272c;
+  --surface: #14181b;
+  --danger: #ffc0b3;
+  --danger-paper: #3c2523;
+  --danger-line: #885a50;
+  --accent-hover: #d1f7e0;
+  --chat-ink: var(--ink);
+  --chat-paper: var(--paper);
+  --chat-muted: var(--muted);
+  --chat-line: var(--control);
+  --chat-wash: var(--wash);
+  --chat-accent: var(--accent);
+  --chat-shadow: #0005;
+  --chat-error-ink: var(--danger);
+  --chat-error-paper: var(--danger-paper);
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+}
+.mascot { flex: none; overflow: visible; }
+.breath { transform-origin: center; animation: breathe 5s ease-in-out infinite; }
+.eye { animation: blink 7s infinite; }
+.mood-atento .breath { animation: attend 2s ease-in-out infinite; }
+.mood-comemorando .breath { animation: celebrate 1.8s ease-in-out 1; }
+.mood-alerta .breath { animation: curl-in .5s ease-out both; }
+.mood-dormindo .breath { animation-duration: 7s; }
+@keyframes breathe { 50% { transform: translateY(-3px) rotate(1deg); } }
+@keyframes blink { 0%,46%,50%,100% { opacity: 1; } 48% { opacity: 0; } }
+@keyframes attend { 50% { transform: translateY(-4px) rotate(-2deg); } }
+@keyframes celebrate { 25%,75% { transform: translateY(-7px); } 50% { transform: rotate(3deg); } }
+@keyframes curl-in { from { transform: scale(.85) rotate(-12deg); opacity: .5; } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
