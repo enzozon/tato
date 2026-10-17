@@ -10,6 +10,8 @@
     "dormindo"
   ],
   "messages": {
+    "web_title": "Vamos conversar.",
+    "web_prompt": "Como posso ajudar com seu dinheiro hoje?",
     "greeting": "Olá! Sou {name}. Posso consultar despesas, explicar conceitos ou preparar um lançamento.",
     "clarify": "Preciso de mais detalhes. Tente: quanto gastei este mês; o que é reserva de emergência; ou gastei 42 no mercado ontem.",
     "draft": "Confira a prévia abaixo e confirme para registrar na conta selecionada.",

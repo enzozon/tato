@@ -16,12 +16,13 @@ export default function AppPage() {
   const generation = useRef(0);
   const identityId = useRef('');
   const accessToken = useRef('');
+  const menuButton = useRef<HTMLButtonElement>(null);
   const recoveryOwner = useRef<string | null>(null);
   const closingRecovery = useRef(false);
   const [recovery, setRecovery] = useState<string | null>(null);
   const [owner, setOwner] = useState('');
-  const [tab, setTab] = useState('Resumo');
-  const [visited, setVisited] = useState(['Resumo']);
+  const [tab, setTab] = useState('Conversa'), [menuOpen, setMenuOpen] = useState(false);
+  const [visited, setVisited] = useState(['Conversa']);
   async function refresh(current = token) {
     if (current !== accessToken.current || recoveryOwner.current !== null) return;
     const version = generation.current;
@@ -63,7 +64,7 @@ export default function AppPage() {
       accessToken.current = nextToken;
       if (nextOwner !== identityId.current) {
         identityId.current = nextOwner; setOwner(nextOwner);
-        setProfile(undefined); setData(undefined); setTab('Resumo'); setVisited(['Resumo']);
+        setProfile(undefined); setData(undefined); setTab('Conversa'); setVisited(['Conversa']); setMenuOpen(false);
       }
       setToken(nextToken); setError('');
     }).data.subscription;
@@ -84,17 +85,21 @@ export default function AppPage() {
     try { await request('/me/onboarding', token, {method:'POST',body:JSON.stringify({completed:true})}); await refresh(); }
     catch(e) { if (version === generation.current) setError(e instanceof Error ? e.message : 'Não foi possível continuar.'); }
   }
-  return <><header><a className="brand" href="/">{identity.name.toLowerCase()}.</a>
+  const signedIn=!!token && recovery === null;
+  return <div className={signedIn?`app-layout ${tab==='Conversa'?'chat-active':''}`:''}><header className={signedIn?'app-header':''}><a className="brand" href="/">{identity.name.toLowerCase()}.</a>
+    {signedIn && data && <button ref={menuButton} className="secondary app-menu" aria-controls="app-navigation" aria-expanded={menuOpen} onClick={()=>setMenuOpen(!menuOpen)}>Menu</button>}
     {token && recovery === null && <nav><span>Plano {profile?.plan.name || '…'}</span><button className="secondary" onClick={()=>auth?.auth.signOut({scope:'local'})}>Sair</button></nav>}</header>
-    <main id="content">{recovery !== null ? <PasswordRecovery key={recovery} owner={recovery} currentOwner={owner} cancel={cancelRecovery}/> : !token ? <Login/> : <>
+    <main id="content" className={signedIn?'app-main':''}>{recovery !== null ? <PasswordRecovery key={recovery} owner={recovery} currentOwner={owner} cancel={cancelRecovery}/> : !token ? <Login/> : <>
       {error && <p role="alert" className="error">{error} <button onClick={()=>refresh().catch(e=>setError(e.message))}>Tentar novamente</button></p>}
       {!profile && !error && <p role="status">Preparando seu espaço…</p>}
       {profile && !profile.onboarding_completed && <section className="panel"><h2>Você escolhe por onde começar.</h2><p>Cadastre uma conta, importe um extrato e revise a prévia. Não precisamos do seu CPF.</p><button onClick={onboarding}>Entendi, vamos lá</button></section>}
-      {data && <div key={owner}><nav className="tabs" aria-label="Seu espaço">{['Resumo','Conversa','Importar','Agentes','Conta'].map(name=><button className={tab===name?'':'secondary'} key={name} onClick={()=>{setTab(name);setVisited(t=>t.includes(name)?t:[...t,name]);}} aria-current={tab===name?'page':undefined}>{name}</button>)}</nav>
-        <div hidden={tab!=='Resumo'}><Overview data={data} token={token} refresh={refresh}/></div>
-        {visited.includes('Conversa') && <div hidden={tab!=='Conversa'}><Chat token={token} accounts={data.accounts} refresh={refresh}/></div>}
-        {visited.includes('Importar') && <div hidden={tab!=='Importar'}><Import token={token} accounts={data.accounts} refresh={refresh}/></div>}
-        {tab==='Agentes' && profile && <Agents token={token} accounts={data.accounts} limit={profile.plan.agents}/>}
-        {tab==='Conta' && profile && <Settings token={token} profile={profile} owner={owner}/>}
-      </div>}</>}</main></>;
+      {data && <div className="app-workspace" key={owner}><nav id="app-navigation" onKeyDown={event=>{if(event.key==='Escape'&&menuOpen){setMenuOpen(false);menuButton.current?.focus();}}} className={`app-navigation ${menuOpen?'is-open':''}`} aria-label="Seu espaço">{['Conversa','Resumo','Importar','Agentes','Conta'].map(name=><button className={tab===name?'':'secondary'} key={name} onClick={()=>{setTab(name);setVisited(t=>t.includes(name)?t:[...t,name]);setMenuOpen(false);if(menuOpen)menuButton.current?.focus();}} aria-current={tab===name?'page':undefined}>{name}</button>)}</nav>
+        <div className={tab==='Conversa'?'app-view is-chat':'app-view'}>
+          <div hidden={tab!=='Resumo'}><Overview data={data} token={token} refresh={refresh}/></div>
+          {visited.includes('Conversa') && <div hidden={tab!=='Conversa'}><Chat token={token} accounts={data.accounts} refresh={refresh} active={tab==='Conversa'}/></div>}
+          {visited.includes('Importar') && <div hidden={tab!=='Importar'}><Import token={token} accounts={data.accounts} refresh={refresh}/></div>}
+          {tab==='Agentes' && profile && <Agents token={token} accounts={data.accounts} limit={profile.plan.agents}/>}
+          {tab==='Conta' && profile && <Settings token={token} profile={profile} owner={owner}/>}
+        </div>
+      </div>}</>}</main></div>;
 }

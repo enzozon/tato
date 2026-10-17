@@ -1,3 +1,4 @@
+import { navigate } from './navigation';
 import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
@@ -21,7 +22,7 @@ async function settings(page:Page){
   await page.getByLabel('E-mail',{exact:true}).fill(user.email);
   await page.getByLabel('Senha',{exact:true}).fill('synthetic-password');
   await page.getByRole('button',{name:'Entrar',exact:true}).click();
-  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  await navigate(page,'Conta');
 }
 
 test('download preserva bytes e int64 sem depender da cobrança',async({page})=>{
@@ -75,7 +76,8 @@ for(const leave of ['renovação','saída','troca de aba'])test(`resposta tardia
   if(leave==='renovação'){
     const refreshed=page.waitForRequest(r=>r.url().endsWith('/me')&&r.headers().authorization==='Bearer synthetic-token-2');
     await page.clock.runFor(31000);await refreshed;
-  }else await page.getByRole('button',{name:leave==='saída'?'Sair':'Resumo',exact:true}).click();
+  }else if(leave==='saída')await page.getByRole('button',{name:'Sair',exact:true}).click();
+  else await navigate(page,'Resumo');
   release();await done;await page.clock.runFor(100);
   expect(downloads).toBe(0);
 });

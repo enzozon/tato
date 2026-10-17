@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { navigate } from '../tests/navigation';
 import { mkdir, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -50,7 +51,7 @@ test('catálogo das telas principais com dados sintéticos',async({page},info)=>
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),label).toBe(true);
     await page.screenshot({path:path.join(output,`${info.project.name}-${label}.png`),fullPage:true,animations:'disabled',style:'nextjs-portal{display:none!important}'});
   }
-  async function tab(name:string){await page.getByRole('button',{name,exact:true}).click();}
+  async function tab(name:string){if(['Resumo','Conversa','Importar','Agentes','Conta'].includes(name))await navigate(page,name);else await page.getByRole('button',{name,exact:true}).click();}
   await page.goto('/');
   await expect(page.getByRole('heading',{name:/seu dinheiro, em uma conversa./i})).toBeVisible();
   await capture('01-landing');
@@ -63,13 +64,19 @@ test('catálogo das telas principais com dados sintéticos',async({page},info)=>
   await tab('Esqueci minha senha');await capture('05-recuperar-senha');await tab('Voltar ao login');
   await page.getByLabel('E-mail',{exact:true}).fill(user.email);await page.getByLabel('Senha',{exact:true}).fill('synthetic-password');await tab('Entrar');
   await expect(page.getByRole('button',{name:'Entendi, vamos lá'})).toBeVisible();await capture('06-onboarding');await tab('Entendi, vamos lá');
+  await tab('Resumo');
   await expect(page.getByRole('heading',{name:'Uma visão tranquila.'})).toBeVisible();await capture('07-resumo');
   await page.getByText('Adicionar conta ou cartão',{exact:true}).click();await capture('08-criar-conta-cartao');
   await tab('Conversa');await expect(page.getByRole('heading',{name:'Vamos conversar.'})).toBeVisible();await capture('09-conversa');
+  const menu=page.getByRole('button',{name:'Menu',exact:true});
+  if(await menu.isVisible())await menu.click();await capture('26-menu-conversa');
+  if(await menu.isVisible())await menu.click();
   let reply:Record<string,unknown>={turn_id:owner,message:'Revise o lançamento sintético antes de salvar.',mood:'atento',sources:[],draft:{description:'Mercado sintético',booked_on:'2026-10-17',amount_cents:4200,kind:'expense'}};
-  await page.route('**/chat/stream',route=>route.fulfill({contentType:'text/event-stream',body:`event: reply\ndata: ${JSON.stringify(reply)}\n\n`}));
+  let release!:()=>void;const gate=new Promise<void>(resolve=>{release=resolve;});
+  await page.route('**/chat/stream',async route=>{await gate;return route.fulfill({contentType:'text/event-stream',body:`event: reply\ndata: ${JSON.stringify(reply)}\n\n`});});
   await page.getByRole('combobox',{name:/^Conta para consulta ou lançamento/}).selectOption(account);
   await page.getByLabel('Sua mensagem').fill('Gastei 42 no mercado hoje');await tab('Enviar mensagem');
+  await expect(page.getByRole('status')).toHaveText('Conferindo seus registros…');await capture('27-chat-processamento');release();
   await expect(page.getByRole('button',{name:'Confirmar lançamento'})).toBeVisible();await capture('10-chat-confirmacao');
   reply={turn_id:account,message:'Uma reserva ajuda com despesas inesperadas. Exemplo sintético.',mood:'calmo',sources:[{chunk_id:owner,section:'Reserva de emergência',content:'Uma reserva ajuda a lidar com despesas inesperadas. Exemplo de conteúdo público sintético.'}]};
   await page.getByLabel('Sua mensagem').fill('O que é reserva de emergência?');await tab('Enviar mensagem');
@@ -80,6 +87,9 @@ test('catálogo das telas principais com dados sintéticos',async({page},info)=>
   reply={turn_id:account,message:'Podemos organizar seus registros juntos. Resposta conversacional sintética.',mood:'calmo',sources:[]};
   await page.getByLabel('Sua mensagem').fill('Olá, Tato');await tab('Enviar mensagem');
   await expect(page.getByText('Podemos organizar seus registros juntos. Resposta conversacional sintética.',{exact:true})).toBeVisible();await capture('23-chat-conversa-livre');
+  await page.route('**/chat/stream',route=>route.fulfill({status:503,json:{detail:'synthetic-unavailable'}}));
+  await page.getByLabel('Sua mensagem').fill('Pergunta sintética durante indisponibilidade');await tab('Enviar mensagem');
+  await expect(page.getByRole('button',{name:'Repetir pedido'})).toBeVisible();await capture('28-chat-erro');await tab('Descartar tentativa');
   await tab('Importar um extrato no chat');await capture('11-importar-no-chat');
   await tab('Importar');await capture('12-importacao');
   await page.getByText('Mapear colunas de CSV personalizado',{exact:true}).filter({visible:true}).click();await capture('13-mapeamento-csv');

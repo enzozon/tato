@@ -33,7 +33,7 @@ Não compartilhar o token usado em Authorize no Swagger.
 | T03 | Retorno de recuperação | Nova senha, confirmação, link inválido/expirado, erro, sucesso e saída; não abre registros durante a recuperação. |
 | T04 | Entrada autenticada | Preparando espaço, erro com tentar novamente e onboarding sem CPF. Navegação Resumo/Conversa/Importar/Agentes/Conta e Sair. |
 | T05 | Resumo | Mascote, saldo, despesas do mês, estimativa ou histórico insuficiente, categorias, contas e expansão Adicionar conta ou cartão. |
-| T06 | Conversa | Histórico vazio/preenchido, seletor de conta, mensagem, processamento, resposta, fonte SQL, fontes RAG expansíveis e rascunho para confirmar. |
+| T06 | Conversa | Entrada padrão após login: Tato animado, sugestões, histórico vazio/preenchido, seletor de conta, compositor ao pé da tela, processamento, resposta, fonte SQL, fontes RAG expansíveis e rascunho para confirmar. |
 | T07 | Importação no chat | Abrir/fechar importador dentro de Conversa; mesmos controles de T08, sem trocar de canal ou gravar sem confirmação. |
 | T08 | Importar | Sem conta: orientação; com conta: formato/arquivo, mapeamento CSV expansível, prévia/tabela/aviso/confirmar, sucesso/duplicatas/erro. |
 | T09 | Agentes | Cards ativo/pausado, configurar agente, seletor de meta, opt-in de e-mail, criar meta, avisos vazios/preenchidos e marcar como lido. |
@@ -68,7 +68,7 @@ edição/exclusão individual de contas ou gerenciador visual de documentos.
 | C03 | Conta selecionada: “gastei 10 reais no mercado hoje” | Caminho lançamento: rascunho com descrição/data/valor, sem gravar até Confirmar lançamento. Após confirmar, um gasto a mais; repetição não duplica. **IA pessoal:** Groq elegível/ZDR. |
 | C04 | Perguntar “o que é uma reserva de emergência?” | Caminho conceitual: base pública indexada/modelos disponíveis; fontes expandem texto e `chunk_id`. Sem fonte suficiente, indisponibilidade/abstenção, não prova inventada. |
 | C05 | Cumprimentar e conversar sem pedir números | Caminho conversa; resposta útil sem inventar patrimônio/saldo ou recomendar ativo. IA pessoal depende da política Groq/ZDR, sem enviar extrato inteiro. |
-| C06 | Enviar e observar processamento; voltar à aba | SSE informa progresso e só depois resposta validada completa; não promete tokens crus ao vivo. Histórico não deve apagar resposta nova quando chega atrasado. |
+| C06 | Usar sugestão, Enter, Shift + Enter; enviar e voltar à aba | Sugestão só preenche, sem consumir quota. Enter envia e Shift + Enter quebra linha; IME não envia enquanto compõe. Tato atento durante processamento; só depois resposta validada completa. Histórico não apaga resposta nova quando chega atrasado. |
 | C07 | Falhar pedido e Repetir pedido/Descartar tentativa | Repetir conserva `request_id`: pedido já aceito não gasta quota novamente; descartar libera nova mensagem. Não há botão geral de cancelar inferência. |
 | C08 | Abrir importação no chat e importar CSV | Mesma revisão/confirmar/deduplicação; depois perguntar sobre conta/período. Anexar arquivo não autoriza suas instruções como prompt. |
 | G01 | Criar meta e configurar Meta | Objetivo/valor positivos; meta pertence ao usuário. Alerta só quando saldo alcança alvo, conferido na execução; não significa reserva bancária feita. |
@@ -83,7 +83,7 @@ edição/exclusão individual de contas ou gerenciador visual de documentos.
 | B01 | Conta: cobrança com configuração desligada | Botões indisponíveis; parâmetros de retorno `success` não concedem Pro. Landing continua “Pro em preparação”. |
 | B02 | Sandbox Stripe checkout/portal/status | Só após preparação de [monetização](12-MONETIZACAO.md): preço fixado no backend, URL Stripe validada, UUID estável ao repetir; status/portal autenticados. Ciclo remoto completo ainda pendente; não habilitar cobrança para apenas avaliar telas. |
 | U01 | Navegar/renovar token/sair durante operações | Rascunhos preservados na mesma identidade; outra identidade não recebe estado, download, redirecionamento ou resposta antiga. Após mutação salva, falha só no refresh não deve reenviar a gravação. |
-| U02 | Teclado, foco, contraste, zoom e tela estreita | Labels acessíveis, avisos percebidos, botões acionáveis, tabelas/mensagens longas sem deslocar a página inteira horizontalmente. Não substitui auditoria WCAG completa. |
+| U02 | Teclado, foco, movimento reduzido, zoom e tela estreita | No celular, Menu abre as seções; selecionar fecha e devolve foco. Escape fecha. No desktop, barra lateral visível. Compositor fica acessível com rolagem das mensagens; animação para com movimento reduzido. Labels, avisos, botões e mensagens longas não causam overflow horizontal. Não substitui auditoria WCAG completa. |
 | U03 | Shell offline e instalação | Testar build estático, não Next dev; offline exibe orientação, sem cache financeiro. Voltar online permite usar API. PWA física requer endereço HTTPS acessível pelo telefone. |
 
 PicPay/Banestes: somente layouts de **conta observados**; não certificação de todos

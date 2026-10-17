@@ -1,8 +1,9 @@
+import { navigate } from './navigation';
 import { test, expect, type Page } from '@playwright/test';
 
 const owner='00000000-0000-4000-8000-000000000001';
 const account='00000000-0000-4000-8000-000000000002';
-async function signIn(page:Page, expiresIn=3600, onboardingCompleted=true) {
+async function signIn(page:Page, expiresIn=3600, onboardingCompleted=true, history:Promise<unknown[]>=Promise.resolve([])) {
   const user={id:owner,email:'teste@example.test',aud:'authenticated',role:'authenticated',app_metadata:{},user_metadata:{},created_at:'2026-10-04T00:00:00Z'};
   let issued=0;
   await page.route('https://auth.example.test/**',route=>{
@@ -16,13 +17,15 @@ async function signIn(page:Page, expiresIn=3600, onboardingCompleted=true) {
     if(route.request().method()==='OPTIONS')return route.fulfill({headers,status:200});
     if(path==='/me') return route.fulfill({headers,json:{onboarding_completed:onboardingCompleted,plan:{name:'free',agents:1,messages_per_month:200}}});
     if(path==='/dashboard')return route.fulfill({headers,json:{as_of:'2026-10-04',balance_cents:'1152921504606846976',expense_cents:'1234',categories:[],accounts:[{id:account,name:'Conta sintética',kind:'checking',opening_date:'2026-01-01',balance_cents:'10000'}]}});
-    if(path==='/chat') return route.fulfill({headers,json:[]});
+    if(path==='/chat') return route.fulfill({headers,json:await history});
     return route.fulfill({headers,status:503,json:{detail:'indisponível'}});
   });
   await page.goto('/app/');
   await page.getByLabel('E-mail',{exact:true}).fill('teste@example.test');
   await page.getByLabel('Senha',{exact:true}).fill('synthetic-password');
   await page.getByRole('button',{name:'Entrar',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Vamos conversar.'})).toBeVisible();
+  await navigate(page,'Resumo');
   await expect(page.getByRole('heading',{name:'Uma visão tranquila.'})).toBeVisible();
 }
 
@@ -42,20 +45,74 @@ test('mensagem sem espaços cabe na conversa sem rolagem horizontal',async({page
   await signIn(page);
   const question='x'.repeat(500);
   await page.route('**/chat/stream',route=>route.fulfill({contentType:'text/event-stream',body:`event: reply\ndata: ${JSON.stringify({turn_id:owner,message:'Resposta sintética.',mood:'calmo',sources:[]})}\n\n`}));
-  await page.getByRole('button',{name:'Conversa',exact:true}).click();
+  await navigate(page,'Conversa');
   await page.getByLabel('Sua mensagem').fill(question);
   await page.getByRole('button',{name:'Enviar mensagem'}).click();
   await expect(page.locator('.question')).toHaveText(question);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
+test('sugestões preenchem sem enviar e teclado respeita quebra de linha e IME',async({page})=>{
+  await signIn(page);let requests=0;
+  await page.route('**/chat/stream',route=>{requests++;return route.fulfill({contentType:'text/event-stream',body:`event: reply\ndata: ${JSON.stringify({turn_id:owner,message:'Resposta sintética.',mood:'calmo',sources:[]})}\n\n`});});
+  await navigate(page,'Conversa');
+  await page.getByRole('button',{name:'Quanto gastei este mês?',exact:true}).click();
+  const input=page.getByLabel('Sua mensagem');
+  await expect(input).toHaveValue('Quanto gastei este mês?');await expect(input).toBeFocused();
+  expect(requests).toBe(0);
+  await input.press('Shift+Enter');await input.press('a');
+  await expect(input).toHaveValue('Quanto gastei este mês?\na');
+  await input.dispatchEvent('keydown',{key:'Enter',code:'Enter',isComposing:true});
+  expect(requests).toBe(0);
+  await input.press('Enter');
+  await expect(page.getByText('Resposta sintética.',{exact:true})).toBeVisible();
+  expect(requests).toBe(1);await expect(input).toHaveValue('');
+  const composer=await page.locator('.chat-composer').boundingBox();
+  expect(composer!.y+composer!.height).toBeLessThanOrEqual(await page.evaluate(()=>innerHeight));
+});
+
+test('erro mantém o mesmo pedido para repetição e permite descartá-lo',async({page})=>{
+  await signIn(page);const requests:{request_id:string;question:string}[]=[];
+  await page.route('**/chat/stream',route=>{requests.push(route.request().postDataJSON());return route.fulfill({status:503,json:{detail:'private'}});});
+  await navigate(page,'Conversa');
+  await page.getByLabel('Sua mensagem').fill('Pedido sintético');await page.getByLabel('Sua mensagem').press('Enter');
+  await expect(page.getByRole('button',{name:'Repetir pedido'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Enviar mensagem'})).toBeDisabled();
+  await page.getByRole('button',{name:'Repetir pedido'}).click();
+  await expect(page.getByRole('button',{name:'Repetir pedido'})).toBeEnabled();
+  expect(requests).toHaveLength(2);expect(requests[1]).toEqual(requests[0]);
+  await page.getByRole('button',{name:'Descartar tentativa'}).click();
+  await expect(page.getByRole('button',{name:'Enviar mensagem'})).toBeEnabled();
+  await expect(page.getByText('Pedido sintético',{exact:true})).toHaveCount(0);
+});
+
+test('conversa cabe em viewport curto e respeita movimento reduzido',async({page})=>{
+  await page.setViewportSize({width:320,height:480});await page.emulateMedia({reducedMotion:'reduce'});
+  await signIn(page);await navigate(page,'Conversa');
+  const menu=page.getByRole('button',{name:'Menu',exact:true});
+  await menu.click();await expect(menu).toHaveAttribute('aria-expanded','true');
+  await page.locator('#app-navigation').getByRole('button',{name:'Conversa',exact:true}).focus();
+  await page.keyboard.press('Escape');await expect(menu).toBeFocused();
+  await expect(menu).toHaveAttribute('aria-expanded','false');
+  expect(await page.locator('.chat-welcome .breath').evaluate(node=>getComputedStyle(node).animationName)).toBe('none');
+  await page.getByLabel('Sua mensagem').fill('Mensagem sintética');
+  const composer=await page.locator('.chat-composer').boundingBox();
+  expect(composer!.y+composer!.height).toBeLessThanOrEqual(480);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.getByRole('button',{name:'Importar um extrato no chat'}).focus();await page.keyboard.press('Enter');
+  await expect(page.getByRole('region',{name:'Importação no chat'})).toBeFocused();
+  await page.getByRole('button',{name:'Fechar importação'}).focus();await page.keyboard.press('Enter');
+  await expect(page.getByRole('region',{name:'Importação no chat'})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Importar um extrato no chat'})).toBeFocused();
+});
+
 test('renovação e navegação preservam rascunhos, sair limpa o espaço',async({page})=>{
   await page.clock.install();
   await signIn(page,120);
   await page.route('**/import/preview',route=>route.fulfill({json:{count:1,start:'2026-10-01',end:'2026-10-01',credits_cents:0,debits_cents:1234,receipt:'signed',warning:'Prévia preservada.',truncated:false,entries:[]}}));
-  await page.getByRole('button',{name:'Conversa',exact:true}).click();
+  await navigate(page,'Conversa');
   await page.getByLabel('Sua mensagem').fill('Mensagem ainda em edição');
-  await page.getByRole('button',{name:'Importar',exact:true}).click();
+  await navigate(page,'Importar');
   await page.getByLabel('Extrato ou fatura').setInputFiles({name:'synthetic.csv',mimeType:'text/csv',buffer:Buffer.from('data,descricao,valor')});
   await page.getByRole('button',{name:'Revisar prévia'}).click();
   await expect(page.getByText('Prévia preservada.',{exact:true})).toBeVisible();
@@ -63,9 +120,9 @@ test('renovação e navegação preservam rascunhos, sair limpa o espaço',async
   await page.clock.runFor(31000);
   await refreshed;
   await expect(page.getByText('Prévia preservada.',{exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Conversa',exact:true}).click();
+  await navigate(page,'Conversa');
   await expect(page.getByLabel('Sua mensagem')).toHaveValue('Mensagem ainda em edição');
-  await page.getByRole('button',{name:'Importar',exact:true}).click();
+  await navigate(page,'Importar');
   await expect(page.getByRole('button',{name:'Confirmar importação'})).toBeVisible();
   await page.getByRole('button',{name:'Sair',exact:true}).click();
   await expect(page.getByRole('heading',{name:'Que bom te ver.'})).toBeVisible();
@@ -100,6 +157,7 @@ test('operação antiga não recarrega dados depois de outro login',async({page}
   await page.getByLabel('E-mail',{exact:true}).fill('outro@example.test');
   await page.getByLabel('Senha',{exact:true}).fill('synthetic-password');
   await page.getByRole('button',{name:'Entrar',exact:true}).click();
+  await navigate(page,'Resumo');
   await expect(page.getByRole('heading',{name:'Uma visão tranquila.'})).toBeVisible();
   page.on('request',r=>{if(r.url().includes('127.0.0.1:8000')&&r.headers().authorization==='Bearer synthetic-token-1')staleRequests++;});
   const finished=page.waitForResponse('**/me/onboarding');
@@ -113,7 +171,7 @@ test('arquivo exige prévia e confirmação',async({page})=>{
   await signIn(page);let confirmed=0;
   await page.route('**/import/preview',route=>route.fulfill({json:{count:1,start:'2026-10-01',end:'2026-10-01',credits_cents:0,debits_cents:1234,receipt:'signed',warning:'Revise os sinais.',truncated:false,entries:[{booked_on:'2026-10-01',description:'<script>alert(1)</script>',amount_cents:-1234}]}}));
   await page.route('**/import/confirm',route=>{confirmed++;return route.fulfill({json:{inserted:1,duplicates:0}});});
-  await page.getByRole('button',{name:'Importar',exact:true}).click();
+  await navigate(page,'Importar');
   await page.getByLabel('Extrato ou fatura').setInputFiles({name:'synthetic.csv',mimeType:'text/csv',buffer:Buffer.from('data,descricao,valor\n01/10/2026,Teste,"-12,34"')});
   await page.getByRole('button',{name:'Revisar prévia'}).click();
   await expect(page.getByText('<script>alert(1)</script>',{exact:true})).toBeVisible();
@@ -128,7 +186,7 @@ test('chat confirma lançamento validado e mostra fontes como texto',async({page
   const reply={turn_id:owner,message:'Revise a prévia.',mood:'atento',sources:[{chunk_id:owner,section:'Teste',content:'<img src=x onerror=alert(1)>'}],draft:{description:'Mercado',booked_on:'2026-10-04',amount_cents:4200,kind:'expense'}};
   await page.route('**/chat/stream',route=>route.fulfill({contentType:'text/event-stream',body:`event: status\ndata: {}\n\nevent: reply\ndata: ${JSON.stringify(reply)}\n\nevent: done\ndata: {}\n\n`}));
   await page.route(`**/chat/${owner}/confirm`,route=>{confirmed++;return route.fulfill({json:{...reply,transaction_id:account,message:'Registrado.'}});});
-  await page.getByRole('button',{name:'Conversa',exact:true}).click();
+  await navigate(page,'Conversa');
   await page.getByLabel('Sua mensagem').fill('gastei 42 no mercado ontem');
   await page.getByRole('button',{name:'Enviar mensagem'}).click();
   await expect(page.getByText('Revise a prévia.',{exact:true})).toBeVisible();expect(confirmed).toBe(0);
@@ -149,14 +207,14 @@ test('agentes respeitam contrato e exclusão exige confirmação',async({page})=
     expect(Object.keys(body).sort()).toEqual(['account_id','email_enabled','enabled','goal_id']);
     enabled=body.enabled;return route.fulfill({json:{...body,id:owner,kind:'runway'}});
   });
-  await page.getByRole('button',{name:'Agentes',exact:true}).click();
+  await navigate(page,'Agentes');
   await page.getByRole('button',{name:'Pausar',exact:true}).click();
   await expect(page.getByText('Pausado',{exact:true})).toBeVisible();
   await page.route('**/me',route=>{
     if(route.request().method()==='DELETE'){deleted++;expect(route.request().postDataJSON()).toEqual({confirm:true});return route.fulfill({status:204});}
     return route.fallback();
   });
-  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  await navigate(page,'Conta');
   await page.getByText('Excluir minha conta',{exact:true}).click();
   await expect(page.getByRole('button',{name:'Excluir permanentemente'})).toBeDisabled();expect(deleted).toBe(0);
   await page.getByLabel('Digite EXCLUIR para confirmar').fill('EXCLUIR');
@@ -168,14 +226,14 @@ test('conta mostra consumo e admite falha sem ocultar exclusão',async({page})=>
   await signIn(page);
   await page.route('**/me/usage',route=>route.fulfill({json:{period_end:'2026-11-01T00:00:00Z',
     messages:{used:200,limit:200,remaining:0},import_sources:{used:7,limit:null,remaining:null},agents:{used:1,limit:3,remaining:2}}}));
-  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  await navigate(page,'Conta');
   const panel=page.getByRole('region',{name:'Consumo do plano'});
   await expect(panel.getByText('200 usados · 0 restantes de 200')).toBeVisible();
   await expect(panel.getByText('7 usados · sem limite contratual')).toBeVisible();
   await expect(panel).toContainText('01/11/2026 (UTC)');
-  await page.getByRole('button',{name:'Resumo',exact:true}).click();
+  await navigate(page,'Resumo');
   await page.route('**/me/usage',route=>route.fulfill({status:503,json:{detail:'private'}}));
-  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  await navigate(page,'Conta');
   await expect(panel.getByRole('status')).toHaveText('Não foi possível consultar o consumo agora.');
   await expect(page.getByText('Excluir minha conta',{exact:true})).toBeVisible();
   await expect(panel.getByText('200 usados · 0 restantes de 200')).toHaveCount(0);
@@ -192,7 +250,7 @@ test('renovar sessão recarrega agentes sem sobrescrever uma alteração recente
   });
   await page.route('**/insights',route=>route.fulfill({json:[]}));
   await page.route('**/agents/runway',route=>{enabled=route.request().postDataJSON().enabled;return route.fulfill({json:{}});});
-  await page.getByRole('button',{name:'Agentes',exact:true}).click();
+  await navigate(page,'Agentes');
   await expect(page.getByRole('button',{name:'Pausar',exact:true})).toBeVisible();
   const renewed=page.waitForRequest(r=>r.url().endsWith('/goals')&&r.headers().authorization==='Bearer synthetic-token-2');
   await page.clock.runFor(31000);await renewed;
@@ -210,7 +268,7 @@ test('exclusão atrasada não encerra a sessão de outra identidade',async({page
     if(route.request().method()!=='DELETE')return route.fallback();
     await gate;await route.fulfill({status:204});completed();
   });
-  await page.getByRole('button',{name:'Conta',exact:true}).click();
+  await navigate(page,'Conta');
   await page.getByText('Excluir minha conta',{exact:true}).click();
   await page.getByLabel('Digite EXCLUIR para confirmar').fill('EXCLUIR');
   const started=page.waitForRequest(r=>r.url().endsWith('/me')&&r.method()==='DELETE');
@@ -219,6 +277,7 @@ test('exclusão atrasada não encerra a sessão de outra identidade',async({page
   await page.getByLabel('E-mail',{exact:true}).fill('outro@example.test');
   await page.getByLabel('Senha',{exact:true}).fill('synthetic-password');
   await page.getByRole('button',{name:'Entrar',exact:true}).click();
+  await navigate(page,'Resumo');
   await expect(page.getByRole('heading',{name:'Uma visão tranquila.'})).toBeVisible();
   let signedOut=false;
   page.on('request',request=>{if(request.url().includes('/auth/v1/logout'))signedOut=true;});
@@ -250,24 +309,33 @@ test('cadastro aguarda confirmação e Google usa o retorno permitido',async({pa
 });
 
 test('histórico atrasado preserva a resposta recém-recebida',async({page})=>{
-  await signIn(page);
   let release!:()=>void;
   const gate=new Promise<void>(resolve=>{release=resolve;});
-  await page.route('**/chat',async route=>{
-    if(route.request().method()!=='GET')return route.fallback();
-    await gate;
-    return route.fulfill({json:[{request:{request_id:owner,question:'Pergunta anterior',account_id:null},
-      response:{turn_id:owner,message:'Resposta anterior',mood:'calmo',sources:[]}}]});
-  });
+  const history=gate.then(()=>[{request:{request_id:owner,question:'Pergunta anterior',account_id:null},
+    response:{turn_id:owner,message:'Resposta anterior',mood:'calmo',sources:[]}}]);
+  await signIn(page,3600,true,history);
   await page.route('**/chat/stream',route=>route.fulfill({contentType:'text/event-stream',
     body:'event: reply\ndata: '+JSON.stringify({turn_id:account,message:'Resposta nova',mood:'calmo',sources:[]})+'\n\n'}));
-  await page.getByRole('button',{name:'Conversa',exact:true}).click();
+  await navigate(page,'Conversa');
   await page.getByLabel('Sua mensagem').fill('Olá');
   await page.getByRole('button',{name:'Enviar mensagem'}).click();
   await expect(page.getByText('Resposta nova',{exact:true})).toBeVisible();
   release();
   await expect(page.getByText('Resposta anterior',{exact:true})).toBeVisible();
   await expect(page.getByText('Resposta nova',{exact:true})).toBeVisible();
+});
+
+test('histórico recebido fora da aba mostra o fim sem perder leitura anterior',async({page})=>{
+  let release!:()=>void;
+  const gate=new Promise<void>(resolve=>{release=resolve;});
+  const history=gate.then(()=>Array.from({length:20},(_,i)=>({request:{request_id:`request-${i}`,question:`Pergunta sintética ${i}`,account_id:null},response:{turn_id:`turn-${i}`,message:'Resposta sintética para revisar com cuidado. '.repeat(8),mood:'calmo',sources:[]}})));
+  await signIn(page,3600,true,history);release();
+  await expect(page.locator('.conversation article')).toHaveCount(20);await navigate(page,'Conversa');
+  const list=page.getByRole('region',{name:'Mensagens da conversa'});
+  await expect.poll(()=>list.evaluate(node=>node.scrollHeight-node.scrollTop-node.clientHeight)).toBeLessThan(2);
+  await list.evaluate(node=>new Promise<void>(resolve=>{node.addEventListener('scroll',()=>resolve(),{once:true});node.scrollTop=0;}));
+  await navigate(page,'Resumo');await navigate(page,'Conversa');
+  await expect.poll(()=>list.evaluate(node=>node.scrollTop)).toBe(0);
 });
 
 test('mapeamento parcial bloqueia envio e editar sinais invalida a prévia',async({page})=>{
@@ -277,7 +345,7 @@ test('mapeamento parcial bloqueia envio e editar sinais invalida a prévia',asyn
     return route.fulfill({json:{count:1,start:'2026-10-01',end:'2026-10-01',
       credits_cents:0,debits_cents:1234,receipt:'signed',warning:'Revise.',truncated:false,entries:[]}});
   });
-  await page.getByRole('button',{name:'Importar',exact:true}).click();
+  await navigate(page,'Importar');
   await page.getByLabel('Extrato ou fatura').setInputFiles({name:'synthetic.csv',mimeType:'text/csv',buffer:Buffer.from('data,descricao,valor')});
   await page.getByText('Mapear colunas de CSV personalizado').click();
   await page.getByLabel('Coluna da data').fill('data');

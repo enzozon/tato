@@ -1,3 +1,4 @@
+import { navigate } from './navigation';
 import { test, expect, type Page } from '@playwright/test';
 
 async function signIn(page: Page, dashboardFailed: () => boolean) {
@@ -18,6 +19,7 @@ async function signIn(page: Page, dashboardFailed: () => boolean) {
   await page.getByLabel('E-mail', { exact: true }).fill(user.email);
   await page.getByLabel('Senha', { exact: true }).fill('synthetic-password');
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
+  await navigate(page,'Resumo');
   await expect(page.getByRole('heading', { name: 'Uma visão tranquila.' })).toBeVisible();
 }
 
@@ -46,7 +48,7 @@ test('importação salva preserva confirmação quando o resumo fica indisponív
   await page.route('**/import/preview', route => route.fulfill({ json: { count: 1, start: '2026-10-01', end: '2026-10-01', credits_cents: 0, debits_cents: 1234,
     receipt: 'signed', warning: 'Prévia sintética.', truncated: false, entries: [] } }));
   await page.route('**/import/confirm', route => { confirmed++; failed = true; return route.fulfill({ json: { inserted: 1, duplicates: 0 } }); });
-  await page.getByRole('button', { name: 'Importar', exact: true }).click();
+  await navigate(page,'Importar');
   await page.getByLabel('Extrato ou fatura').setInputFiles({ name: 'synthetic.csv', mimeType: 'text/csv', buffer: Buffer.from('data,descricao,valor') });
   await page.getByRole('button', { name: 'Revisar prévia' }).click();
   await page.getByRole('button', { name: 'Confirmar importação' }).click();

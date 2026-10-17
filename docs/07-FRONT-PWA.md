@@ -187,7 +187,7 @@ Start-Process ./test-results/ui-gallery/index.html
 
 Encerre o servidor web manual antes: Playwright inicia seu próprio Next em
 127.0.0.1:3000 com configuração pública sintética. O comando apaga somente a
-galeria anterior em `test-results/ui-gallery/`, gera 25 capturas por viewport
+galeria anterior em `test-results/ui-gallery/`, gera 28 capturas por viewport
 (desktop e celular) e um índice HTML navegável. Traces ficam em outro diretório.
 A galeria só está completa quando o comando termina com dois testes aprovados;
 uma falha deixa as capturas parciais e o trace para diagnóstico, sem retries.
@@ -198,6 +198,7 @@ quatro intenções (SQL, RAG, lançamento para revisão e conversa livre), impor
 no chat, upload, mapeamento CSV, prévia e resultado, agentes/avisos, meta/e-mail,
 conta com consumo/exportação, confirmação de exclusão, cobrança desligada/teste
 e a página pública de orientação offline.
+Menu, processamento e recuperação de erro da conversa também têm capturas.
 O gerador navega na aplicação existente; não há modo demonstrativo no produto.
 
 Todos os registros, tokens, respostas de IA e cobranças são simulados. A rede
@@ -209,3 +210,18 @@ exportação pessoal. A página offline é visitada diretamente; testar sua entr
 sem conexão exige o build estático e a suíte PWA própria. O indicador de
 desenvolvimento do Next é ocultado somente nas imagens. Chromium com viewport de iPhone não prova Safari
 nem instalação física. Imagens locais ignoradas não entram em commits ou deploy.
+
+## Conversa familiar (17/10/2026)
+
+A conversa passa a ter uma coluna de mensagens e um compositor sempre ao fim do
+espaço disponível. As sugestões só preenchem o campo: não enviam pedidos nem
+consomem quota. Enter envia; Shift + Enter preserva a quebra de linha e composição
+IME não dispara envio. Importação, seleção de conta, repetição idempotente,
+fontes e confirmação de lançamento continuam usando os contratos existentes.
+O tema escuro e os movimentos do Tato são definidos em `packages/mascot`.
+Conversa é a entrada após login. A navegação fica na lateral no computador e
+no Menu recolhido no celular; selecionar uma seção ou Escape fecha o Menu e
+devolve o foco. O importador recebe foco ao abrir pelo botão do compositor.
+A orientação de instalação continua na landing e nas outras seções; a conversa
+ocupa o viewport para manter o compositor acessível. Histórico novo acompanha
+o fim da lista, mas ler uma mensagem antiga interrompe esse acompanhamento.
