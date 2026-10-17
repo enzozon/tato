@@ -175,3 +175,36 @@ renovação/saída e desmontagem abortam o pedido; a identidade é conferida nov
 antes do download. O Blob não entra no service worker e sua URL é revogada.
 A tela informa que o arquivo contém dados pessoais legíveis. A prova Playwright
 é Chromium desktop/mobile; Safari e iPhone físico ainda precisam de validação.
+
+## Galeria para avaliação local
+
+Com `npm.cmd ci` concluído, execute na raiz:
+
+```powershell
+npm.cmd run gallery --workspace=tato-web
+Start-Process ./test-results/ui-gallery/index.html
+```
+
+Encerre o servidor web manual antes: Playwright inicia seu próprio Next em
+127.0.0.1:3000 com configuração pública sintética. O comando apaga somente a
+galeria anterior em `test-results/ui-gallery/`, gera 25 capturas por viewport
+(desktop e celular) e um índice HTML navegável. Traces ficam em outro diretório.
+A galeria só está completa quando o comando termina com dois testes aprovados;
+uma falha deixa as capturas parciais e o trace para diagnóstico, sem retries.
+
+As imagens mostram landing, instruções PWA, login/cadastro, recuperação e nova
+senha, onboarding, resumo e formulário de conta/cartão, conversa vazia e suas
+quatro intenções (SQL, RAG, lançamento para revisão e conversa livre), importação
+no chat, upload, mapeamento CSV, prévia e resultado, agentes/avisos, meta/e-mail,
+conta com consumo/exportação, confirmação de exclusão, cobrança desligada/teste
+e a página pública de orientação offline.
+O gerador navega na aplicação existente; não há modo demonstrativo no produto.
+
+Todos os registros, tokens, respostas de IA e cobranças são simulados. A rede
+externa é bloqueada e apenas os hosts sintéticos têm respostas interceptadas.
+As asserções verificam conteúdo, ausência de erro JavaScript e de transbordamento
+horizontal. O teste não envia e-mail, não paga, não exclui conta real e não baixa
+exportação pessoal. A página offline é visitada diretamente; testar sua entrega
+sem conexão exige o build estático e a suíte PWA própria. O indicador de
+desenvolvimento do Next é ocultado somente nas imagens. Chromium com viewport de iPhone não prova Safari
+nem instalação física. Imagens locais ignoradas não entram em commits ou deploy.

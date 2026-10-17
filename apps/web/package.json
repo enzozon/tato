@@ -6,7 +6,8 @@
     "dev": "next dev --hostname 127.0.0.1",
     "build": "node scripts/icons.mjs && next build && node scripts/service-worker.mjs",
     "check": "node --test scripts/service-worker.test.mjs && next typegen && tsc --noEmit",
-    "test": "playwright test"
+    "test": "playwright test",
+    "gallery": "node scripts/gallery.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.2",
