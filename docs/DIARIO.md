@@ -810,3 +810,9 @@ como strings; sem migration ou serviços novos. make check passou com601testes
 foi corrigida com sufixo do titular e os4testesnovos passaram. Ainda falta repetir
 make check após essa correção, executar108integrações juntas e integrar o download
 na interface. Código segue no worktree de segurança, semcommit/PRdeexport.
+
+### 17/10/2026 — endpoint de exportação
+
+A rota autenticada materializa o JSON sob lock, preserva RLS e bloqueia exclusão
+pendente. Campos explícitos evitam vazamentos; limites recusam o arquivo inteiro,
+sem truncamento. Testes HTTP cobrem download, erros sanitizados e limites.
