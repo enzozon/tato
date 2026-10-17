@@ -152,6 +152,27 @@ def test_http_errors_are_generic_no_retry(status):
 
 
 @pytest.mark.parametrize(
+    "path,status,expected",
+    [
+        ("/auth", 401, "MEU_PLUGGY_CLIENT_SECRET"),
+        ("/accounts", 404, "MEU_PLUGGY_ITEM_ID"),
+        ("/v2/transactions", 403, "MEU_PLUGGY_ACCOUNT_ID"),
+        ("/auth", 429, "aguarde"),
+        ("/v2/transactions", 503, "tente mais tarde"),
+    ],
+)
+def test_http_diagnostic_identifies_stage_without_upstream_data(path, status, expected):
+    service = client(lambda _: httpx.Response(status, text="private-canary"))
+    with pytest.raises(PluggyError) as caught:
+        service.request(path)
+    message = str(caught.value)
+    assert expected in message and str(status) in message
+    assert "private-canary" not in message
+    if status in {429, 503}:
+        assert "MEU_PLUGGY_" not in message
+
+
+@pytest.mark.parametrize(
     "payload",
     [
         {"results": [ACCOUNT], "totalPages": 2},

@@ -40,6 +40,43 @@ período/totais/linhas na prévia e confirme somente se estiverem corretos.
 Depois pergunte sobre o período com a mesma conta selecionada. Plano Free
 continua limitado a uma fonte; testes de várias contas usam Pro sintético local.
 
+## Testar após configurar
+
+1. Suba API e web conforme [primeiro uso](14-PRIMEIRO-USO.md) e entre no app.
+2. Em Resumo → Adicionar conta ou cartão, escolha o tipo correspondente ao exportado.
+   Para o período acima, use abertura em 01/10/2026 e o saldo imediatamente anterior,
+   em 30/09. Saldo inicial zero serve para testar despesas, mas não reproduz o saldo
+   bancário real se ele não era zero. Não misture com uma fonte já importada.
+3. Rode o coletor. O terminal informa o caminho exato do novo CSV, sem nomes ou valores.
+   No chat, abra o botão `+` (Extrato), selecione a conta do Tato e esse arquivo.
+4. Confira período, linhas, créditos e débitos na prévia antes de confirmar. Selecione
+   a mesma conta no chat e pergunte `quanto gastei este mês?`. Compare a resposta SQL
+   com os débitos importados; o Tato só conhece o período que você trouxe.
+5. Reimporte o mesmo arquivo para a mesma conta: nenhuma nova linha deve ser inserida.
+   Depois confirme que a despesa exibida no Resumo e no chat não aumentou.
+6. Se houver novos movimentos efetivados depois, gere outro CSV e revise sua prévia.
+   Não há atualização automática na tela. Evite sobrepor um CSV/OFX de outra origem:
+   identificadores diferentes não provam que as movimentações são distintas.
+
+## Se a configuração falhar
+
+| Mensagem/etapa | O que conferir |
+| --- | --- |
+| `Configure no .env: ...` | Preencha somente os nomes listados no `.env` da raiz; não em `.env.example` ou no frontend. |
+| Recusa na autenticação | Client ID e Client Secret devem ser da mesma aplicação. Secret não é senha de login nem chave temporária. |
+| Recusa ao listar contas | Confira itemId em Connected Items, aplicação escolhida e consentimento da conexão. |
+| Conta não pertence ao item / recusa nos movimentos | Use o `results[].id` da conta/cartão dentro daquele item; não número bancário, CPF ou ID de transação. Confira as permissões. |
+| HTTP 429 | Aguarde a liberação do limite; não troque credenciais para contorná-lo. |
+| HTTP 5xx / indisponível | Pode ser falha temporária do provedor. Tente mais tarde; isso não prova variável incorreta. |
+| CSV vazio ou fora dos limites | Confira período e movimentos POSTED disponíveis; reduza o intervalo se exceder o teto. Não significa necessariamente chave inválida. |
+
+Uma recusa aponta a etapa para investigar, não identifica com certeza uma variável
+errada. Nunca compartilhe a resposta bancária, chaves ou o CSV para diagnosticar aqui.
+
+Em 17/10/2026, a revalidação local das quatro variáveis completou leitura real BANK/BRL.
+O CSV passou pelo parser, com período e IDs válidos; duas coletas consecutivas foram
+iguais. Isso não comprova outras instituições/cartões nem a importação real no app.
+
 ## Limites deliberados
 
 - Somente BRL, até 366 dias, 5.000 movimentos, 20 páginas e 2 MiB de respostas

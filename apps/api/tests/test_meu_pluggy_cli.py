@@ -29,7 +29,9 @@ def test_opt_in_configuration_and_period_before_network(monkeypatch, capsys):
     assert cli.main(["--confirm-personal-use", "--from", "9999-12-29", "--to", "9999-12-30"]) == 1
     monkeypatch.delenv(cli.VARIABLES[0])
     assert cli.main([*ARGS, "--confirm-personal-use"]) == 1
-    assert "private-canary" not in capsys.readouterr().out
+    message = capsys.readouterr().out
+    assert cli.VARIABLES[0] in message
+    assert "MEU_PLUGGY_CLIENT_SECRET" not in message and "private-canary" not in message
 
 
 def test_snapshot_selection_export_and_no_overwrite(monkeypatch, capsys):
@@ -83,6 +85,8 @@ def test_snapshot_selection_export_and_no_overwrite(monkeypatch, capsys):
     files = list(cli.OUTPUT.glob("*.csv"))
     assert len(files) == 1 and parse_csv(files[0].read_bytes())[0].amount_cents == -123
     original = files[0].read_bytes()
+    message = capsys.readouterr().out
+    assert "conta-synthetic.csv" in message and "private-canary" not in message
     assert cli.main([*ARGS, "--confirm-personal-use"]) == 1
     assert files[0].read_bytes() == original and not list(cli.OUTPUT.glob("*.tmp"))
     assert "private-canary" not in capsys.readouterr().out
