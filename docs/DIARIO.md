@@ -838,3 +838,6 @@ Documentados comandos reais do monorepo, duas janelas de execução e roteiro
 manual com CSV sintético de R$ 70. Publicar frontend não publica API local.
 Host continua pendente: RAG medido em 865 MiB e HF Docker exige plano pago;
 nenhum serviço foi contratado ou publicado para contornar essa limitação.
+
+Revisão do roteiro explicita a instalação do Chromium para o Playwright, a
+data obrigatória da conta sintética e a seleção de Node 24 no build do Pages.
