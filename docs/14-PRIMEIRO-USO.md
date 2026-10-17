@@ -48,7 +48,8 @@ e flag pública próprios. [Referência](https://supabase.com/docs/guides/auth/r
 ## O que testar primeiro
 
 1. Criar conta, confirmar e-mail, entrar e concluir onboarding sem CPF.
-2. No Resumo, adicionar uma conta sintética com saldo inicial zero.
+2. No Resumo, adicionar uma conta sintética com saldo inicial zero e primeiro
+   dia do período em 17/10/2026.
 3. Importar [movimentos-sinteticos.csv](exemplos/movimentos-sinteticos.csv) nessa
    conta. Esperar dois débitos e total R$ 70,00; revisar antes de confirmar.
 4. Reimportar o mesmo arquivo: zero inseridos e duas duplicatas.
@@ -75,9 +76,11 @@ cobertos por este roteiro. Use dados sintéticos antes de dados pessoais.
 
 ```powershell
 npm.cmd run check:web
+npm.cmd exec --workspace=tato-web -- playwright install chromium
 npm.cmd test --workspace=tato-web
 ```
 
+Instale o Chromium na primeira execução ou após atualizar o Playwright.
 Pare o servidor web manual antes do Playwright: a suíte cria seu próprio
 servidor na porta 3000 com fixtures sintéticas. Não executar duas suítes com o
 mesmo diretório de resultados. PG/RLS exigem URLs de teste para `tato_test`,
@@ -102,7 +105,8 @@ disponibiliza a landing; não torna uma API local acessível a outras pessoas.
 Cloudflare Pages é uma opção do plano B existente para o frontend estático:
 Workers & Pages → Create application → Pages → importar `enzozon/tato`.
 Monorepo: raiz do repositório, branch `main`, build `npm run build`, saída
-`apps/web/out`, Node 24. Configurar apenas `NEXT_PUBLIC_API_URL` (HTTPS da API),
+`apps/web/out`, variável de build `NODE_VERSION=24`. Configurar apenas
+`NEXT_PUBLIC_API_URL` (HTTPS da API),
 `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Nunca copiar
 o `.env` inteiro. Validar um preview antes de promover a publicação.
 [Guia oficial](https://developers.cloudflare.com/pages/framework-guides/nextjs/deploy-a-static-nextjs-site/).
