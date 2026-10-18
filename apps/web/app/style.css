@@ -2,8 +2,8 @@
 body { margin: 0; line-height: 1.5; }
 a { color: inherit; text-underline-offset: 4px; }
 button, input, select, textarea { font: inherit; }
-button, .button { display: inline-flex; justify-content: center; align-items: center; gap: 10px; min-height: 44px; padding: 12px 20px; border: 1px solid transparent; border-radius: 12px; background: var(--accent); color: var(--accent-ink); font-weight: 600; cursor: pointer; text-decoration: none; transition: background .18s, border-color .18s, box-shadow .18s, transform .18s; }
-button:hover:not(:disabled), .button:hover { background: var(--accent-hover); box-shadow: 0 4px 20px color-mix(in srgb,var(--accent) 8%,transparent); transform: translateY(-2px); }
+button, .button { display: inline-flex; justify-content: center; align-items: center; gap: 10px; min-height: 44px; padding: 12px 20px; border: 1px solid transparent; border-radius: 12px; background: var(--accent); color: var(--accent-ink); font-weight: 600; cursor: pointer; text-decoration: none; box-shadow: inset 0 1px 0 #ffffff24; transition: background .18s, border-color .18s, box-shadow .18s, transform .18s; }
+button:hover:not(:disabled), .button:hover { background: var(--accent-hover); box-shadow: inset 0 1px 0 #ffffff40, 0 4px 16px color-mix(in srgb,var(--accent) 12%,transparent); transform: translateY(-1px); }
 button:active:not(:disabled), .button:active { transform: translateY(0) scale(.98); box-shadow: none; }
 button:disabled { opacity: .5; cursor: not-allowed; }
 .secondary { background: transparent; border-color: var(--control); color: var(--ink); }
@@ -48,6 +48,10 @@ textarea { resize: vertical; }
 .error { color: var(--danger); background: var(--danger-paper); border-color: var(--danger-line); }
 .notice, .empty-state { background: var(--wash); color: var(--ink); }
 .empty-state { border-style: dashed; color: var(--muted); }
+.illustrated-empty { display: flex; gap: 20px; align-items: center; }
+.illustrated-empty > div { min-width: 0; }
+.illustrated-empty p:last-child { margin-bottom: 0; }
+.onboarding-mascot { display: flex; justify-content: center; }
 .error button, .notice button { margin-top: 8px; }
 .narrow { max-width: 560px; margin: 32px auto; }
 .auth-panel { padding: 32px; }
@@ -67,6 +71,7 @@ textarea { resize: vertical; }
 .account-row small { display: block; color: var(--muted); }
 .screen-header { margin-bottom: 12px; }
 .screen-header .eyebrow { margin-bottom: 12px; }
+.screen-header .eyebrow::before { content: ''; display: inline-block; width: 6px; height: 6px; border: 1px solid var(--copper); border-radius: 2px; margin-right: 9px; transform: rotate(30deg); }
 .screen-header p { max-width: 62ch; margin-bottom: 0; }
 .screen-heading, .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .screen-heading > div { min-width: 0; }
@@ -87,6 +92,10 @@ dl { margin: 0; }
 dl > div { padding: 12px 0; border-bottom: 1px solid var(--line); }
 dt { color: var(--muted); }
 dd { margin: 4px 0 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.account-details > div { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.2fr); gap: 12px; align-items: baseline; }
+.account-details dd { margin: 0; text-align: right; }
+.import-screen > form > fieldset { grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; }
+.import-screen > form > fieldset > :not(label), .import-screen .file-picker { grid-column: 1 / -1; }
 .danger-zone { border-color: var(--danger-line); }
 .danger-zone button { background: var(--danger-paper); border-color: var(--danger-line); color: var(--danger); }
 .danger-zone button:hover:not(:disabled) { background: color-mix(in srgb,var(--danger-paper) 90%,var(--danger)); border-color: var(--danger); box-shadow: none; }
@@ -205,6 +214,10 @@ footer { border-top: 1px solid var(--line); }
   main { padding: 20px; }
   input, select, textarea, .chat-account select { font-size: 16px; }
   .grid, .metrics, .field-grid { grid-template-columns: minmax(0,1fr); }
+  .import-screen > form > fieldset, .account-details > div { grid-template-columns: minmax(0,1fr); }
+  .account-details > div { gap: 4px; }
+  .account-details dd { text-align: left; }
+  .illustrated-empty { flex-direction: column; align-items: flex-start; gap: 12px; }
   .panel { padding: 20px; }
   .narrow { margin: 24px auto; }
   .screen-heading { align-items: flex-start; }

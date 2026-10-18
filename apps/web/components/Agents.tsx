@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { cents, money, request, type Account } from '../lib/client';
+import { Mascot } from '../../../packages/mascot/Mascot';
 
 const kinds = {subscription_watch:'Vigia de assinatura',anomaly:'Desvio de padrão',runway:'Fôlego',goal:'Meta'};
 type Kind=keyof typeof kinds;
@@ -32,7 +33,7 @@ export function Agents({token,accounts,limit}:{token:string;accounts:Account[];l
     <div className="grid">{agents.map(a=><article className="panel agent-card" key={a.kind}><h3>{kinds[a.kind]}</h3><p className="status-pill">{a.enabled?'Ativo':'Pausado'}</p>
       <p>E-mail: {a.email_enabled?'autorizado':'desligado'}</p>
       <button disabled={busy} className="secondary" onClick={()=>action(()=>request(`/agents/${a.kind}`,token,{method:'PUT',body:JSON.stringify({account_id:a.account_id,goal_id:a.goal_id,enabled:!a.enabled,email_enabled:a.email_enabled})}))}>{a.enabled?'Pausar':'Ativar'}</button></article>)}</div>
-    {!agents.length&&!error&&<p className="empty-state">Escolha o que merece sua atenção. Configure um agente para acompanhar os registros de uma conta.</p>}
+    {!agents.length&&!error&&<div className="empty-state illustrated-empty"><Mascot scene mood="atento" size={88}/><div><h3>Você escolhe o que acompanhar.</h3><p>Escolha o que merece sua atenção. Configure um agente para acompanhar os registros de uma conta.</p></div></div>}
     <details className="panel"><summary>Configurar um agente</summary>{!accounts.length?<p>Adicione uma conta primeiro.</p>:<form onSubmit={configure} aria-busy={busy}>
       <label>Agente<select value={kind} onChange={e=>setKind(e.target.value as Kind)}>{Object.entries(kinds).map(([k,name])=><option key={k} value={k}>{name}</option>)}</select></label>
       <label>Conta<select name="account_id" required>{accounts.filter(a=>!['runway','goal'].includes(kind)||a.kind!=='credit_card').map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>

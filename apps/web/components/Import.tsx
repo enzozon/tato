@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { money, request, type Account } from '../lib/client';
+import { Mascot } from '../../../packages/mascot/Mascot';
 
 type Preview = {count:number; start:string; end:string; credits_cents:number; debits_cents:number;
   receipt:string; warning:string; truncated:boolean;
@@ -42,11 +43,11 @@ export function Import({token, accounts, refresh}: {token:string; accounts:Accou
   return <section className="stack import-screen"><div className="screen-header"><span className="eyebrow">Do extrato à conversa</span><h2>Traga seus movimentos.</h2>
     <p className="muted">CSV, OFX ou PDF compatível. Contas PicPay e Banestes validadas; faturas e Sicoob ainda pendentes.</p></div>
     <ol className="import-steps" aria-label="Etapas da importação"><li aria-current={!preview?'step':undefined}>Escolher arquivo</li><li aria-current={preview?'step':undefined}>Revisar prévia</li><li>Confirmar</li></ol>
-    {!accounts.length ? <p className="empty-state">Adicione uma conta no resumo antes de importar.</p> : <form aria-busy={busy} onSubmit={inspect} onChange={()=>{setPreview(undefined);setPayload(undefined);}}>
-      <fieldset disabled={busy} className="stack"><label>Conta de destino<select name="account_id">{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
+    {!accounts.length ? <div className="empty-state illustrated-empty"><Mascot scene size={88}/><div><h3>Vamos dar um lugar aos seus registros.</h3><p>Adicione uma conta no resumo antes de importar.</p></div></div> : <form aria-busy={busy} onSubmit={inspect} onChange={()=>{setPreview(undefined);setPayload(undefined);}}>
+      <fieldset disabled={busy} className="import-fields field-grid"><label>Conta de destino<select name="account_id">{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
         <label>Formato<select name="kind"><option value="csv">CSV</option><option value="ofx">OFX</option><option value="pdf">PDF</option></select></label>
-        <label className="file-picker">Extrato ou fatura<input name="file" type="file" accept=".csv,.ofx,.pdf" required /></label><small>Até 2 MiB. Nada é salvo antes da sua confirmação.</small>
-        <details><summary>Mapear colunas de CSV personalizado</summary><p>Preencha as três colunas principais para personalizar; deixe todas vazias para detectar um layout conhecido.</p>
+        <label className="file-picker">Extrato ou fatura<input name="file" type="file" accept=".csv,.ofx,.pdf" required /></label><small className="import-help">Até 2 MiB. Nada é salvo antes da sua confirmação.</small>
+        <details className="import-mapping"><summary>Mapear colunas de CSV personalizado</summary><p>Preencha as três colunas principais para personalizar; deixe todas vazias para detectar um layout conhecido.</p>
           <div className="field-grid"><label>Coluna da data<input name="date_column" maxLength={100} /></label><label>Coluna da descrição<input name="description_column" maxLength={100} /></label><label>Coluna do valor<input name="amount_column" maxLength={100} /></label>
           <label>Coluna do identificador (opcional)<input name="id_column" maxLength={100} /></label>
           <label>Separador decimal<select name="decimal_separator"><option value=",">Vírgula (12,34)</option><option value=".">Ponto (12.34)</option></select></label>

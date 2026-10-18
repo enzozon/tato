@@ -29,7 +29,7 @@ export function PasswordRecovery({ owner, currentOwner, cancel }: { owner: strin
     try { await cancel(); }
     catch { setExitError('Não foi possível sair agora. Tente novamente.'); setBusy(false); }
   }
-  return <section className="narrow panel auth-panel"><div className="auth-mascot"><Mascot mood={done?'comemorando':'atento'} size={80}/></div><span className="eyebrow">Seu espaço protegido</span><h1>Definir nova senha.</h1>
+  return <section className="narrow panel auth-panel"><div className="auth-mascot"><Mascot scene mood={done?'comemorando':'atento'} size={104}/></div><span className="eyebrow">Seu espaço protegido</span><h1>Definir nova senha.</h1>
     {!valid ? <p role="alert">Link ausente, expirado ou de outra sessão. Solicite um novo link após sair.</p> : done ?
       <p role="status">Senha atualizada. Entre novamente com sua nova senha.</p> :
       <form onSubmit={update} aria-busy={busy}><label>Nova senha<input name="password" type="password" minLength={8} autoComplete="new-password" required disabled={busy}/></label>

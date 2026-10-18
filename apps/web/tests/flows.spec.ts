@@ -1,5 +1,7 @@
 import { navigate } from './navigation';
 import { test, expect, type Page } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
+import path from 'node:path';
 
 const owner='00000000-0000-4000-8000-000000000001';
 const account='00000000-0000-4000-8000-000000000002';
@@ -47,6 +49,41 @@ test('resumo acomoda nomes longos de conta e categoria em 320px',async({page})=>
   await expect(page.getByText('C'.repeat(80),{exact:true}).filter({visible:true})).toBeVisible();
   await expect(page.locator('.category-list p')).toContainText('Categoria'.repeat(10));
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('estados vazios orientam o primeiro passo e abrem o cadastro com foco',async({page},info)=>{
+  await signIn(page);
+  const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,content-type','Access-Control-Allow-Methods':'GET,OPTIONS'};
+  await page.route('**/dashboard',route=>route.fulfill({headers,json:{as_of:'2026-10-18',balance_cents:'0',expense_cents:'0',categories:[],accounts:[]}}));
+  for(const endpoint of ['agents','goals','insights'])await page.route(`**/${endpoint}`,route=>route.fulfill({headers,json:[]}));
+  await page.reload();
+  await page.getByLabel('E-mail',{exact:true}).fill('teste@example.test');
+  await page.getByLabel('Senha',{exact:true}).fill('synthetic-password');
+  await page.getByRole('button',{name:'Entrar',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Vamos conversar.',exact:true})).toBeVisible();
+  const directory=path.resolve(__dirname,'../../../test-results/obsidiana-empty');
+  await mkdir(directory,{recursive:true});
+  for(const width of info.project.name==='desktop'?[1440]:[390,320]){
+    await page.setViewportSize({width,height:844});
+    await navigate(page,'Conversa');await navigate(page,'Resumo');
+    await expect(page.getByRole('heading',{name:'Um primeiro passo, no seu ritmo.',exact:true})).toBeVisible();
+    await expect(page.locator('.metrics')).toHaveCount(0);
+    await expect(page.locator('.screen-heading').getByRole('img')).toHaveAccessibleName(/: dormindo$/);
+    const firstAccount=page.getByRole('button',{name:'Adicionar minha primeira conta',exact:true});
+    const box=await firstAccount.boundingBox();
+    expect(box).not.toBeNull();expect(box!.y).toBeGreaterThanOrEqual(0);expect(box!.y+box!.height).toBeLessThanOrEqual(844);
+    await expect(page.getByLabel('Nome',{exact:true})).toBeVisible();
+    await page.getByText('Adicionar conta ou cartão',{exact:true}).click();
+    await expect(page.getByLabel('Nome',{exact:true})).not.toBeVisible();
+    await firstAccount.click();
+    await expect(page.getByLabel('Nome',{exact:true})).toBeFocused();
+    for(const [screen,heading] of [['Resumo','Um primeiro passo, no seu ritmo.'],['Importar','Vamos dar um lugar aos seus registros.'],['Agentes','Você escolhe o que acompanhar.']]){
+      if(screen!=='Resumo')await navigate(page,screen);
+      await expect(page.getByRole('heading',{name:heading,exact:true})).toBeVisible();
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${screen} ${width}px`).toBe(true);
+      await page.screenshot({path:path.join(directory,`${width}-${screen}.png`),fullPage:true,animations:'disabled',style:'nextjs-portal{display:none!important}'});
+    }
+  }
 });
 
 test('mensagem sem espaços cabe na conversa sem rolagem horizontal',async({page})=>{
