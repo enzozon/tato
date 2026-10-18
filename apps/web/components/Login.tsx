@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { auth } from '../lib/client';
 import { Mascot } from '../../../packages/mascot/Mascot';
+import identity from '../../../packages/mascot/identity.json';
 
 export function Login() {
   const [signup, setSignup] = useState(false), [busy, setBusy] = useState(false);
@@ -31,7 +32,7 @@ export function Login() {
       if(error)setMessage('Login com Google indisponível neste momento.');
     }catch{setMessage('Não foi possível conectar ao Google.');}finally{setBusy(false);}
   }
-  return <section className="narrow panel auth-panel"><div className="auth-mascot"><Mascot mood={busy?'atento':'calmo'} size={88}/></div><span className="eyebrow">Seu dinheiro, em uma conversa</span><h1>{recovery ? 'Recuperar sua senha.' : signup ? 'Vamos começar?' : 'Que bom te ver.'}</h1>
+  return <section className="narrow panel auth-panel"><div className="auth-mascot"><Mascot mood={busy?'atento':'calmo'} size={88}/></div><span className="eyebrow">{identity.tagline}</span><h1>{recovery ? 'Recuperar sua senha.' : signup ? 'Vamos começar?' : 'Que bom te ver.'}</h1>
     <p className="muted">{recovery ? 'Informe seu e-mail para solicitar um link de recuperação.' : 'Entre para conversar sobre suas finanças.'}</p>
     {!auth && <p role="status" className="notice">Login ainda não configurado neste ambiente. O responsável precisa configurar o projeto Supabase.</p>}
     <form onSubmit={submit} aria-busy={busy}><label>E-mail<input name="email" type="email" autoComplete="email" required /></label>

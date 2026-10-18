@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { auth, request, requestResponse, type Profile } from '../lib/client';
 import { Billing } from './Billing';
+import brandIdentity from '../../../packages/mascot/identity.json';
 
 type Capacity={used:number;limit:number|null;remaining:number|null};
 type Usage={period_end:string;messages:Capacity;import_sources:Capacity;agents:Capacity};
@@ -74,7 +75,7 @@ export function Settings({token,profile,owner}:{token:string;profile:Profile;own
         <div><dt>Tempo acumulado das tentativas</dt><dd>{llmUsage.elapsed_ms} ms</dd></div>
       </dl><p>Tentativas sem contagem de tokens: {llmUsage.unknown_input_attempts} de entrada e {llmUsage.unknown_output_attempts} de saída.</p>
       <p>Período de {llmUsage.period_start.slice(0,10).split('-').reverse().join('/')} até {llmUsage.period_end.slice(0,10).split('-').reverse().join('/')} (fim exclusivo, UTC).</p></> : <p role="status">{llmError || 'Consultando medições…'}</p>}
-      <p>São medições registradas pelo Tato, incluindo tentativas de fallback. Não representam saldo nem quota dos provedores.</p>
+      <p>São medições registradas pelo {brandIdentity.name}, incluindo tentativas de fallback. Não representam saldo nem quota dos provedores.</p>
     </section>
     <section className="panel" aria-label="Exportar dados"><h2>Uma cópia dos seus dados</h2>
       <p>O arquivo JSON contém dados pessoais e financeiros legíveis. Guarde-o em um local seguro e compartilhe apenas com quem você escolher.</p>
