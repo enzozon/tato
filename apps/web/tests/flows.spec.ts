@@ -179,7 +179,7 @@ test('retornar à janela não descarta atualização da mesma sessão',async({pa
   let release!:()=>void;
   const gate=new Promise<void>(resolve=>{release=resolve;});
   await page.route('**/accounts',route=>route.fulfill({json:{}}));
-  await page.route('**/dashboard',async route=>{await gate;await route.fulfill({json:{as_of:'2026-10-04',balance_cents:'4500',expense_cents:'0',categories:[],accounts:[]}});});
+  await page.route('**/dashboard',async route=>{await gate;await route.fulfill({json:{as_of:'2026-10-04',balance_cents:'4500',expense_cents:'0',categories:[],accounts:[{id:account,name:'Conta nova',kind:'checking',balance_cents:'4500'}]}});});
   await page.getByText('Adicionar conta ou cartão',{exact:true}).click();
   await page.getByLabel('Nome',{exact:true}).fill('Conta nova');
   await page.getByLabel('Primeiro dia do período').fill('2026-10-01');

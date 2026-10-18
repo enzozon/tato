@@ -968,3 +968,11 @@ Provas: suíte web de 136 testes antes do último ajuste, quatro focados depois,
 evidências aprovados. `make check`: 657 testes, 83,94% de cobertura. O teste
 novo confirma ausência de métricas sem contas, humor preservado, ação visível
 em 844px e abertura/foco do formulário. Aparelhos físicos continuam pendentes.
+
+A suíte completa da CI encontrou uma fixture incoerente após o ajuste final:
+o teste de atualização da sessão criava uma conta, mas devolvia `accounts: []`
+com saldo. Corrigimos a resposta simulada para incluir a conta criada, mantendo
+a asserção do saldo. A CI bloqueou o merge até validar essa correção.
+Os quatro casos afetados passaram localmente em desktop/celular; a primeira
+tentativa não chegou aos testes por timeout de inicialização do Next, e a
+repetição passou após o aquecimento. `make check` manteve 657 testes aprovados.
