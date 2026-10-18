@@ -976,3 +976,11 @@ a asserção do saldo. A CI bloqueou o merge até validar essa correção.
 Os quatro casos afetados passaram localmente em desktop/celular; a primeira
 tentativa não chegou aos testes por timeout de inicialização do Next, e a
 repetição passou após o aquecimento. `make check` manteve 657 testes aprovados.
+
+### Lançamentos — 18/10/2026
+
+A primeira parte permite consultar páginas limitadas e corrigir um lançamento
+com versão conferida sob lock do usuário. Conta, documento e hash de origem não
+mudam. O teste Postgres provou paginação, dinheiro acima do limite seguro de
+JavaScript, acesso cruzado negado e recusa de edição antiga. O schema de identidade
+removida foi aprovado antes da migration; plano e consequências em `19-LANCAMENTOS.md`.
