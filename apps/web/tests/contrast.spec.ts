@@ -34,3 +34,22 @@ test('campos vazios de login têm limites distinguíveis das superfícies adjace
     expect(ratios.outside).toBeGreaterThanOrEqual(3);
   }
 });
+
+test('login mantém foco visível e desativa animações com movimento reduzido', async ({ page }) => {
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/app/');
+  const email=page.getByLabel('E-mail',{exact:true});
+  await email.focus();
+  const outline=await email.evaluate(element=>{
+    const style=getComputedStyle(element);
+    return {width:parseFloat(style.outlineWidth),style:style.outlineStyle};
+  });
+  expect(outline.width).toBeGreaterThanOrEqual(2);
+  expect(outline.style).not.toBe('none');
+  const animated=await page.locator('body *').evaluateAll(elements=>elements.filter(element=>{
+    if(!element.checkVisibility())return false;
+    const style=getComputedStyle(element);
+    return style.animationName!=='none'&&style.animationDuration.split(',').some(value=>parseFloat(value)>.001);
+  }).map(element=>element.className));
+  expect(animated).toEqual([]);
+});

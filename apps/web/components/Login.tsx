@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { auth } from '../lib/client';
+import { Mascot } from '../../../packages/mascot/Mascot';
 
 export function Login() {
   const [signup, setSignup] = useState(false), [busy, setBusy] = useState(false);
@@ -30,15 +31,16 @@ export function Login() {
       if(error)setMessage('Login com Google indisponível neste momento.');
     }catch{setMessage('Não foi possível conectar ao Google.');}finally{setBusy(false);}
   }
-  return <section className="narrow panel"><h1>{recovery ? 'Recuperar sua senha.' : signup ? 'Vamos começar?' : 'Que bom te ver.'}</h1>
+  return <section className="narrow panel auth-panel"><div className="auth-mascot"><Mascot mood={busy?'atento':'calmo'} size={88}/></div><span className="eyebrow">Seu dinheiro, em uma conversa</span><h1>{recovery ? 'Recuperar sua senha.' : signup ? 'Vamos começar?' : 'Que bom te ver.'}</h1>
     <p className="muted">{recovery ? 'Informe seu e-mail para solicitar um link de recuperação.' : 'Entre para conversar sobre suas finanças.'}</p>
     {!auth && <p role="status" className="notice">Login ainda não configurado neste ambiente. O responsável precisa configurar o projeto Supabase.</p>}
-    <form onSubmit={submit}><label>E-mail<input name="email" type="email" autoComplete="email" required /></label>
+    <form onSubmit={submit} aria-busy={busy}><label>E-mail<input name="email" type="email" autoComplete="email" required /></label>
       {!recovery && <label>Senha<input name="password" type="password" minLength={8} autoComplete={signup ? 'new-password' : 'current-password'} required /></label>}
       <button disabled={busy || !auth}>{busy ? 'Aguarde…' : recovery ? 'Enviar instruções' : signup ? 'Criar conta' : 'Entrar'}</button></form>
-    {!recovery && process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED==='true'&&<button disabled={busy||!auth} className="secondary" onClick={google}>Continuar com Google</button>}
+    <div className="auth-actions button-group">{!recovery && process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED==='true'&&<button disabled={busy||!auth} className="secondary" onClick={google}>Continuar com Google</button>}
     {message && <p role="status">{message}</p>}
     {!signup && !recovery && <button className="secondary" disabled={busy} onClick={()=>{setRecovery(true);setMessage('');}}>Esqueci minha senha</button>}
     <button className="secondary" disabled={busy} onClick={()=>{if(recovery)setRecovery(false);else setSignup(!signup);setMessage('');}}>{recovery ? 'Voltar ao login' : signup ? 'Já tenho conta' : 'Criar conta gratuitamente'}</button>
+    </div>
   </section>;
 }

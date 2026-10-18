@@ -147,7 +147,7 @@ tbody tr:hover { background: var(--wash); }
 .chat-composer:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb,var(--accent) 5%,transparent),0 12px 40px #0003; }
 .chat-composer textarea { border: 0; padding: 8px; background: transparent; resize: none; min-height: 64px; max-height: 160px; box-shadow: none; }
 .chat-tools { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.chat-tools .chat-attach { padding: 8px 10px; flex: none; font-weight: 400; font-size: 13px; border-color: transparent; }
+.chat-tools .chat-attach { padding: 8px 10px; flex: none; min-width: 44px; font-weight: 400; font-size: 13px; border-color: transparent; }
 .chat-attach > span:first-child { font-size: 24px; line-height: 1; }
 .chat-account { min-width: 0; max-width: 320px; flex: 1; }
 .chat-account select { background: transparent; border: 0; color: var(--muted); font-size: 13px; text-overflow: ellipsis; cursor: pointer; padding: 10px 4px; min-height: 44px; }

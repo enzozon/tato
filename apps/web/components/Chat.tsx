@@ -64,7 +64,7 @@ export function Chat({token, accounts, refresh, active=true}: {token:string; acc
   return <section className="chat-space" aria-label="Conversa financeira">
     <div className="chat-thread" ref={messages} role="region" tabIndex={0} aria-label="Mensagens da conversa" onScroll={event=>{const list=event.currentTarget;if(active&&list.clientHeight)followLatest.current=list.scrollHeight-list.scrollTop-list.clientHeight<40;}}>
       {!turns.length && !pending && <div className="chat-welcome">
-        <Mascot mood={mood} size={136}/><h2>{identity.messages.web_title}</h2>
+        <div className="chat-mascot-halo"><Mascot mood={mood} size={136}/></div><span className="eyebrow">Um pouco de clareza, uma conversa de cada vez</span><h2>{identity.messages.web_title}</h2>
         <p>{identity.messages.web_prompt}</p>
       </div>}
       <div className="conversation" aria-live="polite" aria-relevant="additions text">{turns.map(turn=><article key={turn.request.request_id}>
@@ -75,20 +75,20 @@ export function Chat({token, accounts, refresh, active=true}: {token:string; acc
           {turn.response.sources?.map(source=><details key={source.chunk_id}><summary>Fonte: {source.section}</summary><p>{source.content}</p><small>Trecho {source.chunk_id}</small></details>)}
         </div></article>)}
         {pending && <p className="question">{pending.question}</p>}
-        {busy && <div className="chat-thinking" role="status"><Mascot mood="atento" size={42}/><span>Conferindo seus registros…</span></div>}
+        {busy && <div className="chat-thinking" role="status"><Mascot mood="atento" size={42}/><span>Conferindo seus registros…</span><span className="thinking-dots" aria-hidden="true"><i/><i/><i/></span></div>}
       </div>
       {attachment && <div className="chat-import" ref={importPanel} role="region" aria-label="Importação no chat" tabIndex={-1}><Import token={token} accounts={accounts} refresh={refresh}/></div>}
     </div>
     <div className="chat-bottom">
       {error && <p role="alert" className="error">{error} {pending && <button disabled={busy} onClick={()=>send(pending)}>Repetir pedido</button>}</p>}
       {!turns.length && !pending && <div className="chat-suggestions" aria-label="Sugestões de conversa">{suggestions.map(question=><button type="button" className="secondary" key={question} onClick={()=>{if(input.current){input.current.value=question;input.current.focus();}}}>{question}</button>)}</div>}
-      <form className="chat-composer" onSubmit={submit}>
+      <form className="chat-composer" onSubmit={submit} aria-busy={busy}>
         <label className="sr-only" htmlFor="chat-question">Sua mensagem</label>
         <textarea id="chat-question" ref={input} name="question" rows={2} maxLength={500} required placeholder={`Converse com ${identity.name}`} onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.nativeEvent.isComposing){event.preventDefault();event.currentTarget.form?.requestSubmit();}}}/>
         <div className="chat-tools">
           <button type="button" className="secondary chat-attach" aria-expanded={attachment} onClick={()=>setAttachment(!attachment)} aria-label={attachment?'Fechar importação':'Importar um extrato no chat'} title={attachment?'Fechar importação':'Importar um extrato no chat'}><span aria-hidden="true">{attachment?'×':'+'}</span><span className="chat-attach-label">Extrato</span></button>
           <label className="chat-account"><span className="sr-only">Conta para consulta ou lançamento</span><select name="account_id"><option value="">Todas (somente consultas)</option>{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
-          <button className="chat-send" disabled={busy || !!pending} aria-label="Enviar mensagem" title="Enviar mensagem"><span aria-hidden="true">↑</span></button>
+          <button className="chat-send" disabled={busy || !!pending} aria-label="Enviar mensagem" title="Enviar mensagem"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
         </div>
         {pending && !busy && <button type="button" className="secondary" onClick={()=>setPending(undefined)}>Descartar tentativa</button>}
       </form>

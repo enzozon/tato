@@ -1,6 +1,7 @@
 'use client';
 import { useRef, useState } from 'react';
 import { auth } from '../lib/client';
+import { Mascot } from '../../../packages/mascot/Mascot';
 
 export function PasswordRecovery({ owner, currentOwner, cancel }: { owner: string; currentOwner: string; cancel: () => Promise<void> }) {
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [done, setDone] = useState(false);
@@ -28,10 +29,10 @@ export function PasswordRecovery({ owner, currentOwner, cancel }: { owner: strin
     try { await cancel(); }
     catch { setExitError('Não foi possível sair agora. Tente novamente.'); setBusy(false); }
   }
-  return <section className="narrow panel"><h1>Definir nova senha.</h1>
+  return <section className="narrow panel auth-panel"><div className="auth-mascot"><Mascot mood={done?'comemorando':'atento'} size={80}/></div><span className="eyebrow">Seu espaço protegido</span><h1>Definir nova senha.</h1>
     {!valid ? <p role="alert">Link ausente, expirado ou de outra sessão. Solicite um novo link após sair.</p> : done ?
       <p role="status">Senha atualizada. Entre novamente com sua nova senha.</p> :
-      <form onSubmit={update}><label>Nova senha<input name="password" type="password" minLength={8} autoComplete="new-password" required disabled={busy}/></label>
+      <form onSubmit={update} aria-busy={busy}><label>Nova senha<input name="password" type="password" minLength={8} autoComplete="new-password" required disabled={busy}/></label>
         <label>Confirmar nova senha<input name="confirmation" type="password" minLength={8} autoComplete="new-password" required disabled={busy}/></label>
         <button disabled={busy}>Salvar nova senha</button></form>}
     {error && valid && <p role="alert" className="error">{error}</p>}

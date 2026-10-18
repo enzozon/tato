@@ -6,6 +6,7 @@ PWA sem cache financeiro; testes de navegador e CI. Sem novo schema previsto.
 A branch parte da etapa 8. PR 17 já integrado; o PR desta etapa aponta para main.
 
 Direção visual atual: Obsidiana, grafite e menta com cobre do mascote autoral.
+O [guia de identidade](18-OBSIDIANA.md) explica composição, movimento e avaliação.
 Formulários usam HTML semântico e foco visível.
 Next/React substituem roteamento e renderização próprios; Supabase JS cuida da
 sessão; Playwright valida comportamento real no navegador. CSS local nesta
