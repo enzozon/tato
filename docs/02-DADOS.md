@@ -1,5 +1,11 @@
 # Dados — revisão da etapa 2
 
+Atualização de 18/10/2026: a migration `0010` acrescenta `deleted_transactions`,
+aprovada antes da geração. Guarda UUID original, dono, conta, hash e data da
+remoção, sem valores ou descrição. Usa FK do mesmo dono, unicidade da origem,
+RLS forçada e cascata no usuário. Não participa dos saldos nem dos relatórios.
+Detalhes da exclusão e limites de deduplicação em `19-LANCAMENTOS.md`.
+
 Em 19/09/2026, Enzo autorizou revisar o schema, executar a etapa 2, instalar
 dependências e seguir para a migration. Esta revisão precede a geração de tabelas.
 Escopo: dez modelos solicitados; autenticação HTTP e ingestão ficam para etapas 3/4.

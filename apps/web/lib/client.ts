@@ -40,11 +40,16 @@ export function money(value: string | number) {
   return `${cents < 0n ? '−' : ''}R$ ${(absolute / 100n).toLocaleString('pt-BR')},${String(absolute % 100n).padStart(2, '0')}`;
 }
 export function cents(text: string): number {
+  const result=BigInt(centsString(text));
+  if (result > BigInt(Number.MAX_SAFE_INTEGER) || result < BigInt(Number.MIN_SAFE_INTEGER)) throw new Error('Valor acima do limite de entrada.');
+  return Number(result);
+}
+export function centsString(text: string): string {
   if (!/^-?\d+(,\d{1,2})?$/.test(text)) throw new Error('Use reais com vírgula, sem separador de milhar.');
   const [whole, fraction = ''] = text.replace('-', '').split(',');
   const result = (BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0'))) * (text.startsWith('-') ? -1n : 1n);
-  if (result > BigInt(Number.MAX_SAFE_INTEGER) || result < BigInt(Number.MIN_SAFE_INTEGER)) throw new Error('Valor acima do limite de entrada.');
-  return Number(result);
+  if (result >= 2n**63n || result < -(2n**63n)) throw new Error('Valor acima do limite de entrada.');
+  return String(result);
 }
 export type Account = { id: string; name: string; kind: string; opening_date: string; balance_cents: string };
 export type Summary = { accounts: Account[]; balance_cents: string; expense_cents: string; as_of: string;

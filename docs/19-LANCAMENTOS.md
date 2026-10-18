@@ -49,3 +49,22 @@ de sobreposição e revisar períodos. A prova entre arquivos distintos usa ID b
 
 Reconciliação automática, alteração de conta/origem e exclusão em lote ficam
 fora desta primeira entrega: exigem regras próprias de rastreabilidade.
+
+## Como conferir no aplicativo
+
+No menu, abra **Lançamentos** depois de cadastrar uma conta e importar dados
+sintéticos. Filtre conta/período/tipo e navegue pelas páginas. Em **Editar**,
+revise data, descrição, valor assinado, natureza e categoria; confirme a correção
+e confira o Resumo. Para excluir, use a confirmação separada. Cancele primeiro
+para verificar que nada muda. A exclusão não pode ser desfeita nesta versão.
+
+Se outra edição ocorrer, recarregue a lista antes de confirmar novamente. Se
+a gravação funcionar mas o Resumo falhar, a tela informa o sucesso e pede somente
+a atualização dos totais. Os testes cobrem esse caso sem repetir a exclusão.
+
+Provas locais: `make check` com 674 testes/82,53%; ciclo de downgrade/upgrade
+no banco descartável e 111 integrações Postgres/RLS aprovados. A suíte web inicial
+aprovou 140 casos e falhou em dois por seletor do novo campo Natureza. Após usar
+o papel acessível do campo e ajustar o espaçamento, seis casos focados passaram.
+Capturas sintéticas de desktop e 320px em `test-results/lancamentos/`.
+Build estático, checagem de tipos e PWA offline também passaram após o ajuste.
