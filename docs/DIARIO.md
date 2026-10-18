@@ -949,3 +949,30 @@ Provas locais: 134 testes web, 10 focados após o ajuste final, 90 capturas,
 build estático, tipos e PWA offline aprovados. `make check` manteve 657 testes
 e 83,94% de cobertura. Capturas usam API simulada; não provam provedores reais
 ou instalação em iPhone físico. Guia e refinamentos seguintes em `18-OBSIDIANA.md`.
+
+### Acabamento Obsidiana — 18/10/2026
+
+Três agentes dividiram ilustração, jornadas e QA. Cenários SVG autorais dão
+presença ao Tato nos primeiros passos; formulários de importação aproveitam
+duas colunas no desktop e os detalhes alinham rótulo/valor. No celular, tudo
+retorna a uma coluna. Nenhuma dependência, integração ou cálculo foi adicionado.
+
+A revisão das capturas mostrou que quatro indicadores vazios escondiam a ação
+inicial no Resumo. Sem contas, eles agora aguardam os primeiros registros, e
+um único mascote conserva o humor derivado dos dados. O botão inicial abre
+o formulário recolhido e leva o foco ao Nome. A identidade também depende da
+hierarquia das ações: decorar o estado vazio sozinho não resolvia a fricção.
+
+Provas: suíte web de 136 testes antes do último ajuste, quatro focados depois,
+90 capturas gerais e nove vazias, build, tipos, PWA offline e verificador de
+evidências aprovados. `make check`: 657 testes, 83,94% de cobertura. O teste
+novo confirma ausência de métricas sem contas, humor preservado, ação visível
+em 844px e abertura/foco do formulário. Aparelhos físicos continuam pendentes.
+
+A suíte completa da CI encontrou uma fixture incoerente após o ajuste final:
+o teste de atualização da sessão criava uma conta, mas devolvia `accounts: []`
+com saldo. Corrigimos a resposta simulada para incluir a conta criada, mantendo
+a asserção do saldo. A CI bloqueou o merge até validar essa correção.
+Os quatro casos afetados passaram localmente em desktop/celular; a primeira
+tentativa não chegou aos testes por timeout de inicialização do Next, e a
+repetição passou após o aquecimento. `make check` manteve 657 testes aprovados.

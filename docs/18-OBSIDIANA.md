@@ -71,11 +71,21 @@ reconciliação de transferências/faturas, novas ferramentas SQL ou publicaçã
 Essas partes seguem o inventário em `13-CONCLUSAO.md` e precisam de implementação
 e prova próprias. Validar Safari e aparelhos físicos após esta revisão local.
 
-A revisão visual sugeriu três refinamentos para uma próxima rodada de feedback:
-limitar melhor a largura dos formulários de importação no desktop; melhorar o
-alinhamento de rótulo/valor em avisos e configurações; criar ilustrações autorais
-para onboarding e estados vazios. Barras proporcionais de categorias só devem usar
-os valores SQL existentes. Não acrescentar métricas fictícias para preencher telas.
+A rodada de acabamento aplica os refinamentos da primeira revisão: importação
+em duas colunas no desktop, rótulo/valor alinhados em avisos e configurações e
+cenários autorais para onboarding e estados vazios. No celular, campos e valores
+voltam a uma coluna. Barras proporcionais de categorias continuam como evolução
+possível, usando somente valores SQL; não acrescentar métricas fictícias.
+
+O parâmetro opcional `scene` de `Mascot` acrescenta órbitas, folhas geométricas e
+detalhes de cobre/menta atrás do tatu. A decoração não muda o humor nem o nome
+acessível e respeita movimento reduzido. Login, recuperação, onboarding e telas
+sem contas/agentes usam o cenário; o chat conserva seu halo para evitar duplicação.
+No Resumo vazio, os cartões de métricas aguardam a primeira conta: a ação inicial
+fica visível antes da rolagem no celular. Um único Tato preserva o humor derivado
+dos dados. “Adicionar minha primeira conta” abre o formulário e foca Nome,
+inclusive se ele tiver sido recolhido. Botões ganham borda iluminada e feedback
+curto, preservando a distinção de ações destrutivas e desabilitadas.
 
 ## Validação local de 18/10/2026
 
@@ -91,3 +101,12 @@ Reproduzir: `npm run gallery --workspace=tato-web`; se a porta 3000 estiver em u
 definir `PLAYWRIGHT_PORT=3100` no ambiente do comando. As imagens e o índice ficam
 em `test-results/ui-gallery/`, com dados sintéticos. A preferência de movimento
 reduzido foi testada; Safari físico e leitor de tela completo continuam pendentes.
+
+Na rodada de acabamento, a suíte completa aprovou 136 testes antes do último
+ajuste de hierarquia. Depois dele, quatro testes focados aprovaram cenário,
+movimento reduzido, humor e abertura/foco do cadastro; a ação inicial cabe em
+844px de altura também na largura de 320px. A galeria final manteve 90 capturas,
+com nove imagens adicionais de Resumo, Importar e Agentes sem dados. Dois
+revisores avaliaram espaçamento e hierarquia nas capturas sintéticas.
+Build, tipos, teste PWA offline e verificador das evidências passaram novamente
+após o ajuste final. `make check` manteve 657 testes e 83,94% de cobertura.

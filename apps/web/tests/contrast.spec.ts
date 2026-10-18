@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import identity from '../../../packages/mascot/identity.json';
 
 test('campos vazios de login têm limites distinguíveis das superfícies adjacentes', async ({ page }) => {
   await page.goto('/app/');
@@ -52,4 +53,18 @@ test('login mantém foco visível e desativa animações com movimento reduzido'
     return style.animationName!=='none'&&style.animationDuration.split(',').some(value=>parseFloat(value)>.001);
   }).map(element=>element.className));
   expect(animated).toEqual([]);
+});
+
+test('cenários do mascote preservam o nome acessível e respeitam movimento reduzido', async ({ page }) => {
+  await page.emulateMedia({reducedMotion:'reduce'});
+  for(const screen of ['landing','login','recuperação']){
+    if(screen==='landing')await page.goto('/');
+    if(screen==='login')await page.goto('/app/');
+    if(screen==='recuperação')await page.getByRole('button',{name:'Esqueci minha senha',exact:true}).click();
+    const mascot=page.locator('svg.mascot').filter({has:page.locator('.mascot-scene')});
+    await expect(mascot).toHaveCount(1);
+    await expect(mascot).toHaveAccessibleName(`${identity.name}: calmo`);
+    await expect(mascot.locator('.mascot-scene')).toHaveAttribute('aria-hidden','true');
+    expect(await mascot.evaluate(element=>element.getAnimations({subtree:true}).length)).toBe(0);
+  }
 });
