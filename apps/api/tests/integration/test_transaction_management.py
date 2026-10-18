@@ -146,6 +146,10 @@ def test_deleted_import_stays_removed_in_overlapping_file(
     from app.import_service import store_import
 
     monkeypatch.setenv("DEDUP_HMAC_KEY", base64.b64encode(b"s" * 32).decode())
+    monkeypatch.setenv("TATO_ENV", "development")
+    monkeypatch.setenv("RATE_LIMIT_BACKEND", "memory")
+    monkeypatch.delenv("UPSTASH_REDIS_REST_URL", raising=False)
+    monkeypatch.delenv("UPSTASH_REDIS_REST_TOKEN", raising=False)
     monkeypatch.setattr("app.transactions.check_rate", lambda *args: None)
     owner, account = owners[0], agent_accounts[0]
     mapping = CsvMapping(

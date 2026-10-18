@@ -995,3 +995,8 @@ integrações aprovadas. A primeira suíte web teve 140 aprovações e dois sele
 de Natureza incorretos; seis casos focados passaram após a correção. A captura
 de 320px mostrou o valor comprimido ao lado da descrição: a versão final o põe
 em linha própria e dá mais espaço ao formulário. Nenhum dado real nas capturas.
+
+A CI encontrou uma dependência ambiental no teste novo de reimportação: o
+limitador tentava acessar Upstash quando o backend de teste não era definido.
+O teste agora declara desenvolvimento/memória e remove as duas variáveis remotas,
+sem alterar a política do produto nem exigir credenciais no runner.
