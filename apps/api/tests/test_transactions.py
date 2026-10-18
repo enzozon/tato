@@ -10,7 +10,20 @@ from app.auth import Identity, current_identity
 from app.crypto import encrypt_text
 from app.main import app
 from app.models import Transaction
-from app.transactions import TransactionEdit, TransactionFilter, TransactionPage, revision, view
+from app.transactions import (
+    TransactionDeletion,
+    TransactionEdit,
+    TransactionFilter,
+    TransactionPage,
+    revision,
+    view,
+)
+
+
+@pytest.mark.parametrize("confirmation", [1, "true", "false", None])
+def test_deletion_requires_boolean(confirmation):
+    with pytest.raises(ValidationError):
+        TransactionDeletion(revision="a" * 64, confirm=confirmation)
 
 
 @pytest.mark.parametrize(

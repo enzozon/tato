@@ -984,3 +984,8 @@ com versão conferida sob lock do usuário. Conta, documento e hash de origem n�
 mudam. O teste Postgres provou paginação, dinheiro acima do limite seguro de
 JavaScript, acesso cruzado negado e recusa de edição antiga. O schema de identidade
 removida foi aprovado antes da migration; plano e consequências em `19-LANCAMENTOS.md`.
+
+A migration 0010 adiciona apenas identidades removidas, com RLS forçada e sem
+valores ou descrições. Exclusão e marcador são atômicos. A prova Postgres cobre
+repetição da exclusão, proteção contra reinserção, FK entre usuários e remoção
+em cascata. O primeiro `make check` desta parte aprovou 674 testes/82,53%.

@@ -77,3 +77,14 @@ class Transaction(TenantRecord, table=True):
     kind: str = Field(max_length=10)
     description_ciphertext: bytes
     dedup_key: str = Field(max_length=64)
+
+
+class DeletedTransaction(TenantRecord, table=True):
+    __tablename__: ClassVar[str] = "deleted_transactions"
+    __table_args__ = (
+        ForeignKeyConstraint(["user_id", "account_id"], ["accounts.user_id", "accounts.id"]),
+        UniqueConstraint("user_id", "account_id", "dedup_key"),
+        CheckConstraint("dedup_key ~ '^[0-9a-f]{64}$'", name="dedup_key"),
+    )
+    account_id: UUID
+    dedup_key: str = Field(max_length=64)

@@ -37,6 +37,15 @@ transação. O ponto único `add_transaction` consulta as identidades removidas
 antes da inserção. Isso impede uma reimportação de ressuscitar o lançamento.
 O custo é conservar o hash de origem enquanto existir a conta do usuário.
 Sem essa tabela, apagar uma linha permitiria sua recriação por arquivo sobreposto.
+O marcador usa o UUID do lançamento para permitir repetir a exclusão após uma
+resposta perdida. A migration foi aplicada primeiro em `tato_test`, com drift
+verificado. Downgrade descarta a proteção e fica restrito ao banco descartável;
+em ambiente publicado, corrigir migrations com uma nova revisão.
+
+Limite: CSV/PDF sem ID estável usam identidade do arquivo/linha. O mesmo arquivo
+continua bloqueado, mas outro arquivo sobreposto pode conter a mesma movimentação
+com outra identidade. O marcador não resolve essa ambiguidade; preservar o aviso
+de sobreposição e revisar períodos. A prova entre arquivos distintos usa ID bancário.
 
 Reconciliação automática, alteração de conta/origem e exclusão em lote ficam
 fora desta primeira entrega: exigem regras próprias de rastreabilidade.

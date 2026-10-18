@@ -4,7 +4,7 @@ from typing import Annotated, Literal, Self, cast
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, Response
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StringConstraints, model_validator
 from sqlalchemy import Engine, and_, or_
 from sqlmodel import col, select
 
@@ -13,7 +13,7 @@ from app.account_service import account_session
 from app.agent_routes import handled
 from app.crypto import decrypt_text, encrypt_text, load_key
 from app.llm_service import require_active
-from app.models import Account, Category, Transaction
+from app.models import Account, Category, DeletedTransaction, Transaction
 from app.plans import user_plan
 from app.rate_limit import check_rate
 
@@ -182,6 +182,15 @@ def edit_transaction(
                 select(Category).where(Category.user_id == owner, Category.name == data.category)
             ).first()
             if category is None:
+                if (
+                    len(
+                        session.exec(
+                            select(Category.id).where(Category.user_id == owner).limit(1000)
+                        ).all()
+                    )
+                    >= 1000
+                ):
+                    raise HTTPException(409, "Limite técnico de 1000 categorias atingido.")
                 category = Category(user_id=owner, name=data.category)
                 session.add(category)
                 session.flush()
@@ -193,6 +202,46 @@ def edit_transaction(
         session.add(record)
         session.flush()
         return view(record, data.category, key, owner)
+
+
+class TransactionDeletion(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    revision: str = Field(pattern="^[0-9a-f]{64}$")
+    confirm: StrictBool
+
+
+def delete_transaction(
+    engine: Engine, owner: UUID, identifier: UUID, data: TransactionDeletion
+) -> None:
+    if data.confirm is not True:
+        raise HTTPException(422, "Confirme explicitamente a exclusão.")
+    with account_session(engine, owner) as session:
+        require_active(session, owner)
+        check_rate(owner, user_plan(session, owner).requests_per_minute)
+        record = session.exec(
+            select(Transaction).where(Transaction.user_id == owner, Transaction.id == identifier)
+        ).first()
+        if record is None:
+            removed = session.exec(
+                select(DeletedTransaction.id).where(
+                    DeletedTransaction.user_id == owner, DeletedTransaction.id == identifier
+                )
+            ).first()
+            if removed is not None:
+                return
+            raise HTTPException(404, "Lançamento não encontrado.")
+        if revision(record) != data.revision:
+            raise HTTPException(409, "O lançamento mudou. Recarregue antes de excluir.")
+        session.add(
+            DeletedTransaction(
+                id=record.id,
+                user_id=owner,
+                account_id=record.account_id,
+                dedup_key=record.dedup_key,
+            )
+        )
+        session.delete(record)
+        session.flush()
 
 
 @router.get("", response_model=TransactionPage)
@@ -218,3 +267,12 @@ def put_transaction(
     response.headers["Cache-Control"] = "no-store"
     with handled():
         return edit_transaction(engine, identity.id, identifier, data)
+
+
+@router.delete("/{identifier}", status_code=204)
+def remove_transaction(
+    identifier: UUID, data: TransactionDeletion, identity: IdentityDep, engine: EngineDep
+) -> Response:
+    with handled():
+        delete_transaction(engine, identity.id, identifier, data)
+    return Response(status_code=204, headers={"Cache-Control": "no-store"})
