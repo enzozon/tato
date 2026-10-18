@@ -69,8 +69,8 @@ export function Billing({ token }: { token: string }) {
     {!status && !error && <p role="status">Consultando disponibilidade…</p>}
     {status && !enabled && <p>Cobrança de teste desativada neste ambiente.</p>}
     {status?.pending_request_id && <p>Há um checkout pendente. Repetir mantém o mesmo pedido.</p>}
-    <button disabled={busy || !enabled || status?.can_checkout !== true} onClick={() => open(false)}>Simular assinatura Pro</button>
-    <button className="secondary" disabled={busy || !enabled || status?.can_portal !== true} onClick={() => open(true)}>Gerenciar assinatura de teste</button>
+    <div className="button-group"><button disabled={busy || !enabled || status?.can_checkout !== true} onClick={() => open(false)}>Simular assinatura Pro</button>
+    <button className="secondary" disabled={busy || !enabled || status?.can_portal !== true} onClick={() => open(true)}>Gerenciar assinatura de teste</button></div>
     {busy && <p role="status">Preparando ambiente de teste…</p>}
     {message && <p role="status">{message}</p>}{error && <p role="alert" className="error">{error}</p>}
   </section>;

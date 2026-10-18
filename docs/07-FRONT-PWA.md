@@ -5,8 +5,9 @@ onboarding, contas e resumo; prévia de importação; chat e fontes; agentes;
 PWA sem cache financeiro; testes de navegador e CI. Sem novo schema previsto.
 A branch parte da etapa 8. PR 17 já integrado; o PR desta etapa aponta para main.
 
-Direção visual: papel claro, verde profundo e terracota, tipografia de leitura,
-mascote geométrico autoral. Formulários usam HTML semântico e foco visível.
+Direção visual atual: Obsidiana, grafite e menta com cobre do mascote autoral.
+O [guia de identidade](18-OBSIDIANA.md) explica composição, movimento e avaliação.
+Formulários usam HTML semântico e foco visível.
 Next/React substituem roteamento e renderização próprios; Supabase JS cuida da
 sessão; Playwright valida comportamento real no navegador. CSS local nesta
 primeira entrega evita gerar uma biblioteca de componentes sem usos definidos.
@@ -185,11 +186,12 @@ npm.cmd run gallery --workspace=tato-web
 Start-Process ./test-results/ui-gallery/index.html
 ```
 
-Encerre o servidor web manual antes: Playwright inicia seu próprio Next em
-127.0.0.1:3000 com configuração pública sintética. O comando apaga somente a
-galeria anterior em `test-results/ui-gallery/`, gera 28 capturas por viewport
-(desktop e celular) e um índice HTML navegável. Traces ficam em outro diretório.
-A galeria só está completa quando o comando termina com dois testes aprovados;
+Playwright inicia seu próprio Next em 127.0.0.1:3000 com configuração sintética;
+se essa porta já estiver em uso, defina `$env:PLAYWRIGHT_PORT='3100'` antes do
+comando para preservar o servidor manual. O comando apaga somente a galeria
+anterior em `test-results/ui-gallery/`, gera 30 capturas por viewport (1440×1000,
+390×844 e 320×844) e um índice HTML navegável. Traces ficam em outro diretório.
+A galeria só está completa quando o comando termina com três testes aprovados;
 uma falha deixa as capturas parciais e o trace para diagnóstico, sem retries.
 
 As imagens mostram landing, instruções PWA, login/cadastro, recuperação e nova
@@ -198,7 +200,8 @@ quatro intenções (SQL, RAG, lançamento para revisão e conversa livre), impor
 no chat, upload, mapeamento CSV, prévia e resultado, agentes/avisos, meta/e-mail,
 conta com consumo/exportação, confirmação de exclusão, cobrança desligada/teste
 e a página pública de orientação offline.
-Menu, processamento e recuperação de erro da conversa também têm capturas.
+Menu, processamento, erro da conversa, conta parcialmente disponível e exportação
+recusada também têm capturas. Os controles verificam alvos efetivos de 44px.
 O gerador navega na aplicação existente; não há modo demonstrativo no produto.
 
 Todos os registros, tokens, respostas de IA e cobranças são simulados. A rede

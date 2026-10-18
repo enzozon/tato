@@ -35,7 +35,7 @@ test('cobrança desligada não permite ações nem concede plano pelo retorno', 
   await expect(page.getByText('Excluir minha conta', { exact: true })).toBeVisible();
 });
 
-test('repetição do checkout conserva UUID durante renovação e valida destino', async ({ page }) => {
+test('repetição do checkout conserva UUID durante renovação e valida destino', async ({ page, baseURL }) => {
   await page.clock.install();
   const ids: string[] = [];
   await page.route('**/billing/status', route => route.fulfill({ json: enabled }));
@@ -54,7 +54,8 @@ test('repetição do checkout conserva UUID durante renovação e valida destino
   await expect(panel.getByRole('alert')).toBeVisible();
   expect(ids).toHaveLength(2); expect(ids[1]).toBe(ids[0]);
   expect(ids[0]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
-  await expect(page).toHaveURL(/127\.0\.0\.1:3000\/app\//);
+  const current=new URL(page.url());
+  expect(`${current.origin}${current.pathname}`).toBe(`${baseURL}/app/`);
 });
 
 test('checkout existente reutiliza pedido do serviço e navega somente para Stripe', async ({ page }) => {

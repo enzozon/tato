@@ -17,7 +17,7 @@ async function simulate(page: Page, options: { requestStatus?: number; updateFai
     const request = route.request(), url = new URL(request.url());
     if (url.pathname.endsWith('/logout') && options.logoutFails) return route.fulfill({ status: 503, json: { msg: 'synthetic logout failure' } });
     if (url.pathname.endsWith('/recover')) {
-      expect(url.searchParams.get('redirect_to')).toBe('http://127.0.0.1:3000/app/?recovery=1');
+      expect(url.searchParams.get('redirect_to')).toBe(`${new URL(page.url()).origin}/app/?recovery=1`);
       expect(request.postDataJSON().email).toBe(user.email);
       return route.fulfill({ status: options.requestStatus || 200, json: options.requestStatus && options.requestStatus !== 200 ?
         { code: 'user_not_found', msg: 'synthetic private provider message' } : {} });

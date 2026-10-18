@@ -11,6 +11,11 @@ O chat usa o humor retornado pela API, nunca presume sucesso financeiro a partir
 do texto gerado. Persona acolhedora, sem julgamento, promessa ou indicação de ativo.
 Trocar a identidade exige alterar somente o pacote e reconstruir o frontend.
 
+Na identidade Obsidiana, menta identifica ações e o cobre do casco aproxima o
+produto do Tato. Halo, órbitas e feedback usam os tokens do pacote; o SVG mantém
+suas cores autorais. A [direção visual](18-OBSIDIANA.md) limita o movimento para
+preservar leitura, foco e conforto, inclusive com preferência de movimento reduzido.
+
 Na conversa vazia, o Tato respira no centro. Durante o pedido, o estado atento
 indica processamento; não presume uma mudança nas finanças. Cada resposta mantém
 o humor validado pela API. Atento inclina discretamente, comemorando faz uma breve

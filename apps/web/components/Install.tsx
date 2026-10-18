@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import identity from '../../../packages/mascot/identity.json';
 type InstallEvent = Event & { prompt:()=>Promise<void>; userChoice:Promise<{outcome:string}> };
 export function Install() {
   const [event,setEvent]=useState<InstallEvent>(),[message,setMessage]=useState('');
@@ -16,5 +17,5 @@ export function Install() {
     try{await current.prompt();await current.userChoice;}
     catch{setMessage('Não foi possível abrir a instalação. Use as instruções do seu navegador.');}
   }
-  return <aside className="install"><details><summary>Usar como aplicativo</summary><p>No iPhone, abra no Safari e use Compartilhar → Adicionar à Tela de Início. No Android, procure Instalar aplicativo no menu do navegador.</p>{event&&<button onClick={install}>Instalar aplicativo</button>}{message&&<p role="status">{message}</p>}</details></aside>;
+  return <aside className="install"><details><summary>Usar como aplicativo</summary><p className="muted">Leve o {identity.name} para sua tela inicial, sem loja de aplicativos.</p><p>No iPhone, abra no Safari e use Compartilhar → Adicionar à Tela de Início. No Android, procure Instalar aplicativo no menu do navegador.</p>{event&&<button onClick={install}>Instalar aplicativo</button>}{message&&<p role="status">{message}</p>}</details></aside>;
 }

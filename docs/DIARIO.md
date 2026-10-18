@@ -930,3 +930,22 @@ os mesmos registros. Nenhum movimento foi gravado no ledger durante essa verific
 O CLI agora mostra o caminho do arquivo e orienta por etapa quando há recusa HTTP;
 limite e indisponibilidade não são apresentados como prova de credencial incorreta.
 O guia inclui prévia, comparação SQL e reimportação para verificar deduplicação.
+
+### Identidade Obsidiana — 18/10/2026
+
+A escolha da proposta A virou tema único do site e do aplicativo. Tato, cobre,
+menta, órbitas discretas, feedback de botões e hierarquia compacta substituem
+o contraste entre chat escuro e formulários claros. Três agentes dividiram tema,
+jornadas e validação; a revisão foi concluída pelo agente principal após o limite
+de uso dos auxiliares. Sem dependências novas, schema ou chamadas bancárias.
+
+O navegador encontrou detalhes que a leitura não mostrava: órbita vazando no
+desktop, nomes longos causando overflow e anexo menor que 44px no celular.
+Foram corrigidos também o hover destrutivo e o foco da região rolável do chat.
+Uma execução foi interrompida porque o hook de commit restaurava temporariamente
+arquivos; foi descartada e refeita com os arquivos congelados.
+
+Provas locais: 134 testes web, 10 focados após o ajuste final, 90 capturas,
+build estático, tipos e PWA offline aprovados. `make check` manteve 657 testes
+e 83,94% de cobertura. Capturas usam API simulada; não provam provedores reais
+ou instalação em iPhone físico. Guia e refinamentos seguintes em `18-OBSIDIANA.md`.

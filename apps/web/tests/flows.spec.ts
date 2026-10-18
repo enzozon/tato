@@ -3,7 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 
 const owner='00000000-0000-4000-8000-000000000001';
 const account='00000000-0000-4000-8000-000000000002';
-async function signIn(page:Page, expiresIn=3600, onboardingCompleted=true, history:Promise<unknown[]>=Promise.resolve([])) {
+async function signIn(page:Page, expiresIn=3600, onboardingCompleted=true, history:Promise<unknown[]>=Promise.resolve([]), longContent=false) {
   const user={id:owner,email:'teste@example.test',aud:'authenticated',role:'authenticated',app_metadata:{},user_metadata:{},created_at:'2026-10-04T00:00:00Z'};
   let issued=0;
   await page.route('https://auth.example.test/**',route=>{
@@ -16,7 +16,7 @@ async function signIn(page:Page, expiresIn=3600, onboardingCompleted=true, histo
     const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,content-type','Access-Control-Allow-Methods':'GET,POST,PUT,DELETE'};
     if(route.request().method()==='OPTIONS')return route.fulfill({headers,status:200});
     if(path==='/me') return route.fulfill({headers,json:{onboarding_completed:onboardingCompleted,plan:{name:'free',agents:1,messages_per_month:200}}});
-    if(path==='/dashboard')return route.fulfill({headers,json:{as_of:'2026-10-04',balance_cents:'1152921504606846976',expense_cents:'1234',categories:[],accounts:[{id:account,name:'Conta sintética',kind:'checking',opening_date:'2026-01-01',balance_cents:'10000'}]}});
+    if(path==='/dashboard')return route.fulfill({headers,json:{as_of:'2026-10-04',balance_cents:'1152921504606846976',expense_cents:'1234',categories:longContent?[{name:'Categoria'.repeat(10),amount_cents:'1234'}]:[],accounts:[{id:account,name:longContent?'C'.repeat(80):'Conta sintética',kind:'checking',opening_date:'2026-01-01',balance_cents:'10000'}]}});
     if(path==='/chat') return route.fulfill({headers,json:await history});
     return route.fulfill({headers,status:503,json:{detail:'indisponível'}});
   });
@@ -39,6 +39,14 @@ test('landing responsiva e login com valores exatos',async({page})=>{
   await page.getByRole('button',{name:'Sair',exact:true}).click();
   await expect(page.getByRole('heading',{name:'Que bom te ver.'})).toBeVisible();
   await expect(page.getByText('Conta sintética',{exact:true})).toHaveCount(0);
+});
+
+test('resumo acomoda nomes longos de conta e categoria em 320px',async({page})=>{
+  await page.setViewportSize({width:320,height:844});
+  await signIn(page,3600,true,Promise.resolve([]),true);
+  await expect(page.getByText('C'.repeat(80),{exact:true}).filter({visible:true})).toBeVisible();
+  await expect(page.locator('.category-list p')).toContainText('Categoria'.repeat(10));
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
 test('mensagem sem espaços cabe na conversa sem rolagem horizontal',async({page})=>{
@@ -86,8 +94,8 @@ test('erro mantém o mesmo pedido para repetição e permite descartá-lo',async
   await expect(page.getByText('Pedido sintético',{exact:true})).toHaveCount(0);
 });
 
-test('conversa cabe em viewport curto e respeita movimento reduzido',async({page})=>{
-  await page.setViewportSize({width:320,height:480});await page.emulateMedia({reducedMotion:'reduce'});
+for(const viewport of [{width:320,height:480},{width:390,height:400}])test(`conversa cabe em ${viewport.width}×${viewport.height} e respeita movimento reduzido`,async({page})=>{
+  await page.setViewportSize(viewport);await page.emulateMedia({reducedMotion:'reduce'});
   await signIn(page);await navigate(page,'Conversa');
   const menu=page.getByRole('button',{name:'Menu',exact:true});
   await menu.click();await expect(menu).toHaveAttribute('aria-expanded','true');
@@ -97,7 +105,7 @@ test('conversa cabe em viewport curto e respeita movimento reduzido',async({page
   expect(await page.locator('.chat-welcome .breath').evaluate(node=>getComputedStyle(node).animationName)).toBe('none');
   await page.getByLabel('Sua mensagem').fill('Mensagem sintética');
   const composer=await page.locator('.chat-composer').boundingBox();
-  expect(composer!.y+composer!.height).toBeLessThanOrEqual(480);
+  expect(composer!.y+composer!.height).toBeLessThanOrEqual(viewport.height);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.getByRole('button',{name:'Importar um extrato no chat'}).focus();await page.keyboard.press('Enter');
   await expect(page.getByRole('region',{name:'Importação no chat'})).toBeFocused();
@@ -289,13 +297,13 @@ test('exclusão atrasada não encerra a sessão de outra identidade',async({page
 
 test('cadastro aguarda confirmação e Google usa o retorno permitido',async({page})=>{
   await page.route('https://auth.example.test/auth/v1/signup**',route=>{
-    expect(new URL(route.request().url()).searchParams.get('redirect_to')).toBe('http://127.0.0.1:3000/app/');
+    expect(new URL(route.request().url()).searchParams.get('redirect_to')).toBe(`${new URL(page.url()).origin}/app/`);
     return route.fulfill({json:{id:owner,email:'teste@example.test',identities:[]}});
   });
   await page.route('https://auth.example.test/auth/v1/authorize**',route=>{
     const url=new URL(route.request().url());
     expect(url.searchParams.get('provider')).toBe('google');
-    expect(url.searchParams.get('redirect_to')).toBe('http://127.0.0.1:3000/app/');
+    expect(url.searchParams.get('redirect_to')).toBe(`${new URL(page.url()).origin}/app/`);
     return route.fulfill({contentType:'text/html; charset=utf-8',body:'<h1>Continuação OAuth simulada</h1>'});
   });
   await page.goto('/app/');

@@ -9,10 +9,10 @@ const account='00000000-0000-4000-8000-000000000002';
 const user={id:owner,email:'teste@example.test',aud:'authenticated',role:'authenticated',app_metadata:{},user_metadata:{},created_at:'2026-10-17T00:00:00Z'};
 
 test.afterAll(async()=>{
-  const files=(await readdir(output)).filter(file=>/^(desktop|mobile)-\d{2}-[a-z-]+\.png$/.test(file)).sort();
+  const files=(await readdir(output)).filter(file=>/^(desktop|mobile|narrow)-\d{2}-[a-z-]+\.png$/.test(file)).sort();
   await writeFile(path.join(output,'index.html'),`<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Tato — avaliação visual</title>
-    <style>body{font:18px system-ui;max-width:1200px;margin:32px auto;padding:16px;background:#faf8f1;color:#153e35}nav{display:flex;flex-wrap:wrap;gap:12px}img{max-width:100%;height:auto;border:1px solid #668579}figure{margin:40px 0}a{color:#175f46}</style>
-    <h1>Tato — telas para avaliação</h1><p>Somente dados sintéticos. Capturas da aplicação real com respostas simuladas; não comprovam funcionamento dos provedores nem instalação física no iPhone. O catálogo só está completo se o comando terminou com 2 testes aprovados.</p>
+    <style>body{font:18px system-ui;max-width:1200px;margin:32px auto;padding:16px;background:#0d1110;color:#eef3ef}nav{display:flex;flex-wrap:wrap;gap:12px}img{max-width:100%;height:auto;border:1px solid #728078}figure{margin:40px 0}a{color:#b7efcc}</style>
+    <h1>Tato — telas para avaliação</h1><p>Somente dados sintéticos. Capturas da aplicação real com respostas simuladas; não comprovam funcionamento dos provedores nem instalação física no iPhone. O catálogo só está completo se o comando terminou com 3 testes aprovados.</p>
     <nav>${files.map((file,i)=>`<a href="#screen-${i}">${file.replace('.png','')}</a>`).join('')}</nav>
     ${files.map((file,i)=>`<figure id="screen-${i}"><figcaption><h2>${file.replace('.png','')}</h2><a href="${file}">Abrir imagem completa</a></figcaption><img src="${file}" loading="lazy" alt="${file.replace('.png','')} — dados sintéticos"></figure>`).join('')}</html>`);
 });
@@ -22,7 +22,7 @@ test('catálogo das telas principais com dados sintéticos',async({page},info)=>
   const errors:string[]=[];
   page.on('pageerror',error=>errors.push(error.message));
   // Impede que uma alteração de URL envie credenciais sintéticas a serviços reais.
-  await page.route('**/*',route=>new URL(route.request().url()).origin==='http://127.0.0.1:3000'
+  await page.route('**/*',route=>new URL(route.request().url()).origin===new URL(info.project.use.baseURL!).origin
     ?route.continue():route.abort());
   let completed=false, billing=false;
   await page.route('https://auth.example.test/**',route=>route.fulfill({json:route.request().url().endsWith('/user')?user:
@@ -49,6 +49,15 @@ test('catálogo das telas principais com dados sintéticos',async({page},info)=>
   async function capture(label:string){
     await expect(page.locator('body')).toBeVisible();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),label).toBe(true);
+    const small=await page.locator('button,input,select,textarea,summary').evaluateAll(elements=>elements.flatMap(element=>{
+      const root=element.getRootNode();
+      if(root instanceof ShadowRoot&&root.host.tagName==='NEXTJS-PORTAL')return [];
+      if(!element.checkVisibility())return [];
+      const target=element instanceof HTMLInputElement&&['checkbox','radio'].includes(element.type)?element.closest('label')||element:element;
+      const rect=target.getBoundingClientRect();
+      return rect.width<43.5||rect.height<43.5?[`${element.tagName} ${element.getAttribute('aria-label')||element.getAttribute('name')||element.textContent?.trim().slice(0,70)}: ${Math.round(rect.width)}×${Math.round(rect.height)}`]:[];
+    }));
+    expect(small,`${label}: alvos de toque menores que 44px`).toEqual([]);
     await page.screenshot({path:path.join(output,`${info.project.name}-${label}.png`),fullPage:true,animations:'disabled',style:'nextjs-portal{display:none!important}'});
   }
   async function tab(name:string){if(['Resumo','Conversa','Importar','Agentes','Conta'].includes(name))await navigate(page,name);else await page.getByRole('button',{name,exact:true}).click();}
@@ -100,8 +109,18 @@ test('catálogo das telas principais com dados sintéticos',async({page},info)=>
   await tab('Agentes');await expect(page.getByRole('heading',{name:'A projeção linear de despesas supera o saldo registrado. Revise o mês.'})).toBeVisible();await capture('16-agentes-avisos');
   await page.getByText('Configurar um agente',{exact:true}).click();await page.getByRole('combobox',{name:/^Agente/}).selectOption('goal');await page.getByText('Criar uma meta',{exact:true}).click();await capture('17-agente-meta-email');
   await tab('Conta');await expect(page.getByText('4 usados · 196 restantes de 200')).toBeVisible();await capture('18-conta-exportacao-cobranca-desligada');
-  await page.getByText('Excluir minha conta',{exact:true}).click();await capture('19-exclusao-confirmacao');
+  await page.getByText('Excluir minha conta',{exact:true}).click();
+  await page.getByLabel('Digite EXCLUIR para confirmar').fill('EXCLUIR');
+  await page.getByRole('button',{name:'Excluir permanentemente',exact:true}).hover();await capture('19-exclusao-confirmacao');
   billing=true;await tab('Resumo');await tab('Conta');await expect(page.getByRole('button',{name:'Simular assinatura Pro'})).toBeEnabled();await capture('20-cobranca-sandbox');
+  await page.route('**/me/llm-usage',route=>route.fulfill({status:503,json:{detail:'synthetic-unavailable'}}));
+  await tab('Resumo');await tab('Conta');
+  await expect(page.getByText('Não foi possível consultar as medições da IA agora.',{exact:true})).toBeVisible();
+  await expect(page.getByText('4 usados · 196 restantes de 200')).toBeVisible();await capture('29-conta-parcial');
+  await page.route('**/me/export',route=>route.fulfill({status:403,json:{detail:'synthetic-private-permission'}}));
+  await tab('Baixar meus dados');
+  await expect(page.getByText('Não foi possível exportar seus dados. Aguarde e tente novamente.',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Baixar meus dados',exact:true})).toBeEnabled();await capture('30-exportacao-recusada');
   await tab('Sair');
   const part=(value:object)=>Buffer.from(JSON.stringify(value)).toString('base64url');
   const token=`${part({alg:'HS256',typ:'JWT'})}.${part({sub:owner,role:'authenticated',exp:Math.floor(Date.now()/1000)+3600})}.c3ludGhldGlj`;
