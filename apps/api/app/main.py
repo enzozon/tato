@@ -18,6 +18,7 @@ from app.import_routes import router as import_router
 from app.import_setup import router as setup_router
 from app.rag.routes import router as rag_router
 from app.telemetry_runtime import record_storage_failure
+from app.transactions import router as transactions_router
 from app.upload_limit import UploadLimit
 from app.usage import router as usage_router
 
@@ -32,6 +33,7 @@ app.include_router(chat_router)
 app.include_router(dashboard_router)
 app.include_router(usage_router)
 app.include_router(billing_router)
+app.include_router(transactions_router)
 app.add_middleware(UploadLimit)
 app.add_middleware(
     CORSMiddleware,

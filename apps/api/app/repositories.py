@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, col, select
 
 from app.crypto import dedup_key, encrypt_text
-from app.models import Chunk, Transaction
+from app.models import Chunk, DeletedTransaction, Transaction
 
 
 class TransactionInput(BaseModel):
@@ -44,12 +44,24 @@ def add_transaction(
     *,
     document_id: UUID | None = None,
 ) -> UUID | None:
+    identity = dedup_key(identity_key, owner, data.account_id, data.source_identity)
+    if (
+        session.exec(
+            select(DeletedTransaction.id).where(
+                DeletedTransaction.user_id == owner,
+                DeletedTransaction.account_id == data.account_id,
+                DeletedTransaction.dedup_key == identity,
+            )
+        ).first()
+        is not None
+    ):
+        return None
     record = Transaction(
         **data.model_dump(exclude={"description", "source_identity"}),
         user_id=owner,
         document_id=document_id,
         description_ciphertext=encrypt_text(data.description, cipher_key, owner, "transaction"),
-        dedup_key=dedup_key(identity_key, owner, data.account_id, data.source_identity),
+        dedup_key=identity,
     )
     statement = (
         insert(Transaction)

@@ -4,6 +4,7 @@ import identity from '../../../../packages/mascot/identity.json';
 import { Login } from '../../components/Login';
 import { PasswordRecovery } from '../../components/PasswordRecovery';
 import { Overview } from '../../components/Overview';
+import { Transactions } from '../../components/Transactions';
 import { Chat } from '../../components/Chat';
 import { Import } from '../../components/Import';
 import { Agents } from '../../components/Agents';
@@ -14,6 +15,7 @@ import { Mascot } from '../../../../packages/mascot/Mascot';
 const navigation = [
   ['Conversa','M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-2 2v-9.5A8.5 8.5 0 0 1 10.5 4H21Z'],
   ['Resumo','M4 20V10m8 10V4m8 16v-7'],
+  ['Lançamentos','M4 5h16M4 12h16M4 19h16'],
   ['Importar','M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4'],
   ['Agentes','M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4'],
   ['Conta','M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-3a8 8 0 0 1 16 0v3'],
@@ -105,6 +107,7 @@ export default function AppPage() {
       {data && <div className="app-workspace" key={owner}><nav id="app-navigation" onKeyDown={event=>{if(event.key==='Escape'&&menuOpen){setMenuOpen(false);menuButton.current?.focus();}}} className={`app-navigation ${menuOpen?'is-open':''}`} aria-label="Seu espaço">{navigation.map(([name,path])=><button className={tab===name?'':'secondary'} key={name} onClick={()=>{setTab(name);setVisited(t=>t.includes(name)?t:[...t,name]);setMenuOpen(false);if(menuOpen)menuButton.current?.focus();}} aria-current={tab===name?'page':undefined}><svg className="nav-icon" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={path}/></svg><span className="nav-label">{name}</span></button>)}</nav>
         <div className={tab==='Conversa'?'app-view is-chat':'app-view'}>
           <div hidden={tab!=='Resumo'}><Overview data={data} token={token} refresh={refresh}/></div>
+          {visited.includes('Lançamentos')&&<div hidden={tab!=='Lançamentos'}><Transactions token={token} accounts={data.accounts} refresh={refresh}/></div>}
           {visited.includes('Conversa') && <div hidden={tab!=='Conversa'}><Chat token={token} accounts={data.accounts} refresh={refresh} active={tab==='Conversa'}/></div>}
           {visited.includes('Importar') && <div hidden={tab!=='Importar'}><Import token={token} accounts={data.accounts} refresh={refresh}/></div>}
           {tab==='Agentes' && profile && <Agents token={token} accounts={data.accounts} limit={profile.plan.agents}/>}

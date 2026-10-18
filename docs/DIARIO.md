@@ -976,3 +976,27 @@ a asserção do saldo. A CI bloqueou o merge até validar essa correção.
 Os quatro casos afetados passaram localmente em desktop/celular; a primeira
 tentativa não chegou aos testes por timeout de inicialização do Next, e a
 repetição passou após o aquecimento. `make check` manteve 657 testes aprovados.
+
+### Lançamentos — 18/10/2026
+
+A primeira parte permite consultar páginas limitadas e corrigir um lançamento
+com versão conferida sob lock do usuário. Conta, documento e hash de origem não
+mudam. O teste Postgres provou paginação, dinheiro acima do limite seguro de
+JavaScript, acesso cruzado negado e recusa de edição antiga. O schema de identidade
+removida foi aprovado antes da migration; plano e consequências em `19-LANCAMENTOS.md`.
+
+A migration 0010 adiciona apenas identidades removidas, com RLS forçada e sem
+valores ou descrições. Exclusão e marcador são atômicos. A prova Postgres cobre
+repetição da exclusão, proteção contra reinserção, FK entre usuários e remoção
+em cascata. O primeiro `make check` desta parte aprovou 674 testes/82,53%.
+
+O ciclo 0010→0009→0010 no banco descartável terminou com drift limpo e 111
+integrações aprovadas. A primeira suíte web teve 140 aprovações e dois seletores
+de Natureza incorretos; seis casos focados passaram após a correção. A captura
+de 320px mostrou o valor comprimido ao lado da descrição: a versão final o põe
+em linha própria e dá mais espaço ao formulário. Nenhum dado real nas capturas.
+
+A CI encontrou uma dependência ambiental no teste novo de reimportação: o
+limitador tentava acessar Upstash quando o backend de teste não era definido.
+O teste agora declara desenvolvimento/memória e remove as duas variáveis remotas,
+sem alterar a política do produto nem exigir credenciais no runner.

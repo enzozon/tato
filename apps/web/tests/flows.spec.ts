@@ -86,6 +86,85 @@ test('estados vazios orientam o primeiro passo e abrem o cadastro com foco',asyn
   }
 });
 
+test('lançamentos filtram e corrigem valores exatos sem trocar a origem',async({page},info)=>{
+  await signIn(page);
+  const item={id:owner,account_id:account,booked_on:'2026-10-01',amount_cents:'-1152921504606846976',kind:'expense',description:'Mercado sintético',category:null,revision:'a'.repeat(64)};
+  let query='',saved:Record<string,unknown>|undefined;
+  const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,content-type','Access-Control-Allow-Methods':'GET,PUT,OPTIONS'};
+  await page.route('**/transactions**',route=>{
+    if(route.request().method()==='OPTIONS')return route.fulfill({headers,status:200});
+    if(route.request().method()==='PUT'){saved=route.request().postDataJSON();return route.fulfill({headers,json:{...item,...saved,revision:'b'.repeat(64)}});}
+    query=new URL(route.request().url()).search;
+    return route.fulfill({headers,json:{items:[saved?{...item,...saved}:item],next_cursor:null}});
+  });
+  await navigate(page,'Lançamentos');
+  if(info.project.name==='mobile')await page.setViewportSize({width:320,height:844});
+  await expect(page.getByText('Mercado sintético',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Editar lançamento',exact:true}).click();
+  await expect(page.getByLabel('Valor em reais',{exact:true})).toHaveValue('-11529215046068469,76');
+  const screenshots=path.resolve(__dirname,'../../../test-results/lancamentos');
+  await mkdir(screenshots,{recursive:true});
+  await page.screenshot({path:path.join(screenshots,`${info.project.name}-editar.png`),fullPage:true,animations:'disabled',style:'nextjs-portal{display:none!important}'});
+  await page.getByLabel('Descrição',{exact:true}).fill('Mercado revisado');
+  await page.getByLabel('Valor em reais',{exact:true}).fill('-45,00');
+  await page.getByRole('combobox',{name:'Natureza',exact:true}).selectOption('transfer');
+  await page.getByRole('button',{name:'Confirmar correção',exact:true}).click();
+  await expect(page.getByText('Lançamento corrigido.',{exact:true})).toBeVisible();
+  expect(saved).toMatchObject({amount_cents:'-4500',kind:'transfer',description:'Mercado revisado',revision:'a'.repeat(64)});
+  expect(saved).not.toHaveProperty('account_id');expect(saved).not.toHaveProperty('user_id');
+  await page.getByLabel('De',{exact:true}).fill('2026-10-01');
+  await page.getByRole('button',{name:'Filtrar lançamentos',exact:true}).click();
+  await expect.poll(()=>query).toContain('start=2026-10-01');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('exclusão de lançamento exige confirmação e não repete após falha de atualização',async({page})=>{
+  await signIn(page);let deleted=0;
+  const item={id:owner,account_id:account,booked_on:'2026-10-01',amount_cents:'-4500',kind:'expense',description:'Registro sintético',category:null,revision:'a'.repeat(64)};
+  const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,content-type','Access-Control-Allow-Methods':'GET,DELETE,OPTIONS'};
+  await page.route('**/transactions**',route=>{
+    if(route.request().method()==='OPTIONS')return route.fulfill({headers,status:200});
+    if(route.request().method()==='DELETE'){
+      expect(route.request().postDataJSON()).toEqual({confirm:true,revision:item.revision});deleted++;
+      return route.fulfill({headers,status:204});
+    }
+    return route.fulfill({headers,json:{items:deleted?[]:[item],next_cursor:null}});
+  });
+  await navigate(page,'Lançamentos');
+  await page.getByRole('button',{name:'Excluir lançamento',exact:true}).click();
+  expect(deleted).toBe(0);
+  await page.getByRole('button',{name:'Cancelar exclusão',exact:true}).click();
+  expect(deleted).toBe(0);
+  await page.getByRole('button',{name:'Excluir lançamento',exact:true}).click();
+  await page.route('**/dashboard',route=>route.fulfill({headers,status:503,json:{detail:'Sintético'}}));
+  await page.getByRole('button',{name:'Confirmar exclusão',exact:true}).click();
+  await expect(page.getByText('Lançamento excluído. Atualize o Resumo para conferir os totais.',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Confirmar exclusão',exact:true})).toHaveCount(0);
+  expect(deleted).toBe(1);
+});
+
+test('paginação de lançamentos volta e reinicia ao filtrar',async({page})=>{
+  await signIn(page);
+  const item={id:owner,account_id:account,booked_on:'2026-10-01',amount_cents:'-4500',kind:'expense',category:null,revision:'a'.repeat(64)};
+  const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,content-type'};
+  await page.route('**/transactions**',route=>{
+    const query=new URL(route.request().url()).searchParams;
+    return route.fulfill({headers,json:{items:[{...item,description:query.has('cursor')?'Página seguinte sintética':'Página inicial sintética'}],next_cursor:query.has('cursor')?null:'2026-10-01:'+owner}});
+  });
+  await navigate(page,'Lançamentos');
+  await expect(page.getByText('Página inicial sintética',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Página anterior',exact:true})).toBeDisabled();
+  await page.getByRole('button',{name:'Próxima página',exact:true}).click();
+  await expect(page.getByText('Página seguinte sintética',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Página anterior',exact:true}).click();
+  await expect(page.getByText('Página inicial sintética',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Próxima página',exact:true}).click();
+  await expect(page.getByText('Página seguinte sintética',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Filtrar lançamentos',exact:true}).click();
+  await expect(page.getByText('Página inicial sintética',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Página anterior',exact:true})).toBeDisabled();
+});
+
 test('mensagem sem espaços cabe na conversa sem rolagem horizontal',async({page})=>{
   await signIn(page);
   const question='x'.repeat(500);
