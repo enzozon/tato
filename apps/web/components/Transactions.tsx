@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { centsString, money, request, type Account } from '../lib/client';
+import { centsString, money, request, type Account, type TransactionEntry as Entry } from '../lib/client';
+import { Reconciliation } from './Reconciliation';
 
-type Entry = {id:string;account_id:string;booked_on:string;amount_cents:string;kind:string;description:string;category:string|null;revision:string};
 type Page = {items:Entry[];next_cursor:string|null};
 const kinds:Record<string,string>={income:'Receita',expense:'Despesa',transfer:'Transferência'};
 function editableMoney(value:string){
@@ -15,11 +15,13 @@ export function Transactions({token,accounts,refresh}:{token:string;accounts:Acc
   const [data,setData]=useState<Page>(),[error,setError]=useState(''),[notice,setNotice]=useState('');
   const [loading,setLoading]=useState(false),[busy,setBusy]=useState(false),[reload,setReload]=useState(0);
   const [editing,setEditing]=useState<Entry>(),[deleting,setDeleting]=useState<Entry>();
+  const [reconciling,setReconciling]=useState<Entry>();
+  const reconcileTrigger=useRef<HTMLButtonElement|null>(null),heading=useRef<HTMLHeadingElement>(null);
   const generation=useRef(0);
   const cursor=cursors[cursors.length-1];
   useEffect(()=>{
     const version=++generation.current,controller=new AbortController();
-    setLoading(true);setError('');setData(undefined);setEditing(undefined);setDeleting(undefined);
+    setLoading(true);setError('');setData(undefined);setEditing(undefined);setDeleting(undefined);setReconciling(undefined);
     const query=new URLSearchParams(filters);if(cursor)query.set('cursor',cursor);
     request<Page>(`/transactions?${query}`,token,{signal:controller.signal}).then(result=>{
       if(version===generation.current)setData(result);
@@ -59,7 +61,11 @@ export function Transactions({token,accounts,refresh}:{token:string;accounts:Acc
     }catch(e){if(version===generation.current)setError(e instanceof Error?e.message:'Não foi possível excluir.');}
     finally{setBusy(false);}
   }
-  return <section className="stack"><div className="screen-header"><span className="eyebrow">Cada movimento conta</span><h2>Seus lançamentos.</h2><p>Confira a origem e corrija seus registros. Valores negativos representam saídas.</p></div>
+  async function reconciled(message:string){
+    setReconciling(undefined);setNotice(message);setReload(value=>value+1);heading.current?.focus();
+    try{await refresh();}catch{setNotice(`${message} Atualize o Resumo para conferir os totais.`);}
+  }
+  return <section className="stack"><div className="screen-header"><span className="eyebrow">Cada movimento conta</span><h2 ref={heading} tabIndex={-1}>Seus lançamentos.</h2><p>Confira a origem e corrija seus registros. Valores negativos representam saídas.</p></div>
     <form className="panel" onSubmit={filter}><fieldset disabled={busy} className="field-grid">
       <label>Conta<select name="account_id"><option value="">Todas as contas</option>{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
       <label>Tipo<select name="kind"><option value="">Todos os tipos</option>{Object.entries(kinds).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label>
@@ -72,8 +78,10 @@ export function Transactions({token,accounts,refresh}:{token:string;accounts:Acc
     {data&&!data.items.length&&<p className="empty-state">Nenhum lançamento neste filtro. Importe um extrato ou registre uma movimentação na Conversa.</p>}
     {data&&<ul className="transaction-list stack" aria-label="Lançamentos">{data.items.map(item=><li className="panel" key={item.id}>
       <div className="section-heading"><div><strong>{item.description}</strong><p className="muted">{item.booked_on.split('-').reverse().join('/')} · {accounts.find(a=>a.id===item.account_id)?.name||'Conta'} · {kinds[item.kind]}</p></div><strong>{money(item.amount_cents)}</strong></div>
-      <p>{item.category||'Sem categoria'}</p><div className="row"><button className="secondary" disabled={busy} onClick={()=>{setEditing(item);setDeleting(undefined);setError('');setNotice('');}}>Editar lançamento</button>
-      <button className="secondary" disabled={busy} onClick={()=>{setDeleting(item);setEditing(undefined);setError('');setNotice('');}}>Excluir lançamento</button></div>
+      <p>{item.category||'Sem categoria'}{item.reconciliation_id?' · Vinculado':''}</p><div className="row">{!item.reconciliation_id&&<><button className="secondary" disabled={busy} onClick={()=>{setEditing(item);setDeleting(undefined);setReconciling(undefined);setError('');setNotice('');}}>Editar lançamento</button>
+      <button className="secondary" disabled={busy} onClick={()=>{setDeleting(item);setEditing(undefined);setReconciling(undefined);setError('');setNotice('');}}>Excluir lançamento</button></>}
+      {(item.reconciliation_id||(BigInt(item.amount_cents)<0n&&accounts.find(a=>a.id===item.account_id)?.kind!=='credit_card'))&&<button className="secondary" disabled={busy} onClick={event=>{reconcileTrigger.current=event.currentTarget;setReconciling(item);setEditing(undefined);setDeleting(undefined);setError('');setNotice('');}}>{item.reconciliation_id?'Ver vínculo':'Reconciliar saída'}</button>}</div>
+      {reconciling?.id===item.id&&<Reconciliation key={item.id} entry={item} token={token} accounts={accounts} busy={busy} setBusy={setBusy} complete={reconciled} cancel={()=>{setReconciling(undefined);reconcileTrigger.current?.focus();}}/>}
       {deleting?.id===item.id&&<div className="notice"><h3>Excluir este lançamento?</h3><p>Ele sairá dos saldos e relatórios. A mesma identidade de origem não será importada novamente. Arquivos diferentes sem ID bancário ainda podem sobrepor registros; revise os períodos. Esta ação não tem desfazer.</p><div className="row"><span className="danger-zone"><button disabled={busy} onClick={remove}>{busy?'Excluindo…':'Confirmar exclusão'}</button></span><button className="secondary" disabled={busy} onClick={()=>setDeleting(undefined)}>Cancelar exclusão</button></div></div>}
       {editing?.id===item.id&&<form onSubmit={save} className="stack"><fieldset disabled={busy} className="stack">
         <legend>Corrigir lançamento</legend>

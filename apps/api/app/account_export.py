@@ -24,6 +24,7 @@ from app.models import (
     Goal,
     Insight,
     LLMUsage,
+    Reconciliation,
     Rule,
     Subscription,
     Transaction,
@@ -81,6 +82,7 @@ def export_account(engine: Engine, owner: UUID) -> bytes:
             ("subscriptions", Subscription),
             ("billing_checkouts", BillingCheckout),
             ("llm_usage", LLMUsage),
+            ("reconciliations", Reconciliation),
         ):
             append(f',"{name}":[')
             rows = session.exec(

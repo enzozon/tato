@@ -52,6 +52,7 @@ export function centsString(text: string): string {
   return String(result);
 }
 export type Account = { id: string; name: string; kind: string; opening_date: string; balance_cents: string };
+export type TransactionEntry = {id:string;account_id:string;booked_on:string;amount_cents:string;kind:string;description:string;category:string|null;revision:string;reconciliation_id?:string|null};
 export type Summary = { accounts: Account[]; balance_cents: string; expense_cents: string; as_of: string;
   projected_balance_cents?: string | null;
   categories: { name: string; amount_cents: string }[] };

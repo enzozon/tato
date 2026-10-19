@@ -3,6 +3,7 @@ body { margin: 0; line-height: 1.5; }
 .transaction-list { padding: 0; margin: 0; list-style: none; }
 .transaction-list li, .transaction-list strong { min-width: 0; overflow-wrap: anywhere; }
 .transaction-list form { margin-top: 20px; }
+.reconciliation-panel { margin-top: 20px; }
 .transaction-list legend { margin-bottom: 12px; font-weight: 600; }
 a { color: inherit; text-underline-offset: 4px; }
 button, input, select, textarea { font: inherit; }

@@ -52,8 +52,9 @@ def test_export_decrypts_all_tables_without_cross_tenant_leak(runtime_engine, ex
     assert all(
         len(value) == 1
         for name, value in payload.items()
-        if name not in {"version", "exported_at", "user"}
+        if name not in {"version", "exported_at", "user", "reconciliations"}
     )
+    assert payload["reconciliations"] == []
     for forbidden in ("ciphertext", "dedup_key", "digest", "embedding", "cs_test_private"):
         assert forbidden.encode() not in raw
 

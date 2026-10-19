@@ -1000,3 +1000,36 @@ A CI encontrou uma dependência ambiental no teste novo de reimportação: o
 limitador tentava acessar Upstash quando o backend de teste não era definido.
 O teste agora declara desenvolvimento/memória e remove as duas variáveis remotas,
 sem alterar a política do produto nem exigir credenciais no runner.
+
+### Reconciliação — 18/10/2026
+
+Primeira parte: regras puras para pares de contas próprias, sinais opostos,
+valor exato e intervalo de sete dias. Crédito no cartão é pagamento de fatura,
+nunca pareamento de compras. Treze testes aprovados; `make check` chegou a 687
+testes/82,57%. O schema foi apresentado em `20-RECONCILIACAO.md`; a migration
+aguarda o checkpoint. Nenhum registro foi conciliado nesta preparação.
+
+Schema aprovado antes da migration 0011. O banco descartável comprovou RLS,
+FK entre donos, cascata e bloqueio de edição/exclusão. A leitura de vínculos foi
+centralizada para também preservar a reconciliação em arquivos sobrepostos com
+ID estável: a natureza exportada pelo banco continua sendo a natureza de origem.
+
+Os endpoints passaram seis testes de contrato. Quatro ensaios Postgres provaram
+confirmação/desfazer, saldos conservados, compras preservadas e reimportação.
+O check geral aprovou 694 testes/81,19%; nenhuma conciliação automática é feita.
+
+Mais três casos Postgres comprovaram datas extremas e duas confirmações disputando
+a mesma saída: somente uma vincula. A suíte funcional desta parte chegou a sete
+casos aprovados, com conservação de saldos e retorno dos totais ao desfazer.
+
+A interface agora permite escolher, revisar, confirmar e desfazer o par em
+Lançamentos. Foco volta ao botão ao fechar; conflitos exigem nova revisão.
+Capturas sintéticas em desktop e 320px motivaram espaçamento entre ações e prévia.
+As 150 verificações web passaram, incluindo seis da reconciliação; build,
+tipos e PWA offline também passaram. Nenhum ensaio com iPhone físico.
+
+A revisão dos consumidores encontrou a exportação pessoal: ela agora inclui
+os vínculos ativos por allowlist, com prova de isolamento no Postgres. Check
+final: 695 testes/81,16%; integrações: 119 sem skips. A migration passou por
+reversão/reaplicação apenas no banco descartável, com drift limpo. Não houve
+mudança de provider, dependência, cobrança ou publicação nesta entrega.

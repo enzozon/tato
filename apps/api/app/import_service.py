@@ -20,6 +20,7 @@ from app.pdf_extract import extract_pdf
 from app.pdf_parser import parse_invoice
 from app.plans import require_capacity, user_plan
 from app.rate_limit import check_rate
+from app.reconciliation_links import original_kinds
 from app.repositories import TransactionInput, add_transaction
 
 ImportKind = Literal["csv", "ofx", "pdf"]
@@ -138,6 +139,7 @@ def store_import(
             ).all()
         }
         rules = load_rules(session, owner, cipher_key)
+        originals = original_kinds(session, owner, [row.id for row in existing.values()])
         categories = (
             {
                 row.id: row.name
@@ -155,7 +157,7 @@ def store_import(
         for index, (entry, key) in enumerate(zip(entries, keys, strict=True)):
             entry_kind = entry.kind or ("expense" if entry.amount_cents < 0 else "income")
             if old := existing.get(key):
-                validate_existing(entry, old)
+                validate_existing(entry, old, original_kind=originals.get(old.id))
                 duplicates += 1
                 continue
             category = match_category(entry.description, rules)

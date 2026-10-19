@@ -18,9 +18,11 @@ def require_document_space(session: Session, owner: UUID, content_bytes: int) ->
         raise HTTPException(413, "Limite técnico de 20 MiB de documentos por usuário atingido.")
 
 
-def validate_existing(entry: ParsedEntry, previous: Transaction) -> None:
+def validate_existing(
+    entry: ParsedEntry, previous: Transaction, *, original_kind: str | None = None
+) -> None:
     kind = entry.kind or ("expense" if entry.amount_cents < 0 else "income")
-    if (previous.amount_cents, previous.booked_on, previous.kind) != (
+    if (previous.amount_cents, previous.booked_on, original_kind or previous.kind) != (
         entry.amount_cents,
         entry.booked_on,
         kind,

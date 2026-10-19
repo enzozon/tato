@@ -53,6 +53,7 @@ class Category(TenantRecord, table=True):
 class Transaction(TenantRecord, table=True):
     __tablename__: ClassVar[str] = "transactions"
     __table_args__ = (
+        UniqueConstraint("user_id", "id"),
         ForeignKeyConstraint(["user_id", "document_id"], ["documents.user_id", "documents.id"]),
         Index("ix_transactions_user_document", "user_id", "document_id"),
         ForeignKeyConstraint(["user_id", "account_id"], ["accounts.user_id", "accounts.id"]),
@@ -88,3 +89,30 @@ class DeletedTransaction(TenantRecord, table=True):
     )
     account_id: UUID
     dedup_key: str = Field(max_length=64)
+
+
+class Reconciliation(TenantRecord, table=True):
+    __tablename__: ClassVar[str] = "reconciliations"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["user_id", "debit_transaction_id"],
+            ["transactions.user_id", "transactions.id"],
+            name="fk_reconciliations_debit",
+        ),
+        ForeignKeyConstraint(
+            ["user_id", "credit_transaction_id"],
+            ["transactions.user_id", "transactions.id"],
+            name="fk_reconciliations_credit",
+        ),
+        UniqueConstraint("user_id", "debit_transaction_id"),
+        UniqueConstraint("user_id", "credit_transaction_id"),
+        CheckConstraint("debit_transaction_id <> credit_transaction_id", name="distinct_legs"),
+        CheckConstraint("kind IN ('transfer', 'card_payment')", name="kind"),
+        CheckConstraint("debit_previous_kind IN ('expense', 'transfer')", name="debit_kind"),
+        CheckConstraint("credit_previous_kind IN ('income', 'transfer')", name="credit_kind"),
+    )
+    debit_transaction_id: UUID
+    credit_transaction_id: UUID
+    kind: str = Field(max_length=16)
+    debit_previous_kind: str = Field(max_length=10)
+    credit_previous_kind: str = Field(max_length=10)

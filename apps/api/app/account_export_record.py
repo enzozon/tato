@@ -15,6 +15,7 @@ from app.models import (
     Goal,
     Insight,
     LLMUsage,
+    Reconciliation,
     Rule,
     Subscription,
     Transaction,
@@ -44,6 +45,14 @@ def export_record(row: TenantRecord, key: bytes, owner: UUID) -> dict[str, objec
                 amount_cents=str(row.amount_cents),
                 kind=row.kind,
                 description=decrypt_text(row.description_ciphertext, key, owner, "transaction"),
+            )
+        case Reconciliation():
+            result.update(
+                debit_transaction_id=row.debit_transaction_id,
+                credit_transaction_id=row.credit_transaction_id,
+                kind=row.kind,
+                debit_previous_kind=row.debit_previous_kind,
+                credit_previous_kind=row.credit_previous_kind,
             )
         case Rule():
             result.update(

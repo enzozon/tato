@@ -7,10 +7,31 @@ from cryptography.exceptions import InvalidTag
 
 from app.account_export_record import export_record
 from app.crypto import encrypt_text
-from app.models import Agent, BillingCheckout, ChatTurn, LLMUsage, User
+from app.models import Agent, BillingCheckout, ChatTurn, LLMUsage, Reconciliation, User
 from app.seed_data import demo_records
 
 KEY = b"x" * 32
+
+
+def test_reconciliation_export_preserves_both_legs_and_previous_kinds():
+    owner = uuid4()
+    row = Reconciliation(
+        user_id=owner,
+        debit_transaction_id=uuid4(),
+        credit_transaction_id=uuid4(),
+        kind="card_payment",
+        debit_previous_kind="expense",
+        credit_previous_kind="income",
+    )
+    assert export_record(row, KEY, owner) == {
+        "id": str(row.id),
+        "created_at": row.created_at.isoformat(),
+        "debit_transaction_id": str(row.debit_transaction_id),
+        "credit_transaction_id": str(row.credit_transaction_id),
+        "kind": "card_payment",
+        "debit_previous_kind": "expense",
+        "credit_previous_kind": "income",
+    }
 
 
 def personal_records(owner):

@@ -186,3 +186,14 @@ unicidade por usuário/tipo, FKs compostas de conta/meta, RLS forçada e cascade
 do usuário. `goals(user_id, id)` ganha unicidade para esse vínculo. Insights
 mantêm conteúdo cifrado e recebem estado/tentativas/datas de entrega de e-mail.
 A execução continua sob identidade do usuário, sem conexão administrativa.
+
+## Reconciliação manual
+
+Schema aprovado em 18/10/2026, revision `0011`: `reconciliations` liga duas
+transações do mesmo dono por FKs compostas. A unicidade de dono/ID em
+`transactions` sustenta essas FKs; unicidades de dono/ponta apoiam a consulta
+dos vínculos. A API impede reutilização em qualquer posição sob lock do usuário.
+São 17 tabelas privadas com RLS forçada; exclusão do usuário apaga os vínculos.
+O runtime pode ler, inserir e remover vínculos, sem permissão de UPDATE.
+As naturezas anteriores permitem desfazer sem alterar valores ou saldos.
+Regras, limites e contratos em [20-RECONCILIACAO.md](20-RECONCILIACAO.md).
