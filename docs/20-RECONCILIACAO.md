@@ -63,3 +63,7 @@ vínculo, sem sobrescrever `transfer`; divergências de data/valor seguem recusa
 `POST /reconciliations` confirma com versões das duas linhas e booleano explícito.
 `GET /reconciliations/{id}` mostra o vínculo; `DELETE` desfaz com confirmação.
 Repetir uma confirmação já ativa conserva o vínculo. Desfazer ausente é idempotente.
+
+Sete ensaios Postgres cobrem saldos, compras, desfazer, acesso cruzado,
+reimportação divergente, limite de candidatos, extremos de data/inteiro e
+disputa concorrente pela mesma saída. Valores são conferidos pelos totais SQL.

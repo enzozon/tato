@@ -1017,3 +1017,7 @@ ID estável: a natureza exportada pelo banco continua sendo a natureza de origem
 Os endpoints passaram seis testes de contrato. Quatro ensaios Postgres provaram
 confirmação/desfazer, saldos conservados, compras preservadas e reimportação.
 O check geral aprovou 694 testes/81,19%; nenhuma conciliação automática é feita.
+
+Mais três casos Postgres comprovaram datas extremas e duas confirmações disputando
+a mesma saída: somente uma vincula. A suíte funcional desta parte chegou a sete
+casos aprovados, com conservação de saldos e retorno dos totais ao desfazer.
