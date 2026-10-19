@@ -1008,3 +1008,8 @@ valor exato e intervalo de sete dias. Crédito no cartão é pagamento de fatura
 nunca pareamento de compras. Treze testes aprovados; `make check` chegou a 687
 testes/82,57%. O schema foi apresentado em `20-RECONCILIACAO.md`; a migration
 aguarda o checkpoint. Nenhum registro foi conciliado nesta preparação.
+
+Schema aprovado antes da migration 0011. O banco descartável comprovou RLS,
+FK entre donos, cascata e bloqueio de edição/exclusão. A leitura de vínculos foi
+centralizada para também preservar a reconciliação em arquivos sobrepostos com
+ID estável: a natureza exportada pelo banco continua sendo a natureza de origem.

@@ -16,6 +16,7 @@ from app.llm_service import require_active
 from app.models import Account, Category, DeletedTransaction, Transaction
 from app.plans import user_plan
 from app.rate_limit import check_rate
+from app.reconciliation_links import linked_reconciliations
 
 router = APIRouter(prefix="/transactions", tags=["lançamentos"])
 Kind = Literal["income", "expense", "transfer"]
@@ -50,6 +51,7 @@ class TransactionView(BaseModel):
     description: str
     category: str | None
     revision: str
+    reconciliation_id: UUID | None = None
 
 
 class TransactionPage(BaseModel):
@@ -127,6 +129,13 @@ def list_transactions(engine: Engine, owner: UUID, filters: TransactionFilter) -
             )
         ).all()
         items = [view(record, category, key, owner) for record, category in rows[: filters.limit]]
+        links = {
+            identifier: link.id
+            for link in linked_reconciliations(session, owner, [item.id for item in items])
+            for identifier in [link.debit_transaction_id, link.credit_transaction_id]
+        }
+        for item in items:
+            item.reconciliation_id = links.get(item.id)
         last = items[-1] if items else None
         return TransactionPage(
             items=items,
@@ -174,6 +183,8 @@ def edit_transaction(
         ).first()
         if record is None:
             raise HTTPException(404, "Lançamento não encontrado.")
+        if linked_reconciliations(session, owner, [identifier]):
+            raise HTTPException(409, "Desfaça a reconciliação antes de editar.")
         if revision(record) != data.revision:
             raise HTTPException(409, "O lançamento mudou. Recarregue antes de editar.")
         category = None
@@ -232,6 +243,8 @@ def delete_transaction(
             raise HTTPException(404, "Lançamento não encontrado.")
         if revision(record) != data.revision:
             raise HTTPException(409, "O lançamento mudou. Recarregue antes de excluir.")
+        if linked_reconciliations(session, owner, [identifier]):
+            raise HTTPException(409, "Desfaça a reconciliação antes de excluir.")
         session.add(
             DeletedTransaction(
                 id=record.id,

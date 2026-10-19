@@ -10,7 +10,7 @@ from app import categorization_llm as categorization
 from app.import_parsers import ParsedEntry
 from app.llm import LLMUnavailable
 from app.llm_router import Routed
-from app.models import Account, Category, Transaction
+from app.models import Account, Category, Reconciliation, Transaction
 
 
 @pytest.fixture
@@ -143,9 +143,11 @@ def test_skip_without_provider(ready, monkeypatch, reason):
     unexpected.assert_not_called()
 
 
-def test_existing_transaction_does_not_call_provider(ready, monkeypatch):
+@pytest.mark.parametrize("linked", [False, True])
+def test_existing_transaction_does_not_call_provider(ready, monkeypatch, linked):
     owner, account, category, session, _ = ready
     key = categorization.dedup_key(b"x" * 32, owner, account, "csv:1")
+    record_id = uuid4()
     session.exec.side_effect = [
         Mock(first=lambda: None),
         Mock(all=lambda: [account]),
@@ -153,15 +155,32 @@ def test_existing_transaction_does_not_call_provider(ready, monkeypatch):
         Mock(
             all=lambda: [
                 Transaction(
+                    id=record_id,
                     user_id=owner,
                     account_id=account,
                     dedup_key=key,
                     booked_on=entry().booked_on,
                     amount_cents=-12345,
-                    kind="expense",
+                    kind="transfer" if linked else "expense",
                     description_ciphertext=b"synthetic",
                 )
             ]
+        ),
+        Mock(
+            all=lambda: (
+                [
+                    Reconciliation(
+                        user_id=owner,
+                        debit_transaction_id=record_id,
+                        credit_transaction_id=uuid4(),
+                        kind="transfer",
+                        debit_previous_kind="expense",
+                        credit_previous_kind="income",
+                    )
+                ]
+                if linked
+                else []
+            )
         ),
     ]
     unexpected = Mock(side_effect=AssertionError("Não pode chamar provedor."))
@@ -218,6 +237,7 @@ def test_preflight_rejects_before_provider(ready, monkeypatch, reason):
                     )
                 ]
             ),
+            Mock(all=lambda: []),
         ]
     unexpected = Mock(side_effect=AssertionError("Não pode chamar provedor."))
     monkeypatch.setattr(categorization, "generate", unexpected)

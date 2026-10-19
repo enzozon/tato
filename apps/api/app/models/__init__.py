@@ -5,7 +5,14 @@ from app.models.billing import BillingCheckout, BillingEvent, LLMUsage
 from app.models.chat import ChatTurn
 from app.models.documents import Chunk, Document
 from app.models.knowledge import KnowledgeChunk
-from app.models.ledger import Account, Category, DeletedTransaction, Transaction, User
+from app.models.ledger import (
+    Account,
+    Category,
+    DeletedTransaction,
+    Reconciliation,
+    Transaction,
+    User,
+)
 from app.models.planning import Goal, Insight, Rule, Subscription
 
 __all__ = [
@@ -23,6 +30,7 @@ __all__ = [
     "KnowledgeChunk",
     "LLMUsage",
     "Rule",
+    "Reconciliation",
     "Subscription",
     "Transaction",
     "User",

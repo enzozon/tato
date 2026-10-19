@@ -38,7 +38,7 @@ Juros, tarifas, estornos, parcelamentos e conciliação em lote ficam fora desta
 
 ## Checkpoint de schema proposto
 
-Ainda não aprovado nem migrado. Tabela `reconciliations` com `id`, `user_id`,
+Aprovado por Enzo em 18/10/2026 antes da migration. Tabela `reconciliations` com `id`, `user_id`,
 `created_at`, `debit_transaction_id`, `credit_transaction_id`, `kind`
 (`transfer`/`card_payment`), `debit_previous_kind` e `credit_previous_kind`.
 Sem descrição ou valor duplicados. Adicionar UNIQUE `(user_id, id)` a
@@ -53,3 +53,8 @@ Desfazer remove o vínculo na mesma transação que restaura as naturezas.
 Consequência: desfazer remove este vínculo, sem criar um histórico permanente
 de reconciliações. Esta versão não é um livro de auditoria imutável. Uma nova
 camada de auditoria exigirá checkpoint próprio antes de persistir mais dados.
+
+A migration `0011` foi aplicada primeiro em `tato_test`, com drift limpo. As
+duas FKs incluem o dono e a API bloqueia edição/exclusão enquanto há vínculo.
+Reimportar ID estável já vinculado confere a natureza de origem guardada no
+vínculo, sem sobrescrever `transfer`; divergências de data/valor seguem recusadas.

@@ -15,6 +15,7 @@ from app.llm_policy import personal_allowed
 from app.llm_service import generate, require_active
 from app.models import Account, Category, Document, Transaction
 from app.plans import require_capacity, user_plan
+from app.reconciliation_links import original_kinds
 
 
 class CategoryChoice(BaseModel):
@@ -77,9 +78,10 @@ def suggest_categories(
                 )
             ).all()
         }
+        originals = original_kinds(session, owner, [row.id for row in existing.values()])
         for entry, key in zip(entries, keys, strict=True):
             if previous := existing.get(key):
-                validate_existing(entry, previous)
+                validate_existing(entry, previous, original_kind=originals.get(previous.id))
         seen = set(existing)
         pending: dict[int, str] = {}
         for index, (entry, key) in enumerate(zip(entries, keys, strict=True)):
