@@ -58,3 +58,8 @@ A migration `0011` foi aplicada primeiro em `tato_test`, com drift limpo. As
 duas FKs incluem o dono e a API bloqueia edição/exclusão enquanto há vínculo.
 Reimportar ID estável já vinculado confere a natureza de origem guardada no
 vínculo, sem sobrescrever `transfer`; divergências de data/valor seguem recusadas.
+
+`GET /reconciliations/candidates` mostra até 20 entradas e sinaliza limite;
+`POST /reconciliations` confirma com versões das duas linhas e booleano explícito.
+`GET /reconciliations/{id}` mostra o vínculo; `DELETE` desfaz com confirmação.
+Repetir uma confirmação já ativa conserva o vínculo. Desfazer ausente é idempotente.

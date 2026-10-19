@@ -1013,3 +1013,7 @@ Schema aprovado antes da migration 0011. O banco descartável comprovou RLS,
 FK entre donos, cascata e bloqueio de edição/exclusão. A leitura de vínculos foi
 centralizada para também preservar a reconciliação em arquivos sobrepostos com
 ID estável: a natureza exportada pelo banco continua sendo a natureza de origem.
+
+Os endpoints passaram seis testes de contrato. Quatro ensaios Postgres provaram
+confirmação/desfazer, saldos conservados, compras preservadas e reimportação.
+O check geral aprovou 694 testes/81,19%; nenhuma conciliação automática é feita.
