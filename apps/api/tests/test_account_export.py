@@ -33,6 +33,7 @@ def ready(monkeypatch):
         [rows[8]],
         [rows[11]],
         [rows[12]],
+        [],
     ]
     active = [False]
 
@@ -60,8 +61,8 @@ def test_complete_json_materialized_before_unlock(ready):
     assert payload["user"]["onboarding_completed_at"] == "2026-10-16T00:00:00+00:00"
     assert payload["accounts"][0]["name"] == "Carteira demonstrativa"
     assert payload["transactions"][0]["amount_cents"] == "-4200"
-    assert len(payload) == 16
-    assert session.exec.call_count == 13
+    assert len(payload) == 17 and payload["reconciliations"] == []
+    assert session.exec.call_count == 14
     rate.assert_called_once_with(owner, FREE.requests_per_minute)
 
 

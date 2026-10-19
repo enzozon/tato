@@ -1,8 +1,10 @@
+import json
 from datetime import date
 
 import pytest
 from fastapi import HTTPException
 
+from app.account_export import export_account
 from app.account_service import account_session
 from app.dashboard import summary
 from app.models import Account, Transaction
@@ -75,6 +77,12 @@ def test_confirm_and_undo_preserve_balances_and_purchases(
     paired = reconcile(runtime_engine, owners[0], request)
     assert reconcile(runtime_engine, owners[0], request).id == paired.id
     assert paired.debit.kind == paired.credit.kind == "transfer"
+    assert paired.debit.reconciliation_id == paired.credit.reconciliation_id == paired.id
+    exported = json.loads(export_account(runtime_engine, owners[0]))["reconciliations"]
+    assert len(exported) == 1 and exported[0]["id"] == str(paired.id)
+    assert exported[0]["debit_transaction_id"] == str(debit.id)
+    assert exported[0]["credit_transaction_id"] == str(credit.id)
+    assert json.loads(export_account(runtime_engine, owners[1]))["reconciliations"] == []
     assert paired.impact.expense_reduction_cents == paired.impact.income_reduction_cents == "4500"
     after = summary(runtime_engine, owners[0], date(2026, 10, 10))
     assert after.balance_cents == before.balance_cents

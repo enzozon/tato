@@ -64,8 +64,9 @@ regressões para problemas demonstráveis. Não equivale a auditoria de cada lin
   tipo, corrigir com versão conferida e excluir com confirmação. A migration 0010
   conserva identidades removidas com RLS, impedindo recriação da mesma origem.
   Arquivos diferentes sem ID estável continuam exigindo revisão de sobreposição.
-  Pareamento de transferências e pagamento de faturas ainda não foi implementado;
-  marcar manualmente como transferência não cria a contrapartida. Ver `19-LANCAMENTOS.md`.
+  Reconciliação manual de transferências e pagamentos de faturas entregue em
+  `20-RECONCILIACAO.md`: prévia, confirmação e desfazer, sem alterar saldos.
+  As duas pontas precisam existir; não se cria uma contrapartida automaticamente.
 
 - Categorização usa regras e sugestão LLM limitada na confirmação, quando a política
   pessoal Groq/ZDR está habilitada; prova remota com dados bancários não foi realizada.

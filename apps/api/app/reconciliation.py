@@ -100,10 +100,13 @@ def pair_view(session: Session, owner: UUID, link: Reconciliation, key: bytes) -
     previous_debit = debit.model_copy(update={"kind": link.debit_previous_kind})
     previous_credit = credit.model_copy(update={"kind": link.credit_previous_kind})
     result = impact(session, owner, previous_debit, previous_credit)
+    debit_view = public_entry(session, owner, debit, key)
+    credit_view = public_entry(session, owner, credit, key)
+    debit_view.reconciliation_id = credit_view.reconciliation_id = link.id
     return PairView(
         id=link.id,
-        debit=public_entry(session, owner, debit, key),
-        credit=public_entry(session, owner, credit, key),
+        debit=debit_view,
+        credit=credit_view,
         impact=result,
     )
 

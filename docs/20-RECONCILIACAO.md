@@ -56,7 +56,7 @@ camada de auditoria exigirá checkpoint próprio antes de persistir mais dados.
 
 A migration `0011` foi aplicada primeiro em `tato_test`, com drift limpo. As
 duas FKs incluem o dono e a API bloqueia edição/exclusão enquanto há vínculo.
-Reimportar ID estável já vinculado confere a natureza de origem guardada no
+Reimportar ID estável já vinculado confere a natureza anterior guardada no
 vínculo, sem sobrescrever `transfer`; divergências de data/valor seguem recusadas.
 
 `GET /reconciliations/candidates` mostra até 20 entradas e sinaliza limite;
@@ -67,3 +67,37 @@ Repetir uma confirmação já ativa conserva o vínculo. Desfazer ausente é ide
 Sete ensaios Postgres cobrem saldos, compras, desfazer, acesso cruzado,
 reimportação divergente, limite de candidatos, extremos de data/inteiro e
 disputa concorrente pela mesma saída. Valores são conferidos pelos totais SQL.
+
+## Como testar na interface
+
+1. Importe ou registre as duas pontas em contas próprias diferentes.
+2. Em **Lançamentos**, encontre a saída e clique em **Reconciliar saída**.
+3. Escolha **Revisar este par** na entrada correspondente. A prévia mostra
+   as duas contas, datas, valores e quanto deixará de contar como receita/despesa.
+4. Confira os registros antes de **Confirmar reconciliação**. O efeito segue a
+   data de cada ponta, inclusive quando pertencem a meses diferentes.
+5. Abra **Ver vínculo** em qualquer ponta. **Confirmar desfazer** restaura as
+   naturezas anteriores e libera edição/exclusão; não move dinheiro no banco.
+
+Sem candidato, importe a outra ponta ou revise datas e valores. A lista mostra
+até 20 entradas; não é prova de completude se o aviso de limite aparecer.
+Se uma versão mudou, feche e abra novamente para revisar os dados atuais.
+O app não confirma nem tenta outro par automaticamente após conflito.
+
+As naturezas guardadas são as anteriores à reconciliação, não necessariamente
+as originalmente exportadas pelo banco: correções manuais anteriores continuam
+sujeitas às regras de divergência de reimportação em `19-LANCAMENTOS.md`.
+
+## Evidência local — 18/10/2026
+
+- `make check`: 695 testes, cobertura de 81,16%, lint/formatação/mypy aprovados.
+- PostgreSQL: 119 integrações aprovadas; reversão `0011 → 0010 → 0011` no
+  banco descartável e drift limpo, mais oito ensaios de schema/fluxo.
+- Web: 150 testes desktop/mobile; seis exercitam prévia, confirmação,
+  desfazer, ausência de candidatos, foco e conflito com nova revisão.
+- Build estático, tipos e PWA offline aprovados. Capturas sintéticas em
+  `test-results/reconciliacao/`, incluindo 320px sem overflow horizontal.
+
+A exportação JSON da conta inclui vínculos ativos com as duas pontas e
+naturezas anteriores, sem dados de outro usuário. Estes ensaios não comprovam
+leitura bancária real, Safari/iPhone físico ou publicação em produção.

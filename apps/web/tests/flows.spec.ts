@@ -143,6 +143,93 @@ test('exclusão de lançamento exige confirmação e não repete após falha de 
   expect(deleted).toBe(1);
 });
 
+test('reconciliação revisa pagamento de fatura e desfaz sem editar as pontas',async({page},info)=>{
+  await signIn(page);let linked=false,confirmed=0,undone=0;
+  const creditId='00000000-0000-4000-8000-000000000003',linkId='00000000-0000-4000-8000-000000000004';
+  const debit={id:owner,account_id:account,booked_on:'2026-10-01',amount_cents:'-4500',kind:'expense',description:'Saída sintética da conta',category:null,revision:'a'.repeat(64)};
+  const credit={...debit,id:creditId,account_id:creditId,amount_cents:'4500',kind:'income',description:'Pagamento sintético no cartão',revision:'b'.repeat(64)};
+  const impact={kind:'card_payment',amount_cents:'4500',expense_reduction_cents:'4500',income_reduction_cents:'4500'};
+  const pair={id:linkId,debit:{...debit,kind:'transfer',revision:'c'.repeat(64)},credit:{...credit,kind:'transfer',revision:'d'.repeat(64)},impact};
+  const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,content-type','Access-Control-Allow-Methods':'GET,POST,DELETE,OPTIONS'};
+  await page.route('**/transactions**',route=>route.fulfill({headers,json:{items:[linked?{...pair.debit,reconciliation_id:linkId}:debit],next_cursor:null}}));
+  await page.route('**/reconciliations**',route=>{
+    const method=route.request().method();
+    if(method==='OPTIONS')return route.fulfill({headers,status:200});
+    if(method==='POST'){
+      expect(route.request().postDataJSON()).toEqual({debit_id:debit.id,credit_id:credit.id,debit_revision:debit.revision,credit_revision:credit.revision,confirm:true});
+      confirmed++;linked=true;return route.fulfill({headers,json:pair});
+    }
+    if(method==='DELETE'){
+      expect(route.request().postDataJSON()).toEqual({debit_revision:pair.debit.revision,credit_revision:pair.credit.revision,confirm:true});
+      undone++;linked=false;return route.fulfill({headers,status:204});
+    }
+    return route.fulfill({headers,json:route.request().url().includes('/candidates')?{source:debit,candidates:[{entry:credit,impact}],truncated:false}:pair});
+  });
+  await navigate(page,'Lançamentos');
+  if(info.project.name==='mobile')await page.setViewportSize({width:320,height:844});
+  await page.getByRole('button',{name:'Reconciliar saída',exact:true}).click();
+  const region=page.getByRole('region',{name:'Reconciliação de lançamentos',exact:true});
+  await expect(region).toBeFocused();expect(confirmed).toBe(0);
+  await page.getByRole('button',{name:'Revisar este par',exact:true}).click();
+  await expect(region).toBeFocused();
+  await expect(region).toContainText('Pagamento de fatura. Valores, datas e saldos permanecem iguais.');
+  const directory=path.resolve(__dirname,'../../../test-results/reconciliacao');await mkdir(directory,{recursive:true});
+  await page.screenshot({path:path.join(directory,`${info.project.name}-revisao.png`),fullPage:true,animations:'disabled',style:'nextjs-portal{display:none!important}'});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.getByRole('button',{name:'Fechar reconciliação',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Reconciliar saída',exact:true})).toBeFocused();expect(confirmed).toBe(0);
+  await page.getByRole('button',{name:'Reconciliar saída',exact:true}).click();
+  await page.getByRole('button',{name:'Revisar este par',exact:true}).click();
+  await page.getByRole('button',{name:'Confirmar reconciliação',exact:true}).click();
+  await expect(page.getByText('Reconciliação confirmada.',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Editar lançamento',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Excluir lançamento',exact:true})).toHaveCount(0);
+  await page.getByRole('button',{name:'Ver vínculo',exact:true}).click();
+  await page.getByRole('button',{name:'Confirmar desfazer',exact:true}).click();
+  await expect(page.getByText('Reconciliação desfeita.',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Editar lançamento',exact:true})).toBeVisible();
+  expect(confirmed).toBe(1);expect(undone).toBe(1);
+});
+
+test('reconciliação sem candidatos não oferece confirmação',async({page})=>{
+  await signIn(page);
+  const source={id:owner,account_id:account,booked_on:'2026-10-01',amount_cents:'-4500',kind:'expense',description:'Saída sintética',category:null,revision:'a'.repeat(64)};
+  const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,content-type'};
+  await page.route('**/transactions**',route=>route.fulfill({headers,json:{items:[source],next_cursor:null}}));
+  await page.route('**/reconciliations/candidates**',route=>route.fulfill({headers,json:{source,candidates:[],truncated:false}}));
+  await navigate(page,'Lançamentos');
+  await page.getByRole('button',{name:'Reconciliar saída',exact:true}).click();
+  await expect(page.getByRole('region',{name:'Reconciliação de lançamentos',exact:true})).toContainText('Nenhuma entrada compatível');
+  await expect(page.getByRole('button',{name:'Confirmar reconciliação',exact:true})).toHaveCount(0);
+});
+
+test('conflito de reconciliação exige nova revisão antes de repetir',async({page})=>{
+  await signIn(page);let attempts=0;
+  const creditId='00000000-0000-4000-8000-000000000003';
+  const debit={id:owner,account_id:account,booked_on:'2026-10-01',amount_cents:'-4500',kind:'expense',description:'Saída sintética',category:null,revision:'a'.repeat(64)};
+  const credit={...debit,id:creditId,account_id:creditId,amount_cents:'4500',kind:'income',description:'Entrada sintética'};
+  const impact={kind:'transfer',amount_cents:'4500',expense_reduction_cents:'4500',income_reduction_cents:'4500'};
+  const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,content-type','Access-Control-Allow-Methods':'GET,POST,OPTIONS'};
+  await page.route('**/transactions**',route=>route.fulfill({headers,json:{items:[debit],next_cursor:null}}));
+  await page.route('**/reconciliations**',route=>{
+    if(route.request().method()==='OPTIONS')return route.fulfill({headers,status:200});
+    if(route.request().method()==='POST'){
+      attempts++;expect(route.request().postDataJSON().debit_revision).toBe(attempts===1?'a'.repeat(64):'b'.repeat(64));
+      return route.fulfill({headers,status:409,json:{detail:'Registros alterados'}});
+    }
+    return route.fulfill({headers,json:{source:{...debit,revision:attempts?'b'.repeat(64):debit.revision},candidates:[{entry:credit,impact}],truncated:false}});
+  });
+  await navigate(page,'Lançamentos');
+  for(let index=0;index<2;index++){
+    await page.getByRole('button',{name:'Reconciliar saída',exact:true}).click();
+    await page.getByRole('button',{name:'Revisar este par',exact:true}).click();
+    await page.getByRole('button',{name:'Confirmar reconciliação',exact:true}).click();
+    await expect(page.getByRole('region',{name:'Reconciliação de lançamentos',exact:true}).getByRole('alert')).toBeVisible();
+    expect(attempts).toBe(index+1);
+    await page.getByRole('button',{name:'Fechar reconciliação',exact:true}).click();
+  }
+});
+
 test('paginação de lançamentos volta e reinicia ao filtrar',async({page})=>{
   await signIn(page);
   const item={id:owner,account_id:account,booked_on:'2026-10-01',amount_cents:'-4500',kind:'expense',category:null,revision:'a'.repeat(64)};

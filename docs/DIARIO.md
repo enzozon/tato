@@ -1021,3 +1021,15 @@ O check geral aprovou 694 testes/81,19%; nenhuma conciliação automática é fe
 Mais três casos Postgres comprovaram datas extremas e duas confirmações disputando
 a mesma saída: somente uma vincula. A suíte funcional desta parte chegou a sete
 casos aprovados, com conservação de saldos e retorno dos totais ao desfazer.
+
+A interface agora permite escolher, revisar, confirmar e desfazer o par em
+Lançamentos. Foco volta ao botão ao fechar; conflitos exigem nova revisão.
+Capturas sintéticas em desktop e 320px motivaram espaçamento entre ações e prévia.
+As 150 verificações web passaram, incluindo seis da reconciliação; build,
+tipos e PWA offline também passaram. Nenhum ensaio com iPhone físico.
+
+A revisão dos consumidores encontrou a exportação pessoal: ela agora inclui
+os vínculos ativos por allowlist, com prova de isolamento no Postgres. Check
+final: 695 testes/81,16%; integrações: 119 sem skips. A migration passou por
+reversão/reaplicação apenas no banco descartável, com drift limpo. Não houve
+mudança de provider, dependência, cobrança ou publicação nesta entrega.
