@@ -1000,3 +1000,11 @@ A CI encontrou uma dependência ambiental no teste novo de reimportação: o
 limitador tentava acessar Upstash quando o backend de teste não era definido.
 O teste agora declara desenvolvimento/memória e remove as duas variáveis remotas,
 sem alterar a política do produto nem exigir credenciais no runner.
+
+### Reconciliação — 18/10/2026
+
+Primeira parte: regras puras para pares de contas próprias, sinais opostos,
+valor exato e intervalo de sete dias. Crédito no cartão é pagamento de fatura,
+nunca pareamento de compras. Treze testes aprovados; `make check` chegou a 687
+testes/82,57%. O schema foi apresentado em `20-RECONCILIACAO.md`; a migration
+aguarda o checkpoint. Nenhum registro foi conciliado nesta preparação.
